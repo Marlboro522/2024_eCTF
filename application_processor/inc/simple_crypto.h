@@ -68,3 +68,31 @@ int hash(void *data, size_t len, uint8_t *hash_out);
 
 #endif // CRYPTO_EXAMPLE
 #endif // ECTF_CRYPTO_H
+
+// /**
+//  * @file "simple_crypto.h"
+//  * @author Raja Kantheti
+//  * @brief AES 256 implementation 
+//  * @date 2024
+//  */
+#include<wolfssl/wolfcrypt/aes.h>
+#include<wolfssl/wolfcrypt/random.h>
+
+#define KEY_SIZE 32
+#define BLOCK_SIZE 16
+#define SUCCESS_RETURN 0
+#define ERROR_RETURN -1
+
+//Fucntion prototypes
+int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
+              int block_size);
+
+int generate_key(uint8_t *key);
+
+int generate_random_iv(uint8_t *iv);
+
+int encrypt_n(const char *pin, int pin_len, uint8_t *encrypted_pin,
+             const uint8_t *key, uint8_t *iv);
+
+int compare_pins(const uint8_t *encrypted_pin, const uint8_t *encrypted_pin1);
+
