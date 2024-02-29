@@ -390,12 +390,14 @@ int validate_pin() {
     uint8_t iv[KEY_SIZE];
     char hex_str[BLOCK_SIZE * 2 + 1];
 
-
     generate_key(key);
     generate_random_iv(iv);
-
+    bytes_to_hex(key, KEY_SIZE, hex_str);
+    print_info("key: %s", hex_str);
+    bytes_to_hex(iv,KEY_SIZE,hex_str);
+    print_info("iv: %s", hex_str);
     // Encrypt original PIN
-    // print_info("AP PIN > %s\n", AP_PIN);
+    print_info("AP PIN >%s\n", AP_PIN);
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
     printf("Encrypted AP PIN (u_CIPHER): ");
     bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
@@ -406,6 +408,10 @@ int validate_pin() {
         print_info("Entered the encryption of the user_PIN");
         return ERROR_RETURN;
     }print_info("the pin>%s\n",user_PIN);
+    bytes_to_hex(key, KEY_SIZE, hex_str);
+    print_info("key: %s", hex_str);
+    bytes_to_hex(iv,KEY_SIZE,hex_str);
+    print_info("iv: %s", hex_str);
     printf("Encrypted User PIN (u_CIPHER): ");
     bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
     print_info("%s\n", hex_str);

@@ -355,7 +355,7 @@ int main() {
 
     generate_key(key);
     generate_random_iv(iv);
-
+    bytes_to_hex(key,KEY_SIZE,hex_str);
     // Encrypt original PIN
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv); // Include null terminator in pin length
     printf("%s\n", AP_PIN);
