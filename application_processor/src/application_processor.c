@@ -395,7 +395,7 @@ int validate_pin() {
     generate_random_iv(iv);
 
     // Encrypt original PIN
-    print_info("AP PIN > %s\n", AP_PIN);
+    // print_info("AP PIN > %s\n", AP_PIN);
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
     printf("Encrypted AP PIN (u_CIPHER): ");
     bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
