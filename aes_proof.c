@@ -372,7 +372,7 @@ int main() {
     // Encrypt user PIN
     if (encrypt_n(user_PIN, strlen(user_PIN) + 1, u_CIPHER, key, iv) != 0) { // Include null terminator in pin length
         return ERROR_RETURN;
-    }
+    } 
 
     // Print user PIN cipher text
     printf("Encrypted User PIN (u_CIPHER): ");
@@ -384,7 +384,7 @@ int main() {
         printf("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     } else {
-        printf("Invalid PIN!\n");
+        printf("Invalid PIN!!!\n");
         return ERROR_RETURN;
     }
 }
