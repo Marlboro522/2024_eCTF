@@ -344,7 +344,7 @@ void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
 }
 
 
-#define AP_PIN "76ea8r3"
+#define AP_PIN "76ea8r"
 
 int main() {
     uint8_t key[KEY_SIZE];
@@ -357,20 +357,19 @@ int main() {
     generate_random_iv(iv);
     bytes_to_hex(key,KEY_SIZE,hex_str);
     // Encrypt original PIN
-    encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv); // Include null terminator in pin length
-    printf("%s\n", AP_PIN);
+    encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv); //wtf is this fine and application is not
     // Print original PIN cipher text
     printf("Original PIN (o_CIPHER): ");
     bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
     printf("%s\n\n", hex_str);
 
     // Get user PIN
-    char user_PIN[50]; // Increase buffer size to accommodate null terminator and maximum PIN length
+    char user_PIN[50]; 
     printf("Enter PIN: ");
     scanf("%s", user_PIN);
     printf("\n");
     // Encrypt user PIN
-    if (encrypt_n(user_PIN, strlen(user_PIN) + 1, u_CIPHER, key, iv) != 0) { // Include null terminator in pin length
+    if (encrypt_n(user_PIN, strlen(user_PIN) + 1, u_CIPHER, key, iv) != 0) {
         return ERROR_RETURN;
     }
     printf("%s\n", AP_PIN);
@@ -379,7 +378,7 @@ int main() {
     bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
     printf("%s\n", hex_str);
 
-    // Compare original PIN cipher text with user PIN cipher text
+    // Compare
     if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
         printf("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
