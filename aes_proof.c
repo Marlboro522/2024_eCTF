@@ -344,7 +344,7 @@ void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
 }
 
 
-#define AP_PIN "521313"
+#define AP_PIN "76ea8r3"
 
 int main() {
     uint8_t key[KEY_SIZE];
@@ -358,7 +358,7 @@ int main() {
 
     // Encrypt original PIN
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv); // Include null terminator in pin length
-
+    printf("%s\n", AP_PIN);
     // Print original PIN cipher text
     printf("Original PIN (o_CIPHER): ");
     bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
@@ -372,8 +372,8 @@ int main() {
     // Encrypt user PIN
     if (encrypt_n(user_PIN, strlen(user_PIN) + 1, u_CIPHER, key, iv) != 0) { // Include null terminator in pin length
         return ERROR_RETURN;
-    } 
-
+    }
+    printf("%s\n", AP_PIN);
     // Print user PIN cipher text
     printf("Encrypted User PIN (u_CIPHER): ");
     bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);

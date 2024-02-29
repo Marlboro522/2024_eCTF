@@ -399,9 +399,11 @@ int validate_pin() {
     char user_PIN[50];
     recv_input("Enter PIN: ",user_PIN);
     if(encrypt_n(user_PIN,strlen(user_PIN),u_CIPHER,key,iv)!=0){
+        print_info("Entered the encryption of the user_PIN");
         return ERROR_RETURN;
     }print_info("the pin>%s\n",user_PIN);
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
+        print_info("Entered the commpare pins");
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
