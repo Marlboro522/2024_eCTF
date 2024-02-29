@@ -404,7 +404,7 @@ int validate_pin() {
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
-    print_error("Invalid PIN!\n");
+    print_error("Invalid PIN!!!\n");
     return ERROR_RETURN; 
 }
 
