@@ -96,3 +96,4 @@ int encrypt_n(const char *pin, int pin_len, uint8_t *encrypted_pin,
 
 int compare_pins(const uint8_t *encrypted_pin, const uint8_t *encrypted_pin1);
 
+void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str);

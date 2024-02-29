@@ -388,6 +388,7 @@ int validate_pin() {
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
+    char hex_str[BLOCK_SIZE * 2 + 1];
 
 
     generate_key(key);
@@ -396,12 +397,18 @@ int validate_pin() {
     // Encrypt original PIN
     print_info("AP PIN > %s\n", AP_PIN);
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
+    printf("Encrypted AP PIN (u_CIPHER): ");
+    bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
+    print_info("%s\n", hex_str);
     char user_PIN[50];
     recv_input("Enter PIN: ",user_PIN);
     if(encrypt_n(user_PIN,strlen(user_PIN),u_CIPHER,key,iv)!=0){
         print_info("Entered the encryption of the user_PIN");
         return ERROR_RETURN;
     }print_info("the pin>%s\n",user_PIN);
+    printf("Encrypted User PIN (u_CIPHER): ");
+    bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
+    print_info("%s\n", hex_str);
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
         print_info("Entered the commpare pins");
         print_debug("PIN ACCEPTED!\n");

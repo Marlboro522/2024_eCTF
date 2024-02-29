@@ -173,6 +173,11 @@ int compare_pins(const uint8_t *encrypted_pin1, const uint8_t *encrypted_pin2) {
     return SUCCESS_RETURN; // PINs match
 }
 
+void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
+    for (int i = 0; i < len; i++) {
+        sprintf(hex_str + (i * 2), "%02x", bytes[i]);
+    }
+}
 // void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
 //     for (int i = 0; i < len; i++) {
 //         sprintf(hex_str + (i * 2), "%02x", bytes[i]);
