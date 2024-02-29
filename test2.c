@@ -14,7 +14,7 @@ byte key[] = {"234567890abcdef"};
 
 byte iv[]  = {"1234567890abcdef"};
 
-byte plain[32]  = {"Hola mundoHola mundoHola mundo"};   // an increment of 16, fill with data
+byte plain[32]  = {"flurrrrrrrrr test testy testing flurrr"};   // an increment of 16, fill with data
 byte plain2[32];
 byte cipher[32];
 
