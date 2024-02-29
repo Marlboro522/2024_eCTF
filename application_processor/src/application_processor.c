@@ -394,6 +394,7 @@ int validate_pin() {
     generate_random_iv(iv);
 
     // Encrypt original PIN
+    print_info("AP PIN > %s\n", AP_PIN);
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
     char user_PIN[50];
     recv_input("Enter PIN: ",user_PIN);
