@@ -362,7 +362,7 @@ int validate_pin() {
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
     char buf[50];
     recv_input("Enter PIN: ",buf);
-    if(encrypt_n(user_PIN,strlen(buf)+ 1,u_CIPHER,key,iv)!=0){
+    if(encrypt_n(buf,strlen(buf)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
