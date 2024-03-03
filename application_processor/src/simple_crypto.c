@@ -1,110 +1,3 @@
-/**
- * @file "simple_crypto.c"
- * @author Ben Janis
- * @brief Simplified Crypto API Implementation
- * @date 2024
- *
- * This source file is part of an example system for MITRE's 2024 Embedded System CTF (eCTF).
- * This code is being provided only for educational purposes for the 2024 MITRE eCTF competition,
- * and may not meet MITRE standards for quality. Use this code at your own risk!
- *
- * @copyright Copyright (c) 2024 The MITRE Corporation
- */
-
-#if CRYPTO_EXAMPLE
-
-#include "simple_crypto.h"
-#include <stdint.h>
-#include <string.h>
-
-/******************************** FUNCTION PROTOTYPES ********************************/
-/** @brief Encrypts plaintext using a symmetric cipher
- *
- * @param plaintext A pointer to a buffer of length len containing the
- *          plaintext to encrypt
- * @param len The length of the plaintext to encrypt. Must be a multiple of
- *          BLOCK_SIZE (16 bytes)
- * @param key A pointer to a buffer of length KEY_SIZE (16 bytes) containing
- *          the key to use for encryption
- * @param ciphertext A pointer to a buffer of length len where the resulting
- *          ciphertext will be written to
- *
- * @return 0 on success, -1 on bad length, other non-zero for other error
- */
-int encrypt_sym(uint8_t *plaintext, size_t len, uint8_t *key, uint8_t *ciphertext) {
-    Aes ctx; // Context for encryption
-    int result; // Library result
-
-    // Ensure valid length
-    if (len <= 0 || len % BLOCK_SIZE)
-        return -1;
-
-    // Set the key for encryption
-    result = wc_AesSetKey(&ctx, key, 16, NULL, AES_ENCRYPTION);
-    if (result != 0)
-        return result; // Report error
-
-
-    // Encrypt each block
-    for (int i = 0; i < len - 1; i += BLOCK_SIZE) {
-        result = wc_AesEncryptDirect(&ctx, ciphertext + i, plaintext + i);
-        if (result != 0)
-            return result; // Report error
-    }
-    return 0;
-}
-
-/** @brief Decrypts ciphertext using a symmetric cipher
- *
- * @param ciphertext A pointer to a buffer of length len containing the
- *          ciphertext to decrypt
- * @param len The length of the ciphertext to decrypt. Must be a multiple of
- *          BLOCK_SIZE (16 bytes)
- * @param key A pointer to a buffer of length KEY_SIZE (16 bytes) containing
- *          the key to use for decryption
- * @param plaintext A pointer to a buffer of length len where the resulting
- *          plaintext will be written to
- *
- * @return 0 on success, -1 on bad length, other non-zero for other error
- */
-int decrypt_sym(uint8_t *ciphertext, size_t len, uint8_t *key, uint8_t *plaintext) {
-    Aes ctx; // Context for decryption
-    int result; // Library result
-
-    // Ensure valid length
-    if (len <= 0 || len % BLOCK_SIZE)
-        return -1;
-
-    // Set the key for decryption
-    result = wc_AesSetKey(&ctx, key, 16, NULL, AES_DECRYPTION);
-    if (result != 0)
-        return result; // Report error
-
-    // Decrypt each block
-    for (int i = 0; i < len - 1; i += BLOCK_SIZE) {
-        result = wc_AesDecryptDirect(&ctx, plaintext + i, ciphertext + i);
-        if (result != 0)
-            return result; // Report error
-    }
-    return 0;
-}
-
-/** @brief Hashes arbitrary-length data
- *
- * @param data A pointer to a buffer of length len containing the data
- *          to be hashed
- * @param len The length of the plaintext to encrypt
- * @param hash_out A pointer to a buffer of length HASH_SIZE (16 bytes) where the resulting
- *          hash output will be written to
- *
- * @return 0 on success, non-zero for other error
- */
-int hash(void *data, size_t len, uint8_t *hash_out) {
-    // Pass values to hash
-    return wc_Md5Hash((uint8_t *)data, len, hash_out);
-}
-
-#endif
 #include "simple_crypto.h"
 #include "ectf_params.h"
 #include <stdint.h>
@@ -112,6 +5,7 @@ int hash(void *data, size_t len, uint8_t *hash_out) {
 //Macros
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
+#define FLASH_ADDRESS 0x0800FC00
 
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data, int block_size) {
     int padded_len = block_size * ((data_len + block_size - 1) / block_size); // Calculate the padded length
@@ -178,8 +72,21 @@ void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
         sprintf(hex_str + (i * 2), "%02x", bytes[i]);
     }
 }
-// void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
-//     for (int i = 0; i < len; i++) {
-//         sprintf(hex_str + (i * 2), "%02x", bytes[i]);
-//     }
-// }
+
+void hash_pin(const char* pin, uint8_t* hash) {
+    Sha256 sha;
+    wc_InitSha256(&sha);
+    wc_Sha256Update(&sha, (const byte*)pin, strlen(pin));
+    wc_Sha256Final(&sha, hash);
+}
+
+void enroll_pin(const char* pin) {
+    uint8_t hash[SHA256_DIGEST_SIZE];
+    uint8_t encrypted_hash[AES_BLOCK_SIZE];
+
+    hash_pin(pin, hash);
+    encrypt_pin(hash, encrypted_hash);
+
+    flash_write(encrypted_hash, AES_BLOCK_SIZE, FLASH_ADDRESS);
+}
+

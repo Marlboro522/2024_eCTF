@@ -18,6 +18,7 @@
 #include "mxc_delay.h"
 #include "mxc_device.h"
 #include "nvic_table.h"
+#include "max78000.h"
 
 // // header files for encryption 
 // #include <wolfssl/wolfcrypt/aes.h>
@@ -32,9 +33,6 @@
 #include "board_link.h"
 #include "simple_flash.h"
 #include "host_messaging.h"
-#ifdef CRYPTO_EXAMPLE
-#include "simple_crypto.h"
-#endif
 
 #ifdef POST_BOOT
 #include <stdint.h>
@@ -328,36 +326,7 @@ int attest_component(uint32_t component_id) {
 // YOUR DESIGN MUST NOT CHANGE THIS FUNCTION
 // Boot message is customized through the AP_BOOT_MSG macro
 void boot() {
-    // Example of how to utilize included simple_crypto.h
-    #ifdef CRYPTO_EXAMPLE
-    // This string is 16 bytes long including null terminator
-    // This is the block size of included symmetric encryption
-    char* data = "Crypto Example!";
-    uint8_t ciphertext[BLOCK_SIZE];
-    uint8_t key[KEY_SIZE];
-    
-    // Zero out the key
-    bzero(key, BLOCK_SIZE);
-
-    // Encrypt example data and print out
-    encrypt_sym((uint8_t*)data, BLOCK_SIZE, key, ciphertext); 
-    print_debug("Encrypted data: ");
-    print_hex_debug(ciphertext, BLOCK_SIZE);
-
-    // Hash example encryption results 
-    uint8_t hash_out[HASH_SIZE];
-    hash(ciphertext, BLOCK_SIZE, hash_out);
-
-    // Output hash result
-    print_debug("Hash result: ");
-    print_hex_debug(hash_out, HASH_SIZE);
-    
-    // Decrypt the encrypted message and print out
-    uint8_t decrypted[BLOCK_SIZE];
-    decrypt_sym(ciphertext, BLOCK_SIZE, key, decrypted);
-    print_debug("Decrypted message: %s\r\n", decrypted);
-    #endif
-
+    print_info("AP>%s\n", AP_BOOT_MSG);
     // POST BOOT FUNCTIONALITY
     // DO NOT REMOVE IN YOUR DESIGN
     #ifdef POST_BOOT
@@ -388,42 +357,21 @@ int validate_pin() {
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
-    char hex_str[BLOCK_SIZE * 2 + 1];
-
     generate_key(key);
     generate_random_iv(iv);
-    bytes_to_hex(key, KEY_SIZE, hex_str);
-    print_info("key: %s", hex_str);
-    bytes_to_hex(iv,KEY_SIZE,hex_str);
-    print_info("iv: %s", hex_str);
-    // Encrypt original PIN
-    print_info("AP PIN >%s\n", AP_PIN);
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
-    print_info("Encrypted AP PIN (u_CIPHER): ");
-    bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
-    print_info("%s\n", hex_str);
-    char user_PIN[50];
-    recv_input("Enter PIN: ",user_PIN);
-    print_info("\nUSER_PIN len: %d",strlen(user_PIN));
-    print_info("\nAP_PIN len: %d",strlen(AP_PIN));
-    if(encrypt_n(user_PIN,strlen(user_PIN)+ 1,u_CIPHER,key,iv)!=0){
-        print_info("Entered the failed encryption of the user_PIN");
+    char buf[50];
+    recv_input("Enter PIN: ",buf);
+    if(encrypt_n(user_PIN,strlen(buf)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
-    }print_info("the pin>%s\n",user_PIN);
-    bytes_to_hex(key, KEY_SIZE, hex_str);
-    print_info("key: %s", hex_str);
-    bytes_to_hex(iv,KEY_SIZE,hex_str);
-    print_info("iv: %s", hex_str);
-    printf("Encrypted User PIN (u_CIPHER): ");
-    bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
-    print_info("%s\n", hex_str);
+    }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
-        print_info("Entered the commpare pins");
+        // print_info("Entered the commpare pins");
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
-    print_error("Invalid PIN!!!\n");
-    return ERROR_RETURN; 
+    delay_us(5000000);
+    return ERROR_RETURN;
 }
 
 // Function to validate the replacement token
