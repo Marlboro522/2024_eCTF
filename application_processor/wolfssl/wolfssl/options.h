@@ -18,20 +18,20 @@ extern "C" {
 #undef  WOLFSSL_HAVE_ATOMIC_H
 #define WOLFSSL_HAVE_ATOMIC_H
 
-#undef  HAVE_C___ATOMIC
-#define HAVE_C___ATOMIC 1
-
 #undef  HAVE_THREAD_LS
 #define HAVE_THREAD_LS
+
+#undef  DEBUG_WOLFSSL
+#define DEBUG_WOLFSSL
 
 #undef  NO_DO178
 #define NO_DO178
 
-#undef  WOLFSSL_X86_64_BUILD
-#define WOLFSSL_X86_64_BUILD
+#undef  USE_FAST_MATH
+#define USE_FAST_MATH
 
-#undef  ERROR_QUEUE_PER_THREAD
-#define ERROR_QUEUE_PER_THREAD
+#undef  SINGLE_THREADED
+#define SINGLE_THREADED
 
 #undef  TFM_TIMING_RESISTANT
 #define TFM_TIMING_RESISTANT
@@ -44,9 +44,6 @@ extern "C" {
 
 #undef  WOLFSSL_USE_ALIGN
 #define WOLFSSL_USE_ALIGN
-
-#undef  WOLFSSL_SHA224
-#define WOLFSSL_SHA224
 
 #undef  WOLFSSL_SHA512
 #define WOLFSSL_SHA512
@@ -69,6 +66,9 @@ extern "C" {
 #undef  ECC_SHAMIR
 #define ECC_SHAMIR
 
+#undef  HAVE_ECC_ENCRYPT
+#define HAVE_ECC_ENCRYPT
+
 #undef  NO_OLD_TLS
 #define NO_OLD_TLS
 
@@ -80,15 +80,6 @@ extern "C" {
 
 #undef  WOLFSSL_ASN_TEMPLATE
 #define WOLFSSL_ASN_TEMPLATE
-
-#undef  WOLFSSL_ASN_PRINT
-#define WOLFSSL_ASN_PRINT
-
-#undef  WOLFSSL_BASE64_ENCODE
-#define WOLFSSL_BASE64_ENCODE
-
-#undef  WOLFSSL_SHA3
-#define WOLFSSL_SHA3
 
 #undef  WOLFSSL_NO_SHAKE128
 #define WOLFSSL_NO_SHAKE128
@@ -105,11 +96,8 @@ extern "C" {
 #undef  HAVE_HASHDRBG
 #define HAVE_HASHDRBG
 
-#undef  HAVE_TLS_EXTENSIONS
-#define HAVE_TLS_EXTENSIONS
-
-#undef  HAVE_SNI
-#define HAVE_SNI
+#undef  NO_FILESYSTEM
+#define NO_FILESYSTEM
 
 #undef  HAVE_TLS_EXTENSIONS
 #define HAVE_TLS_EXTENSIONS
@@ -144,20 +132,11 @@ extern "C" {
 #undef  NO_MD4
 #define NO_MD4
 
-#undef  WOLFSSL_SP_MATH_ALL
-#define WOLFSSL_SP_MATH_ALL
-
-#undef  WOLFSSL_SP_X86_64
-#define WOLFSSL_SP_X86_64
-
 #undef  WC_NO_ASYNC_THREADING
 #define WC_NO_ASYNC_THREADING
 
 #undef  HAVE_DH_DEFAULT_PARAMS
 #define HAVE_DH_DEFAULT_PARAMS
-
-#undef  WOLFSSL_SYS_CA_CERTS
-#define WOLFSSL_SYS_CA_CERTS
 
 #undef  NO_DES3
 #define NO_DES3
@@ -174,11 +153,20 @@ extern "C" {
 #undef  HAVE_SERVER_RENEGOTIATION_INFO
 #define HAVE_SERVER_RENEGOTIATION_INFO
 
-#undef  HAVE___UINT128_T
-#define HAVE___UINT128_T 1
+#undef  WOLFSSL_TEST_STATIC_BUILD
+#define WOLFSSL_TEST_STATIC_BUILD
 
 #undef  HAVE_WC_INTROSPECTION
 #define HAVE_WC_INTROSPECTION
+
+#undef  HAVE_PK_CALLBACKS
+#define HAVE_PK_CALLBACKS
+
+#undef  WOLFSSL_USER_IO
+#define WOLFSSL_USER_IO
+
+#undef  NO_WRITEV
+#define NO_WRITEV
 
 
 #ifdef __cplusplus

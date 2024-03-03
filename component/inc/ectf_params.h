@@ -1,8 +1,8 @@
 #ifndef __ECTF_PARAMS__
 #define __ECTF_PARAMS__
-#define COMPONENT_ID 2003195177
-#define COMPONENT_BOOT_MSG "Comp2 boot"
-#define ATTESTATION_LOC "still_essl"
-#define ATTESTATION_DATE "02/06/24"
-#define ATTESTATION_CUSTOMER "still_Raja"
+#define COMPONENT_ID 1126240820
+#define COMPONENT_BOOT_MSG "Component 2 Boot"
+#define ATTESTATION_LOC "co"
+#define ATTESTATION_DATE "03/02/2024"
+#define ATTESTATION_CUSTOMER "raja"
 #endif
