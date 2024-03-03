@@ -18,17 +18,14 @@
 #include "mxc_delay.h"
 #include "mxc_device.h"
 #include "nvic_table.h"
-#include "max78000.h"
 
-// // header files for encryption 
-// #include <wolfssl/wolfcrypt/aes.h>
-// #include <wolfssl/wolfcrypt/random.h>
 #include "simple_crypto.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "board_link.h"
 #include "simple_flash.h"
@@ -370,7 +367,7 @@ int validate_pin() {
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
-    delay_us(5000000);
+    // HAL_Delay(5000);
     return ERROR_RETURN;
 }
 
