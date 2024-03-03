@@ -1,7 +1,8 @@
-examples/pem/pem.o: examples/pem/pem.c .build_params config.h \
-  wolfssl/options.h wolfssl/wolfcrypt/settings.h \
-  wolfssl/wolfcrypt/visibility.h wolfssl/wolfcrypt/asn_public.h \
-  wolfssl/wolfcrypt/types.h wolfssl/wolfcrypt/wc_port.h \
+wolfcrypt/src/src_libwolfssl_la-sp_int.lo: wolfcrypt/src/sp_int.c \
+  .build_params config.h wolfssl/wolfcrypt/settings.h \
+  wolfssl/wolfcrypt/visibility.h wolfcrypt/src/misc.c \
+  wolfssl/wolfcrypt/misc.h wolfssl/wolfcrypt/types.h \
+  wolfssl/wolfcrypt/wc_port.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/pthread.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types.h \
@@ -195,23 +196,25 @@ examples/pem/pem.o: examples/pem/pem.c .build_params config.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/dispatch/io.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/dispatch/workloop.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/dispatch/dispatch_swift_shims.h \
-  wolfssl/wolfcrypt/dsa.h wolfssl/wolfcrypt/random.h \
-  wolfssl/wolfcrypt/sha256.h wolfssl/wolfcrypt/coding.h \
-  wolfssl/wolfcrypt/error-crypt.h wolfssl/wolfcrypt/wc_encrypt.h \
-  wolfssl/wolfcrypt/aes.h wolfssl/wolfcrypt/chacha.h \
-  wolfssl/wolfcrypt/logging.h
+  wolfssl/wolfcrypt/hash.h wolfssl/wolfcrypt/md5.h \
+  wolfssl/wolfcrypt/sha.h wolfssl/wolfcrypt/sha256.h \
+  wolfssl/wolfcrypt/sha512.h wolfssl/wolfcrypt/sp_int.h \
+  /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/limits.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/limits.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/syslimits.h \
+  wolfssl/wolfcrypt/random.h wolfssl/wolfcrypt/wolfmath.h
 
 .build_params:
 
 config.h:
 
-wolfssl/options.h:
-
 wolfssl/wolfcrypt/settings.h:
 
 wolfssl/wolfcrypt/visibility.h:
 
-wolfssl/wolfcrypt/asn_public.h:
+wolfcrypt/src/misc.c:
+
+wolfssl/wolfcrypt/misc.h:
 
 wolfssl/wolfcrypt/types.h:
 
@@ -603,20 +606,24 @@ wolfssl/wolfcrypt/memory.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/dispatch/dispatch_swift_shims.h:
 
-wolfssl/wolfcrypt/dsa.h:
+wolfssl/wolfcrypt/hash.h:
 
-wolfssl/wolfcrypt/random.h:
+wolfssl/wolfcrypt/md5.h:
+
+wolfssl/wolfcrypt/sha.h:
 
 wolfssl/wolfcrypt/sha256.h:
 
-wolfssl/wolfcrypt/coding.h:
+wolfssl/wolfcrypt/sha512.h:
 
-wolfssl/wolfcrypt/error-crypt.h:
+wolfssl/wolfcrypt/sp_int.h:
 
-wolfssl/wolfcrypt/wc_encrypt.h:
+/Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/limits.h:
 
-wolfssl/wolfcrypt/aes.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/limits.h:
 
-wolfssl/wolfcrypt/chacha.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/syslimits.h:
 
-wolfssl/wolfcrypt/logging.h:
+wolfssl/wolfcrypt/random.h:
+
+wolfssl/wolfcrypt/wolfmath.h:

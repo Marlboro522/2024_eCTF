@@ -20,6 +20,6 @@
  */
 
 #ifndef NO_FILESYSTEM
-    #define CERT_PREFIX "/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/"
-    #define CERT_WRITE_TEMP_DIR "/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/"
+    #define CERT_PREFIX "/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/"
+    #define CERT_WRITE_TEMP_DIR "/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/"
 #endif /* NO_FILESYSTEM */

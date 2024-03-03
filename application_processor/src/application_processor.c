@@ -399,12 +399,14 @@ int validate_pin() {
     // Encrypt original PIN
     print_info("AP PIN >%s\n", AP_PIN);
     encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
-    printf("Encrypted AP PIN (u_CIPHER): ");
+    print_info("Encrypted AP PIN (u_CIPHER): ");
     bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
     print_info("%s\n", hex_str);
     char user_PIN[50];
     recv_input("Enter PIN: ",user_PIN);
-    if(encrypt_n(user_PIN,strlen(user_PIN),u_CIPHER,key,iv)!=0){
+    print_info("\nUSER_PIN len: %d",strlen(user_PIN));
+    print_info("\nAP_PIN len: %d",strlen(AP_PIN));
+    if(encrypt_n(user_PIN,strlen(user_PIN)+ 1,u_CIPHER,key,iv)!=0){
         print_info("Entered the failed encryption of the user_PIN");
         return ERROR_RETURN;
     }print_info("the pin>%s\n",user_PIN);
@@ -436,10 +438,10 @@ int validate_token() {
 
     char buf[50];
     recv_input("Enter token: ", buf);
-    if(encrypt_n(buf,strlen(buf),u_CIPHER,key,iv)!=0){
+    if(encrypt_n(buf,strlen(buf) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
-    if (compare_pins(o_CIPHER, u_CIPHER)) {
+    if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
@@ -506,6 +508,7 @@ void attempt_attest() {
     char buf[50];
 
     if (validate_pin()) {
+        print_error("Not validated");
         return;
     }
     uint32_t component_id;

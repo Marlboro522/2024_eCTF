@@ -603,8 +603,8 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-apple-darwin22.6.0
-host_triplet = x86_64-apple-darwin22.6.0
-target_triplet = x86_64-apple-darwin22.6.0
+host_triplet = arm-none-eabi
+target_triplet = arm-none-eabi
 bin_PROGRAMS =
 noinst_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 	$(am__EXEEXT_7) $(am__EXEEXT_8) $(am__EXEEXT_9) \
@@ -636,7 +636,7 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
 #am__append_11 = wolfssl/wolfcrypt/port/intel/quickassist_sync.h
 #am__append_12 = wolfssl/wolfcrypt/sp.h \
 #	wolfssl/wolfcrypt/sp_int.h
-am__append_13 = wolfssl/wolfcrypt/sp_int.h
+#am__append_13 = wolfssl/wolfcrypt/sp_int.h
 #am__append_14 = wolfssl/wolfcrypt/selftest.h
 #am__append_15 = wolfssl/wolfcrypt/fips.h
 #am__append_16 = wolfssl/wolfcrypt/port/caam/wolfcaam.h \
@@ -686,8 +686,8 @@ am__append_23 = src/libwolfssl.la
 ###am__append_35 = wolfcrypt/src/sha256_asm.S
 ##am__append_36 = wolfcrypt/src/sha512.c
 ###am__append_37 = wolfcrypt/src/sha512_asm.S
-##am__append_38 = wolfcrypt/src/sha3.c
-###am__append_39 = wolfcrypt/src/sha3_asm.S
+###am__append_38 = wolfcrypt/src/sha3.c
+####am__append_39 = wolfcrypt/src/sha3_asm.S
 ##am__append_40 = wolfcrypt/src/dh.c
 ###am__append_41 = wolfcrypt/src/cmac.c
 
@@ -749,10 +749,10 @@ am__append_23 = src/libwolfssl.la
 ###	wolfcrypt/src/port/arm/thumb2-sha512-asm.S
 ##am__append_71 = wolfcrypt/src/sha512.c
 ###am__append_72 = wolfcrypt/src/sha512_asm.S
-##am__append_73 = wolfcrypt/src/sha3.c
-####am__append_74 = wolfcrypt/src/port/arm/armv8-sha3-asm_c.c
-###am__append_75 = wolfcrypt/src/port/arm/armv8-sha3-asm.S
-###am__append_76 = wolfcrypt/src/sha3_asm.S
+###am__append_73 = wolfcrypt/src/sha3.c
+#####am__append_74 = wolfcrypt/src/port/arm/armv8-sha3-asm_c.c
+####am__append_75 = wolfcrypt/src/port/arm/armv8-sha3-asm.S
+####am__append_76 = wolfcrypt/src/sha3_asm.S
 ##am__append_77 = wolfcrypt/src/dh.c
 ###am__append_78 = wolfcrypt/src/cmac.c
 
@@ -805,7 +805,7 @@ am__append_98 = wolfcrypt/src/rsa.c
 ##am__append_104 = wolfcrypt/src/sp_armthumb.c
 ##am__append_105 = wolfcrypt/src/sp_arm64.c
 ##am__append_106 = wolfcrypt/src/sp_cortexm.c
-am__append_107 = wolfcrypt/src/sp_int.c
+#am__append_107 = wolfcrypt/src/sp_int.c
 am__append_108 = wolfcrypt/src/aes.c
 #am__append_109 = wolfcrypt/src/port/arm/armv8-aes.c
 ##am__append_110 = wolfcrypt/src/port/arm/armv8-32-aes-asm_c.c \
@@ -832,10 +832,10 @@ am__append_117 = wolfcrypt/src/sha.c
 #	wolfcrypt/src/port/arm/thumb2-sha512-asm.S
 am__append_124 = wolfcrypt/src/sha512.c
 #am__append_125 = wolfcrypt/src/sha512_asm.S
-am__append_126 = wolfcrypt/src/sha3.c
-##am__append_127 = wolfcrypt/src/port/arm/armv8-sha3-asm_c.c
-#am__append_128 = wolfcrypt/src/port/arm/armv8-sha3-asm.S
-#am__append_129 = wolfcrypt/src/sha3_asm.S
+#am__append_126 = wolfcrypt/src/sha3.c
+###am__append_127 = wolfcrypt/src/port/arm/armv8-sha3-asm_c.c
+##am__append_128 = wolfcrypt/src/port/arm/armv8-sha3-asm.S
+##am__append_129 = wolfcrypt/src/sha3_asm.S
 #am__append_130 = wolfcrypt/src/sm2.c
 ###am__append_131 = wolfcrypt/src/sp_sm2_c32.c
 ###am__append_132 = wolfcrypt/src/sp_sm2_c64.c
@@ -883,7 +883,7 @@ am__append_167 = wolfcrypt/src/chacha.c
 #am__append_168 = wolfcrypt/src/chacha_asm.S
 am__append_169 = wolfcrypt/src/chacha20_poly1305.c
 #am__append_170 = wolfcrypt/src/misc.c
-#am__append_171 = wolfcrypt/src/tfm.c
+am__append_171 = wolfcrypt/src/tfm.c
 #am__append_172 = wolfcrypt/src/integer.c
 am__append_173 = wolfcrypt/src/ecc.c
 #am__append_174 = wolfcrypt/src/eccsi.c
@@ -997,31 +997,31 @@ am__append_236 = wolfcrypt/test/test.h wolfcrypt/test/test_paths.h.in
 #am__append_237 = examples/async/async_tls.h
 #am__append_238 = examples/async/async_client \
 #	examples/async/async_server
-am__append_239 = examples/benchmark/tls_bench
-am__append_240 = examples/benchmark/tls_bench.h
-am__append_241 = examples/client/client \
-	examples/echoclient/echoclient
-am__append_242 = examples/client/client.h \
-	examples/echoclient/echoclient.h
-am__append_243 =  \
-	examples/echoserver/echoserver \
-	examples/server/server
-am__append_244 =  \
-	examples/echoserver/echoserver.h \
-	examples/server/server.h
-#am__append_245 = \
-#				examples/sctp/sctp-server \
-#				examples/sctp/sctp-server-dtls
+#am__append_239 = examples/benchmark/tls_bench
+#am__append_240 = examples/benchmark/tls_bench.h
+#am__append_241 = examples/client/client \
+#	examples/echoclient/echoclient
+#am__append_242 = examples/client/client.h \
+#	examples/echoclient/echoclient.h
+#am__append_243 =  \
+#	examples/echoserver/echoserver \
+#	examples/server/server
+#am__append_244 =  \
+#	examples/echoserver/echoserver.h \
+#	examples/server/server.h
+##am__append_245 = \
+##				examples/sctp/sctp-server \
+##				examples/sctp/sctp-server-dtls
 
-#am__append_246 = \
-#				examples/sctp/sctp-client \
-#				examples/sctp/sctp-client-dtls
+##am__append_246 = \
+##				examples/sctp/sctp-client \
+##				examples/sctp/sctp-client-dtls
 
-am__append_247 = examples/asn1/asn1 \
-	examples/pem/pem
-am__append_248 = testsuite/testsuite.test
-am__append_249 = testsuite/testsuite.test \
-	tests/unit.test
+#am__append_247 = examples/asn1/asn1 \
+#	examples/pem/pem
+#am__append_248 = testsuite/testsuite.test
+#am__append_249 = testsuite/testsuite.test \
+#	tests/unit.test
 #am__append_250 = sslSniffer/sslSnifferTest/snifftest
 
 # Simple Example Contents
@@ -1751,29 +1751,29 @@ am__append_251 = mqx/util_lib/.cproject \
 am__append_254 = mcapi/crypto.h
 am__append_255 = IDE/iotsafe/build
 #am__append_256 = scripts/sniffer-testsuite.test
-am__append_257 = scripts/resume.test
+#am__append_257 = scripts/resume.test
 
 # The CRL and OCSP tests use RSA certificates.
 
 # make revoked test rely on completion of resume test
-#am__append_258 = scripts/crl-revoked.test
+##am__append_258 = scripts/crl-revoked.test
 
 # arrange to serialize ocsp.test, ocsp-stapling.test, ocsp-stapling-with-ca-as-responder.test, ocsp-stapling2.test, and testsuite,
 # to help mitigate port conflicts among them.
 # note that unit.test is gated on testsuite in Makefile.am, which is also helpful for these purposes.
-#am__append_259 = scripts/ocsp-stapling.test \
-#	scripts/ocsp-stapling-with-ca-as-responder.test
-#am__append_260 = scripts/ocsp-stapling2.test
-#am__append_261 = scripts/psk.test
-#am__append_262 = scripts/trusted_peer.test
-#am__append_263 = scripts/pkcallbacks.test
-am__append_264 = scripts/tls13.test
-am__append_265 = scripts/external.test \
-	scripts/google.test \
-	scripts/openssl.test
-#am__append_266 = scripts/ocsp.test
-am__append_267 = scripts/unit.test
-am__append_268 = scripts/unit.test.in
+##am__append_259 = scripts/ocsp-stapling.test \
+##	scripts/ocsp-stapling-with-ca-as-responder.test
+##am__append_260 = scripts/ocsp-stapling2.test
+##am__append_261 = scripts/psk.test
+##am__append_262 = scripts/trusted_peer.test
+##am__append_263 = scripts/pkcallbacks.test
+#am__append_264 = scripts/tls13.test
+#am__append_265 = scripts/external.test \
+#	scripts/google.test \
+#	scripts/openssl.test
+##am__append_266 = scripts/ocsp.test
+#am__append_267 = scripts/unit.test
+#am__append_268 = scripts/unit.test.in
 #am__append_269 = scripts/dtlscid.test
 #am__append_270 = scripts/dtlscid.test
 #am__append_271 = linuxkm
@@ -1824,7 +1824,7 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libdir)" \
 	"$(DESTDIR)$(ippdir)" "$(DESTDIR)$(pkgconfigdir)" \
 	"$(DESTDIR)$(includedir)" "$(DESTDIR)$(includedir)"
 #am__EXEEXT_1 = wolfcrypt/test/testwolfcrypt$(EXEEXT)
-am__EXEEXT_2 = testsuite/testsuite.test$(EXEEXT)
+#am__EXEEXT_2 = testsuite/testsuite.test$(EXEEXT)
 #am__EXEEXT_3 =  \
 #	mcapi/test$(EXEEXT)
 am__EXEEXT_4 = wolfcrypt/benchmark/benchmark$(EXEEXT)
@@ -1833,20 +1833,20 @@ am__EXEEXT_5 = wolfcrypt/test/testwolfcrypt$(EXEEXT) \
 #am__EXEEXT_6 =  \
 #	examples/async/async_client$(EXEEXT) \
 #	examples/async/async_server$(EXEEXT)
-am__EXEEXT_7 = examples/benchmark/tls_bench$(EXEEXT)
-am__EXEEXT_8 =  \
-	examples/client/client$(EXEEXT) \
-	examples/echoclient/echoclient$(EXEEXT)
-am__EXEEXT_9 = examples/echoserver/echoserver$(EXEEXT) \
-	examples/server/server$(EXEEXT)
-#am__EXEEXT_10 = examples/sctp/sctp-server$(EXEEXT) \
-#	examples/sctp/sctp-server-dtls$(EXEEXT)
-#am__EXEEXT_11 = examples/sctp/sctp-client$(EXEEXT) \
-#	examples/sctp/sctp-client-dtls$(EXEEXT)
-am__EXEEXT_12 = examples/asn1/asn1$(EXEEXT) \
-	examples/pem/pem$(EXEEXT)
-am__EXEEXT_13 = testsuite/testsuite.test$(EXEEXT) \
-	tests/unit.test$(EXEEXT)
+#am__EXEEXT_7 = examples/benchmark/tls_bench$(EXEEXT)
+#am__EXEEXT_8 =  \
+#	examples/client/client$(EXEEXT) \
+#	examples/echoclient/echoclient$(EXEEXT)
+#am__EXEEXT_9 = examples/echoserver/echoserver$(EXEEXT) \
+#	examples/server/server$(EXEEXT)
+##am__EXEEXT_10 = examples/sctp/sctp-server$(EXEEXT) \
+##	examples/sctp/sctp-server-dtls$(EXEEXT)
+##am__EXEEXT_11 = examples/sctp/sctp-client$(EXEEXT) \
+##	examples/sctp/sctp-client-dtls$(EXEEXT)
+#am__EXEEXT_12 = examples/asn1/asn1$(EXEEXT) \
+#	examples/pem/pem$(EXEEXT)
+#am__EXEEXT_13 = testsuite/testsuite.test$(EXEEXT) \
+#	tests/unit.test$(EXEEXT)
 #am__EXEEXT_14 = sslSniffer/sslSnifferTest/snifftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -2019,8 +2019,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 ###am__objects_10 = wolfcrypt/src/src_libwolfssl_la-sha256_asm.lo
 ##am__objects_11 = wolfcrypt/src/src_libwolfssl_la-sha512.lo
 ###am__objects_12 = wolfcrypt/src/src_libwolfssl_la-sha512_asm.lo
-##am__objects_13 = wolfcrypt/src/src_libwolfssl_la-sha3.lo
-###am__objects_14 = wolfcrypt/src/src_libwolfssl_la-sha3_asm.lo
+###am__objects_13 = wolfcrypt/src/src_libwolfssl_la-sha3.lo
+####am__objects_14 = wolfcrypt/src/src_libwolfssl_la-sha3_asm.lo
 ##am__objects_15 = wolfcrypt/src/src_libwolfssl_la-dh.lo
 ###am__objects_16 = wolfcrypt/src/src_libwolfssl_la-cmac.lo
 ##am__objects_17 = wolfcrypt/src/src_libwolfssl_la-fips.lo \
@@ -2075,10 +2075,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 ###	wolfcrypt/src/port/arm/src_libwolfssl_la-thumb2-sha512-asm.lo
 ##am__objects_46 = wolfcrypt/src/src_libwolfssl_la-sha512.lo
 ###am__objects_47 = wolfcrypt/src/src_libwolfssl_la-sha512_asm.lo
-##am__objects_48 = wolfcrypt/src/src_libwolfssl_la-sha3.lo
-####am__objects_49 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm_c.lo
-###am__objects_50 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm.lo
-###am__objects_51 = wolfcrypt/src/src_libwolfssl_la-sha3_asm.lo
+###am__objects_48 = wolfcrypt/src/src_libwolfssl_la-sha3.lo
+#####am__objects_49 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm_c.lo
+####am__objects_50 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm.lo
+####am__objects_51 = wolfcrypt/src/src_libwolfssl_la-sha3_asm.lo
 ##am__objects_52 = wolfcrypt/src/src_libwolfssl_la-dh.lo
 ###am__objects_53 = wolfcrypt/src/src_libwolfssl_la-cmac.lo
 ##am__objects_54 = wolfcrypt/src/src_libwolfssl_la-fips.lo \
@@ -2119,7 +2119,7 @@ am__objects_73 = wolfcrypt/src/src_libwolfssl_la-rsa.lo
 ##am__objects_79 = wolfcrypt/src/src_libwolfssl_la-sp_armthumb.lo
 ##am__objects_80 = wolfcrypt/src/src_libwolfssl_la-sp_arm64.lo
 ##am__objects_81 = wolfcrypt/src/src_libwolfssl_la-sp_cortexm.lo
-am__objects_82 = wolfcrypt/src/src_libwolfssl_la-sp_int.lo
+#am__objects_82 = wolfcrypt/src/src_libwolfssl_la-sp_int.lo
 am__objects_83 = wolfcrypt/src/src_libwolfssl_la-aes.lo
 #am__objects_84 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-aes.lo
 ##am__objects_85 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-32-aes-asm_c.lo \
@@ -2146,10 +2146,10 @@ am__objects_92 = wolfcrypt/src/src_libwolfssl_la-sha.lo
 #	wolfcrypt/src/port/arm/src_libwolfssl_la-thumb2-sha512-asm.lo
 am__objects_99 = wolfcrypt/src/src_libwolfssl_la-sha512.lo
 #am__objects_100 = wolfcrypt/src/src_libwolfssl_la-sha512_asm.lo
-am__objects_101 = wolfcrypt/src/src_libwolfssl_la-sha3.lo
-##am__objects_102 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm_c.lo
-#am__objects_103 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm.lo
-#am__objects_104 = wolfcrypt/src/src_libwolfssl_la-sha3_asm.lo
+#am__objects_101 = wolfcrypt/src/src_libwolfssl_la-sha3.lo
+###am__objects_102 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm_c.lo
+##am__objects_103 = wolfcrypt/src/port/arm/src_libwolfssl_la-armv8-sha3-asm.lo
+##am__objects_104 = wolfcrypt/src/src_libwolfssl_la-sha3_asm.lo
 #am__objects_105 = wolfcrypt/src/src_libwolfssl_la-sm2.lo
 ###am__objects_106 = wolfcrypt/src/src_libwolfssl_la-sp_sm2_c32.lo
 ###am__objects_107 = wolfcrypt/src/src_libwolfssl_la-sp_sm2_c64.lo
@@ -2195,7 +2195,7 @@ am__objects_142 = wolfcrypt/src/src_libwolfssl_la-chacha.lo
 #am__objects_143 = wolfcrypt/src/src_libwolfssl_la-chacha_asm.lo
 am__objects_144 = wolfcrypt/src/src_libwolfssl_la-chacha20_poly1305.lo
 #am__objects_145 = wolfcrypt/src/src_libwolfssl_la-misc.lo
-#am__objects_146 = wolfcrypt/src/src_libwolfssl_la-tfm.lo
+am__objects_146 = wolfcrypt/src/src_libwolfssl_la-tfm.lo
 #am__objects_147 = wolfcrypt/src/src_libwolfssl_la-integer.lo
 am__objects_148 = wolfcrypt/src/src_libwolfssl_la-ecc.lo
 #am__objects_149 = wolfcrypt/src/src_libwolfssl_la-eccsi.lo
@@ -2391,8 +2391,8 @@ wolfcrypt_test_libwolfcrypttest_la_OBJECTS =  \
 #am_wolfcrypt_test_libwolfcrypttest_la_rpath =  \
 #	-rpath $(libdir)
 am__examples_asn1_asn1_SOURCES_DIST = examples/asn1/asn1.c
-am_examples_asn1_asn1_OBJECTS =  \
-	examples/asn1/asn1.$(OBJEXT)
+#am_examples_asn1_asn1_OBJECTS =  \
+#	examples/asn1/asn1.$(OBJEXT)
 examples_asn1_asn1_OBJECTS = $(am_examples_asn1_asn1_OBJECTS)
 am__examples_async_async_client_SOURCES_DIST =  \
 	examples/async/async_client.c examples/async/async_tls.c
@@ -2416,11 +2416,11 @@ examples_async_async_server_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 am__examples_benchmark_tls_bench_SOURCES_DIST =  \
 	examples/benchmark/tls_bench.c
-am_examples_benchmark_tls_bench_OBJECTS = examples/benchmark/tls_bench.$(OBJEXT)
+#am_examples_benchmark_tls_bench_OBJECTS = examples/benchmark/tls_bench.$(OBJEXT)
 examples_benchmark_tls_bench_OBJECTS =  \
 	$(am_examples_benchmark_tls_bench_OBJECTS)
 am__examples_client_client_SOURCES_DIST = examples/client/client.c
-am_examples_client_client_OBJECTS = examples/client/client-client.$(OBJEXT)
+#am_examples_client_client_OBJECTS = examples/client/client-client.$(OBJEXT)
 examples_client_client_OBJECTS = $(am_examples_client_client_OBJECTS)
 examples_client_client_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -2428,42 +2428,42 @@ examples_client_client_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 am__examples_echoclient_echoclient_SOURCES_DIST =  \
 	examples/echoclient/echoclient.c
-am_examples_echoclient_echoclient_OBJECTS = examples/echoclient/echoclient.$(OBJEXT)
+#am_examples_echoclient_echoclient_OBJECTS = examples/echoclient/echoclient.$(OBJEXT)
 examples_echoclient_echoclient_OBJECTS =  \
 	$(am_examples_echoclient_echoclient_OBJECTS)
 am__examples_echoserver_echoserver_SOURCES_DIST =  \
 	examples/echoserver/echoserver.c
-am_examples_echoserver_echoserver_OBJECTS = examples/echoserver/echoserver.$(OBJEXT)
+#am_examples_echoserver_echoserver_OBJECTS = examples/echoserver/echoserver.$(OBJEXT)
 examples_echoserver_echoserver_OBJECTS =  \
 	$(am_examples_echoserver_echoserver_OBJECTS)
 am__examples_pem_pem_SOURCES_DIST = examples/pem/pem.c
-am_examples_pem_pem_OBJECTS =  \
-	examples/pem/pem.$(OBJEXT)
+#am_examples_pem_pem_OBJECTS =  \
+#	examples/pem/pem.$(OBJEXT)
 examples_pem_pem_OBJECTS = $(am_examples_pem_pem_OBJECTS)
 am__examples_sctp_sctp_client_SOURCES_DIST =  \
 	examples/sctp/sctp-client.c
-#am_examples_sctp_sctp_client_OBJECTS = examples/sctp/sctp-client.$(OBJEXT)
+##am_examples_sctp_sctp_client_OBJECTS = examples/sctp/sctp-client.$(OBJEXT)
 examples_sctp_sctp_client_OBJECTS =  \
 	$(am_examples_sctp_sctp_client_OBJECTS)
-#examples_sctp_sctp_client_DEPENDENCIES = $(am__DEPENDENCIES_1)
+##examples_sctp_sctp_client_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__examples_sctp_sctp_client_dtls_SOURCES_DIST =  \
 	examples/sctp/sctp-client-dtls.c
-#am_examples_sctp_sctp_client_dtls_OBJECTS = examples/sctp/sctp-client-dtls.$(OBJEXT)
+##am_examples_sctp_sctp_client_dtls_OBJECTS = examples/sctp/sctp-client-dtls.$(OBJEXT)
 examples_sctp_sctp_client_dtls_OBJECTS =  \
 	$(am_examples_sctp_sctp_client_dtls_OBJECTS)
 am__examples_sctp_sctp_server_SOURCES_DIST =  \
 	examples/sctp/sctp-server.c
-#am_examples_sctp_sctp_server_OBJECTS = examples/sctp/sctp-server.$(OBJEXT)
+##am_examples_sctp_sctp_server_OBJECTS = examples/sctp/sctp-server.$(OBJEXT)
 examples_sctp_sctp_server_OBJECTS =  \
 	$(am_examples_sctp_sctp_server_OBJECTS)
-#examples_sctp_sctp_server_DEPENDENCIES = $(am__DEPENDENCIES_1)
+##examples_sctp_sctp_server_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__examples_sctp_sctp_server_dtls_SOURCES_DIST =  \
 	examples/sctp/sctp-server-dtls.c
-#am_examples_sctp_sctp_server_dtls_OBJECTS = examples/sctp/sctp-server-dtls.$(OBJEXT)
+##am_examples_sctp_sctp_server_dtls_OBJECTS = examples/sctp/sctp-server-dtls.$(OBJEXT)
 examples_sctp_sctp_server_dtls_OBJECTS =  \
 	$(am_examples_sctp_sctp_server_dtls_OBJECTS)
 am__examples_server_server_SOURCES_DIST = examples/server/server.c
-am_examples_server_server_OBJECTS = examples/server/server-server.$(OBJEXT)
+#am_examples_server_server_OBJECTS = examples/server/server-server.$(OBJEXT)
 examples_server_server_OBJECTS = $(am_examples_server_server_OBJECTS)
 examples_server_server_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -2482,16 +2482,16 @@ sslSniffer_sslSnifferTest_snifftest_OBJECTS =  \
 am__tests_unit_test_SOURCES_DIST = tests/unit.c tests/api.c \
 	tests/suites.c tests/hash.c tests/w64wrapper.c tests/srp.c \
 	tests/quic.c examples/client/client.c examples/server/server.c
-am_tests_unit_test_OBJECTS =  \
-	tests/unit_test-unit.$(OBJEXT) \
-	tests/unit_test-api.$(OBJEXT) \
-	tests/unit_test-suites.$(OBJEXT) \
-	tests/unit_test-hash.$(OBJEXT) \
-	tests/unit_test-w64wrapper.$(OBJEXT) \
-	tests/unit_test-srp.$(OBJEXT) \
-	tests/unit_test-quic.$(OBJEXT) \
-	examples/client/tests_unit_test-client.$(OBJEXT) \
-	examples/server/tests_unit_test-server.$(OBJEXT)
+#am_tests_unit_test_OBJECTS =  \
+#	tests/unit_test-unit.$(OBJEXT) \
+#	tests/unit_test-api.$(OBJEXT) \
+#	tests/unit_test-suites.$(OBJEXT) \
+#	tests/unit_test-hash.$(OBJEXT) \
+#	tests/unit_test-w64wrapper.$(OBJEXT) \
+#	tests/unit_test-srp.$(OBJEXT) \
+#	tests/unit_test-quic.$(OBJEXT) \
+#	examples/client/tests_unit_test-client.$(OBJEXT) \
+#	examples/server/tests_unit_test-server.$(OBJEXT)
 tests_unit_test_OBJECTS = $(am_tests_unit_test_OBJECTS)
 tests_unit_test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -2501,12 +2501,12 @@ am__testsuite_testsuite_test_SOURCES_DIST = wolfcrypt/test/test.c \
 	examples/client/client.c examples/echoclient/echoclient.c \
 	examples/echoserver/echoserver.c examples/server/server.c \
 	testsuite/testsuite.c
-am_testsuite_testsuite_test_OBJECTS = wolfcrypt/test/testsuite_testsuite_test-test.$(OBJEXT) \
-	examples/client/testsuite_testsuite_test-client.$(OBJEXT) \
-	examples/echoclient/testsuite_testsuite_test-echoclient.$(OBJEXT) \
-	examples/echoserver/testsuite_testsuite_test-echoserver.$(OBJEXT) \
-	examples/server/testsuite_testsuite_test-server.$(OBJEXT) \
-	testsuite/testsuite_test-testsuite.$(OBJEXT)
+#am_testsuite_testsuite_test_OBJECTS = wolfcrypt/test/testsuite_testsuite_test-test.$(OBJEXT) \
+#	examples/client/testsuite_testsuite_test-client.$(OBJEXT) \
+#	examples/echoclient/testsuite_testsuite_test-echoclient.$(OBJEXT) \
+#	examples/echoserver/testsuite_testsuite_test-echoserver.$(OBJEXT) \
+#	examples/server/testsuite_testsuite_test-server.$(OBJEXT) \
+#	testsuite/testsuite_test-testsuite.$(OBJEXT)
 testsuite_testsuite_test_OBJECTS =  \
 	$(am_testsuite_testsuite_test_OBJECTS)
 testsuite_testsuite_test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
@@ -3393,32 +3393,32 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} '/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/build-aux/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/build-aux/missing' aclocal-1.16
 AMINCLUDE = aminclude.am
 AMTAR = $${TAR-tar}
-AM_CCASFLAGS =  -DNDEBUG -DWOLFSSL_X86_64_BUILD  $(EXTRA_CCASFLAGS)
-AM_CFLAGS =  -fvisibility=hidden -DHAVE_C___ATOMIC=1 -DHAVE_THREAD_LS -DNDEBUG -DNO_DO178 -DWOLFSSL_X86_64_BUILD -pthread -DERROR_QUEUE_PER_THREAD -DTFM_TIMING_RESISTANT -DECC_TIMING_RESISTANT -DWC_RSA_BLINDING -DWOLFSSL_USE_ALIGN -DWOLFSSL_SHA224 -DWOLFSSL_SHA512 -DWOLFSSL_SHA384 -DHAVE_HKDF -DNO_DSA -DHAVE_ECC -DTFM_ECC256 -DECC_SHAMIR -DNO_OLD_TLS -DWC_RSA_PSS -DWOLFSSL_PSS_LONG_SALT -DWOLFSSL_ASN_TEMPLATE -DWOLFSSL_ASN_PRINT -DWOLFSSL_BASE64_ENCODE -DWOLFSSL_SHA3 -DWOLFSSL_NO_SHAKE128 -DWOLFSSL_NO_SHAKE256 -DHAVE_POLY1305 -DHAVE_CHACHA -DHAVE_HASHDRBG -DHAVE_TLS_EXTENSIONS -DHAVE_SNI -DHAVE_TLS_EXTENSIONS -DHAVE_SUPPORTED_CURVES -DHAVE_FFDHE_2048 -DHAVE_SUPPORTED_CURVES -DWOLFSSL_TLS13 -DHAVE_TLS_EXTENSIONS -DHAVE_EXTENDED_MASTER -DNO_RC4 -DHAVE_ENCRYPT_THEN_MAC -DNO_PSK -DNO_MD4 -DWOLFSSL_SP_MATH_ALL -DWOLFSSL_SP_X86_64 -DWC_NO_ASYNC_THREADING -DHAVE_DH_DEFAULT_PARAMS -DWOLFSSL_SYS_CA_CERTS -DNO_DES3 -DGCM_TABLE_4BIT -DHAVE_AESGCM -DHAVE_TLS_EXTENSIONS -DHAVE_SERVER_RENEGOTIATION_INFO -Wall -Wno-unused -O2 -DHAVE___UINT128_T=1 -DHAVE_WC_INTROSPECTION -include ./.build_params  $(EXTRA_CFLAGS)
+AM_CCASFLAGS = -g -DDEBUG -DDEBUG_WOLFSSL   $(EXTRA_CCASFLAGS)
+AM_CFLAGS =  -fvisibility=hidden -DHAVE_THREAD_LS -g -DDEBUG -DDEBUG_WOLFSSL -DNO_DO178 -DUSE_FAST_MATH -DSINGLE_THREADED -DTFM_TIMING_RESISTANT -DECC_TIMING_RESISTANT -DWC_RSA_BLINDING -DWOLFSSL_USE_ALIGN -DWOLFSSL_SHA512 -DWOLFSSL_SHA384 -DHAVE_HKDF -DNO_DSA -DHAVE_ECC -DTFM_ECC256 -DECC_SHAMIR -DHAVE_ECC_ENCRYPT -DNO_OLD_TLS -DWC_RSA_PSS -DWOLFSSL_PSS_LONG_SALT -DWOLFSSL_ASN_TEMPLATE -DWOLFSSL_NO_SHAKE128 -DWOLFSSL_NO_SHAKE256 -DHAVE_POLY1305 -DHAVE_CHACHA -DHAVE_HASHDRBG -DNO_FILESYSTEM -DHAVE_TLS_EXTENSIONS -DHAVE_SUPPORTED_CURVES -DHAVE_FFDHE_2048 -DHAVE_SUPPORTED_CURVES -DWOLFSSL_TLS13 -DHAVE_TLS_EXTENSIONS -DHAVE_EXTENDED_MASTER -DNO_RC4 -DHAVE_ENCRYPT_THEN_MAC -DNO_PSK -DNO_MD4 -DWC_NO_ASYNC_THREADING -DHAVE_DH_DEFAULT_PARAMS -DNO_DES3 -DGCM_TABLE_4BIT -DHAVE_AESGCM -DHAVE_TLS_EXTENSIONS -DHAVE_SERVER_RENEGOTIATION_INFO -Wall -Wno-unused -DWOLFSSL_TEST_STATIC_BUILD -DHAVE_WC_INTROSPECTION -include ./.build_params  $(EXTRA_CFLAGS)
 
 # allow supplementary or override flags to be passed at make time:
 AM_CPPFLAGS =  -DWOLFSSL_HAVE_ATOMIC_H  $(EXTRA_CPPFLAGS)
 AM_DEFAULT_VERBOSITY = 0
 AM_LDFLAGS =   $(EXTRA_LDFLAGS)
-AR = ar
+AR = arm-none-eabi-ar
 AS = as
 ASFLAGS_FPUSIMD_DISABLE = 
 ASFLAGS_FPUSIMD_ENABLE = 
 ASFLAGS_FPU_DISABLE_SIMD_ENABLE = 
 ASFLAGS_FPU_ENABLE_SIMD_DISABLE = 
-AUTOCONF = ${SHELL} '/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/build-aux/missing' autoconf
-AUTOHEADER = ${SHELL} '/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/build-aux/missing' autoheader
-AUTOMAKE = ${SHELL} '/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/build-aux/missing' automake-1.16
+AUTOCONF = ${SHELL} '/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/build-aux/missing' autoconf
+AUTOHEADER = ${SHELL} '/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/build-aux/missing' autoheader
+AUTOMAKE = ${SHELL} '/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/build-aux/missing' automake-1.16
 AWK = awk
-CC = gcc
-CCAS = gcc
+CC = arm-none-eabi-gcc
+CCAS = arm-none-eabi-gcc
 CCASDEPMODE = depmode=gcc3
-CCASFLAGS =   
+CCASFLAGS = -mcpu=cortex-m4 --specs=nosys.specs -DHAVE_PK_CALLBACKS -DWOLFSSL_USER_IO -DNO_WRITEV  
 CCDEPMODE = depmode=gcc3
-CFLAGS =    -Wno-pragmas -Wall -Wextra -Wunknown-pragmas --param=ssp-buffer-size=1 -Waddress -Warray-bounds -Wbad-function-cast -Wchar-subscripts -Wcomment -Wfloat-equal -Wformat-security -Wformat=2 -Wmissing-field-initializers -Wmissing-noreturn -Wmissing-prototypes -Wnested-externs -Woverride-init -Wpointer-arith -Wpointer-sign -Wshadow -Wshorten-64-to-32 -Wsign-compare -Wstrict-overflow=1 -Wstrict-prototypes -Wswitch-enum -Wundef -Wunused -Wunused-result -Wunused-variable -Wwrite-strings -fwrapv
+CFLAGS = -mcpu=cortex-m4 --specs=nosys.specs -DHAVE_PK_CALLBACKS -DWOLFSSL_USER_IO -DNO_WRITEV   -g -ggdb -O0 -Wno-pragmas -Wall -Wextra -Wunknown-pragmas --param=ssp-buffer-size=1 -Waddress -Warray-bounds -Wbad-function-cast -Wchar-subscripts -Wcomment -Wfloat-equal -Wformat-security -Wformat=2 -Wmaybe-uninitialized -Wmissing-field-initializers -Wmissing-noreturn -Wmissing-prototypes -Wnested-externs -Wnormalized=id -Woverride-init -Wpointer-arith -Wpointer-sign -Wshadow -Wsign-compare -Wstrict-overflow=1 -Wstrict-prototypes -Wswitch-enum -Wundef -Wunused -Wunused-result -Wunused-variable -Wwrite-strings -fwrapv
 CFLAGS_AUTO_VECTORIZE_DISABLE = 
 CFLAGS_AUTO_VECTORIZE_ENABLE = 
 CFLAGS_FPU_DISABLE = 
@@ -3426,7 +3426,7 @@ CFLAGS_FPU_ENABLE =
 CFLAGS_SIMD_DISABLE = 
 CFLAGS_SIMD_ENABLE = 
 CFLAG_VISIBILITY = -fvisibility=hidden
-CPP = gcc -E
+CPP = arm-none-eabi-gcc -E
 CPPFLAGS = 
 CSCOPE = cscope
 CTAGS = ctags
@@ -3434,7 +3434,7 @@ CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DLLTOOL = false
-DSYMUTIL = dsymutil
+DSYMUTIL = 
 DUMPBIN = 
 ECHO_C = \c
 ECHO_N = 
@@ -3458,7 +3458,7 @@ HAVE_OPENSSL_CMD =
 HAVE_VALGRIND = 
 HAVE_VISIBILITY = 1
 HEX_VERSION = 0x05006006
-INCLUDE_SP_INT = yes
+INCLUDE_SP_INT = no
 INC_AMINCLUDE = include $(top_builddir)/aminclude.am
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
@@ -3470,29 +3470,29 @@ IPPLIBS =
 IPPLINK = 
 KERNEL_ARCH = 
 KERNEL_ROOT = 
-LD = /Library/Developer/CommandLineTools/usr/bin/ld
-LDFLAGS =  -framework CoreFoundation -framework Security
-LIBM = 
+LD = arm-none-eabi-ld
+LDFLAGS = 
+LIBM = -lm
 LIBOBJS = 
-LIBS = -lnetwork  -lpthread
+LIBS = 
 LIBSUFFIX = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIB_ADD = 
 LIB_STATIC_ADD = 
-LIPO = lipo
+LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} '/Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/build-aux/missing' makeinfo
+MAKEINFO = ${SHELL} '/Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/build-aux/missing' makeinfo
 MANIFEST_TOOL = :
 MCHECK = 
 MKDIR_P = mkdir -p
-NM = /usr/bin/nm -B
-NMEDIT = nmedit
-OBJDUMP = objdump
+NM = /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/arm-none-eabi-nm -B
+NMEDIT = 
+OBJDUMP = arm-none-eabi-objdump
 OBJEXT = o
-OTOOL = otool
-OTOOL64 = :
+OTOOL = 
+OTOOL64 = 
 PACKAGE = wolfssl
 PACKAGE_BUGREPORT = https://github.com/wolfssl/wolfssl/issues
 PACKAGE_NAME = wolfssl
@@ -3504,38 +3504,38 @@ PATH_SEPARATOR = :
 PSA_INCLUDE = 
 PSA_LIB = 
 PSA_LIB_NAME = 
-PTHREAD_CC = gcc
-PTHREAD_CFLAGS = -pthread
+PTHREAD_CC = arm-none-eabi-gcc
+PTHREAD_CFLAGS = 
 PTHREAD_CXX = 
-PTHREAD_LIBS = -lpthread
-RANLIB = ranlib
+PTHREAD_LIBS = 
+RANLIB = arm-none-eabi-ranlib
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
-STRIP = strip
+STRIP = arm-none-eabi-strip
 VERSION = 5.6.6
 WOLFSENTRY_INCLUDE = 
 WOLFSENTRY_LIB = 
-WOLFSSL_BUILD_DATE = Wed, 28 Feb 2024 16:54:17 -0700
-WOLFSSL_CONFIG_ARGS = 
+WOLFSSL_BUILD_DATE = Fri, 01 Mar 2024 22:41:33 -0700
+WOLFSSL_CONFIG_ARGS =  '--host=arm-none-eabi' 'CC=arm-none-eabi-gcc' 'LD=arm-none-eabi-ld' 'AR=arm-none-eabi-ar' 'RANLIB=arm-none-eabi-ranlib' 'STRIP=arm-none-eabi-strip' '--prefix=/Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/' '-enable-harden' '-enable-eccencrypt' '-enable-debug' 'CFLAGS=-mcpu=cortex-m4 --specs=nosys.specs -DHAVE_PK_CALLBACKS -DWOLFSSL_USER_IO -DNO_WRITEV' '--disable-filesystem' '--enable-fastmath' '--disable-shared' 'host_alias=arm-none-eabi'
 WOLFSSL_LIBRARY_VERSION = 42:0:0
 WOLFSSL_LIBRARY_VERSION_FIRST = 42
 WOLFSSL_LIBRARY_VERSION_SECOND = 0
 WOLFSSL_LIBRARY_VERSION_THIRD = 0
 XMSS_ROOT = 
-abs_builddir = /Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl
-abs_srcdir = /Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl
-abs_top_builddir = /Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl
-abs_top_srcdir = /Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl
-ac_ct_AR = ar
-ac_ct_CC = gcc
+abs_builddir = /Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl
+abs_srcdir = /Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl
+abs_top_builddir = /Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl
+abs_top_srcdir = /Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl
+ac_ct_AR = 
+ac_ct_CC = 
 ac_ct_DUMPBIN = 
 am__include = include
 am__leading_dot = .
 am__quote = 
 am__tar = tar --format=ustar -chf - "$$tardir"
 am__untar = tar -xf -
-ax_pthread_config = 
+ax_pthread_config = no
 bindir = ${exec_prefix}/bin
 build = x86_64-apple-darwin22.6.0
 build_alias = 
@@ -3548,15 +3548,15 @@ datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = x86_64-apple-darwin22.6.0
-host_alias = 
-host_cpu = x86_64
-host_os = darwin22.6.0
-host_vendor = apple
+host = arm-none-eabi
+host_alias = arm-none-eabi
+host_cpu = arm
+host_os = eabi
+host_vendor = none
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /Users/ilu/courseWork/eCtf/2024-ectf-insecure-example/application_processor/wolfssl/build-aux/install-sh
+install_sh = ${SHELL} /Users/ilu/courseWork/2024_eCTF/application_processor/wolfssl/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -3565,7 +3565,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /usr/local
+prefix = /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin
 program_transform_name = s,x,x,
 psdir = ${docdir}
 runstatedir = ${localstatedir}/run
@@ -3573,11 +3573,11 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 srcdir = .
 sysconfdir = ${prefix}/etc
-target = x86_64-apple-darwin22.6.0
+target = arm-none-eabi
 target_alias = 
-target_cpu = x86_64
-target_os = darwin22.6.0
-target_vendor = apple
+target_cpu = arm
+target_os = eabi
+target_vendor = none
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
@@ -4689,64 +4689,64 @@ wolfcrypt_test_testwolfcrypt_DEPENDENCIES = src/libwolfssl.la
 #examples_async_async_server_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
 #examples_async_async_server_DEPENDENCIES = src/libwolfssl.la
 #examples_async_async_server_CFLAGS = $(AM_CFLAGS)
-examples_benchmark_tls_bench_SOURCES = examples/benchmark/tls_bench.c
-examples_benchmark_tls_bench_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-examples_benchmark_tls_bench_DEPENDENCIES = src/libwolfssl.la
-examples_client_client_SOURCES = examples/client/client.c
-examples_client_client_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
-examples_client_client_DEPENDENCIES = src/libwolfssl.la
-examples_client_client_CFLAGS = $(WOLFSENTRY_INCLUDE) $(AM_CFLAGS)
-examples_echoclient_echoclient_SOURCES = examples/echoclient/echoclient.c
-examples_echoclient_echoclient_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-examples_echoclient_echoclient_DEPENDENCIES = src/libwolfssl.la
-examples_echoserver_echoserver_SOURCES = examples/echoserver/echoserver.c
-examples_echoserver_echoserver_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-examples_echoserver_echoserver_DEPENDENCIES = src/libwolfssl.la
-examples_server_server_SOURCES = examples/server/server.c
-examples_server_server_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
-examples_server_server_DEPENDENCIES = src/libwolfssl.la
-examples_server_server_CFLAGS = $(WOLFSENTRY_INCLUDE) $(AM_CFLAGS)
-#examples_sctp_sctp_server_SOURCES = examples/sctp/sctp-server.c
-#examples_sctp_sctp_server_LDADD = $(LIB_STATIC_ADD)
-#examples_sctp_sctp_server_dtls_SOURCES = examples/sctp/sctp-server-dtls.c
-#examples_sctp_sctp_server_dtls_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-#examples_sctp_sctp_server_dtls_DEPENDENCIES = src/libwolfssl.la
-#examples_sctp_sctp_client_SOURCES = examples/sctp/sctp-client.c
-#examples_sctp_sctp_client_LDADD = $(LIB_STATIC_ADD)
-#examples_sctp_sctp_client_dtls_SOURCES = examples/sctp/sctp-client-dtls.c
-#examples_sctp_sctp_client_dtls_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-#examples_sctp_sctp_client_dtls_DEPENDENCIES = src/libwolfssl.la
-examples_asn1_asn1_SOURCES = examples/asn1/asn1.c
-examples_asn1_asn1_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-examples_asn1_asn1_DEPENDENCIES = src/libwolfssl.la
-examples_pem_pem_SOURCES = examples/pem/pem.c
-examples_pem_pem_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
-examples_pem_pem_DEPENDENCIES = src/libwolfssl.la
-testsuite_testsuite_test_SOURCES = \
-			      wolfcrypt/test/test.c \
-			      examples/client/client.c \
-			      examples/echoclient/echoclient.c \
-			      examples/echoserver/echoserver.c \
-			      examples/server/server.c \
-			      testsuite/testsuite.c
+#examples_benchmark_tls_bench_SOURCES = examples/benchmark/tls_bench.c
+#examples_benchmark_tls_bench_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+#examples_benchmark_tls_bench_DEPENDENCIES = src/libwolfssl.la
+#examples_client_client_SOURCES = examples/client/client.c
+#examples_client_client_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
+#examples_client_client_DEPENDENCIES = src/libwolfssl.la
+#examples_client_client_CFLAGS = $(WOLFSENTRY_INCLUDE) $(AM_CFLAGS)
+#examples_echoclient_echoclient_SOURCES = examples/echoclient/echoclient.c
+#examples_echoclient_echoclient_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+#examples_echoclient_echoclient_DEPENDENCIES = src/libwolfssl.la
+#examples_echoserver_echoserver_SOURCES = examples/echoserver/echoserver.c
+#examples_echoserver_echoserver_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+#examples_echoserver_echoserver_DEPENDENCIES = src/libwolfssl.la
+#examples_server_server_SOURCES = examples/server/server.c
+#examples_server_server_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
+#examples_server_server_DEPENDENCIES = src/libwolfssl.la
+#examples_server_server_CFLAGS = $(WOLFSENTRY_INCLUDE) $(AM_CFLAGS)
+##examples_sctp_sctp_server_SOURCES = examples/sctp/sctp-server.c
+##examples_sctp_sctp_server_LDADD = $(LIB_STATIC_ADD)
+##examples_sctp_sctp_server_dtls_SOURCES = examples/sctp/sctp-server-dtls.c
+##examples_sctp_sctp_server_dtls_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+##examples_sctp_sctp_server_dtls_DEPENDENCIES = src/libwolfssl.la
+##examples_sctp_sctp_client_SOURCES = examples/sctp/sctp-client.c
+##examples_sctp_sctp_client_LDADD = $(LIB_STATIC_ADD)
+##examples_sctp_sctp_client_dtls_SOURCES = examples/sctp/sctp-client-dtls.c
+##examples_sctp_sctp_client_dtls_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+##examples_sctp_sctp_client_dtls_DEPENDENCIES = src/libwolfssl.la
+#examples_asn1_asn1_SOURCES = examples/asn1/asn1.c
+#examples_asn1_asn1_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+#examples_asn1_asn1_DEPENDENCIES = src/libwolfssl.la
+#examples_pem_pem_SOURCES = examples/pem/pem.c
+#examples_pem_pem_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD)
+#examples_pem_pem_DEPENDENCIES = src/libwolfssl.la
+#testsuite_testsuite_test_SOURCES = \
+#			      wolfcrypt/test/test.c \
+#			      examples/client/client.c \
+#			      examples/echoclient/echoclient.c \
+#			      examples/echoserver/echoserver.c \
+#			      examples/server/server.c \
+#			      testsuite/testsuite.c
 
-testsuite_testsuite_test_CFLAGS = -DNO_MAIN_DRIVER $(AM_CFLAGS) $(WOLFSENTRY_INCLUDE)
-testsuite_testsuite_test_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
-testsuite_testsuite_test_DEPENDENCIES = src/libwolfssl.la
-tests_unit_test_SOURCES = \
-                  tests/unit.c \
-                  tests/api.c \
-                  tests/suites.c \
-                  tests/hash.c \
-                  tests/w64wrapper.c \
-                  tests/srp.c \
-                  tests/quic.c \
-                  examples/client/client.c \
-                  examples/server/server.c
+#testsuite_testsuite_test_CFLAGS = -DNO_MAIN_DRIVER $(AM_CFLAGS) $(WOLFSENTRY_INCLUDE)
+#testsuite_testsuite_test_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
+#testsuite_testsuite_test_DEPENDENCIES = src/libwolfssl.la
+#tests_unit_test_SOURCES = \
+#                  tests/unit.c \
+#                  tests/api.c \
+#                  tests/suites.c \
+#                  tests/hash.c \
+#                  tests/w64wrapper.c \
+#                  tests/srp.c \
+#                  tests/quic.c \
+#                  examples/client/client.c \
+#                  examples/server/server.c
 
-tests_unit_test_CFLAGS = -DNO_MAIN_DRIVER $(AM_CFLAGS) $(WOLFSENTRY_INCLUDE)
-tests_unit_test_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
-tests_unit_test_DEPENDENCIES = src/libwolfssl.la
+#tests_unit_test_CFLAGS = -DNO_MAIN_DRIVER $(AM_CFLAGS) $(WOLFSENTRY_INCLUDE)
+#tests_unit_test_LDADD = src/libwolfssl.la $(LIB_STATIC_ADD) $(WOLFSENTRY_LIB)
+#tests_unit_test_DEPENDENCIES = src/libwolfssl.la
 #sslSniffer_sslSnifferTest_snifftest_SOURCES = sslSniffer/sslSnifferTest/snifftest.c
 #sslSniffer_sslSnifferTest_snifftest_LDADD = src/libwolfssl.la -lpcap $(LIB_STATIC_ADD)
 #sslSniffer_sslSnifferTest_snifftest_DEPENDENCIES = src/libwolfssl.la
@@ -9321,18 +9321,18 @@ release: rpm-sign
 
 auto-rpmbuild:
 	@auto-br-rpmbuild -ba rpm/spec
-#scripts/crl-revoked.log: scripts/resume.log
-#testsuite/testsuite.log: scripts/ocsp-stapling.log scripts/ocsp-stapling-with-ca-as-responder.log
-#scripts/ocsp-stapling.log: scripts/ocsp.log
-#scripts/ocsp-stapling-with-ca-as-responder.log: scripts/ocsp.log
-#scripts/ocsp-stapling-with-ca-as-responder.log: scripts/ocsp-stapling.log
+##scripts/crl-revoked.log: scripts/resume.log
+##testsuite/testsuite.log: scripts/ocsp-stapling.log scripts/ocsp-stapling-with-ca-as-responder.log
+##scripts/ocsp-stapling.log: scripts/ocsp.log
+##scripts/ocsp-stapling-with-ca-as-responder.log: scripts/ocsp.log
+##scripts/ocsp-stapling-with-ca-as-responder.log: scripts/ocsp-stapling.log
 
-##testsuite/testsuite.log: scripts/ocsp-stapling2.log
+###testsuite/testsuite.log: scripts/ocsp-stapling2.log
+###scripts/ocsp-stapling2.log: scripts/ocsp.log
+###scripts/ocsp-stapling2.log: scripts/ocsp-stapling.log
+###scripts/ocsp-stapling2.log: scripts/ocsp-stapling-with-ca-as-responder.log
 ##scripts/ocsp-stapling2.log: scripts/ocsp.log
-##scripts/ocsp-stapling2.log: scripts/ocsp-stapling.log
-##scripts/ocsp-stapling2.log: scripts/ocsp-stapling-with-ca-as-responder.log
-#scripts/ocsp-stapling2.log: scripts/ocsp.log
-#scripts/pkcallbacks.log: scripts/resume.log
+##scripts/pkcallbacks.log: scripts/resume.log
 
 # Exclude references to non-DFSG sources from build files
 
