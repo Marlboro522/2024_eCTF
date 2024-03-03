@@ -33,6 +33,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <wolfssl/options.h>
+#include <wolfssl.ssl.h>
+#include <wolfssl/wolfcrypt/asn.h>
 #endif
 
 /********************************* CONSTANTS **********************************/
@@ -87,6 +90,39 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
+ * @brief Create Cert
+ * 
+ * Create a cert used for verification of identity
+
+*/
+void* create_cert(){
+
+    /*Initialize cert*/
+    Cert newCert;
+    InitCert(newCert);
+
+    /*Initialize cert info*/
+    strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
+    strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
+    strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
+    strncpy(myCert.subject.org, "RGB", CTC_NAME_SIZE); //Change
+    strncpy(myCert.subject.unit, "CTF", CTC_NAME_SIZE); //change
+    strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
+    strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
+
+    /*generate self signed cert*/
+    byte derCert[4096];
+
+    int certSz = MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
+    if (certSz < 0){
+        fprintf(stderr, "cannot make cert.\n");
+        exit(EXIT_FAILURE);
+    }//if
+    return &derCert;
+
+}
+
+/**
  * @brief Secure Send 
  * 
  * @param buffer: uint8_t*, pointer to data to be send
@@ -96,6 +132,54 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
  * This function must be implemented by your team to align with the security requirements.
 */
 void secure_send(uint8_t* buffer, uint8_t len) {
+
+    //client
+
+    /*Initialize wolfSSL*/
+    wolfssl_Init();
+
+    /*Create context*/
+    WOLFSSL_CTX* ctx;
+    if(ctx = wolfSSL_CTX_new(wolfSSL_v3_client_method())== NULL){
+        fprintf(stderr, "cannot create context.\n");
+        exit(EXIT_FAILURE);
+    }//if
+
+    /*enable peer verifiction*/
+    wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
+
+    /*Create cert*/
+    byte cert[];
+    cert = create_cert();
+
+    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1)
+
+    /*Check if the cert worked*/
+    if (buff != SSL_SUCCESS) {
+        fprintf(stderr, "no cert on file.\n");
+        exit(EXIT_FAILURE);
+    }//if
+
+    /*Create SSL connection*/
+    WOLFSSL* = ssl;
+
+    if( (ssl = wolfSSL_new(ctx)) == NULL) {
+        fprintf(stderr, "cannot create ssl connection.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    sockfd = wolfSSL_get_fd(ssl);
+    Connect(sockfd, (SA *) &address, sizeof(address));
+    wolfSSL_set_fd(ssl, sockfd);
+
+    /*Initiate and do handshake*/
+    ret = wolfSSL_connect(ssl);
+
+    if(ret != SSL_SUCCESS){
+        printf(stderr, "cannot do handshake.\n");
+        exit(EXIT_FAILURE);
+    }
+
     send_packet_and_ack(len, buffer); 
 }
 
@@ -110,6 +194,52 @@ void secure_send(uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(uint8_t* buffer) {
+
+        /*Initialize wolfSSL*/
+    wolfssl_Init();
+
+    /*Create context*/
+    WOLFSSL_CTX* ctx;
+    if(ctx = wolfSSL_CTX_new(wolfSSL_v3_server_method())== NULL){
+        fprintf(stderr, "cannot create context.\n");
+        exit(EXIT_FAILURE);
+    }//if
+
+    /*enable peer verifiction*/
+    wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
+
+    /*Create cert*/
+    byte cert[];
+    cert = create_cert();
+
+    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1)
+
+    /*Check if the cert worked*/
+    if (buff != SSL_SUCCESS) {
+        fprintf(stderr, "no cert on file.\n");
+        exit(EXIT_FAILURE);
+    }//if
+
+    /*Create SSL connection*/
+    WOLFSSL* = ssl;
+
+    if( (ssl = wolfSSL_new(ctx)) == NULL) {
+        fprintf(stderr, "cannot create ssl connection.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    sockfd = wolfSSL_get_fd(ssl);
+    Connect(sockfd, (SA *) &address, sizeof(address));
+    wolfSSL_set_fd(ssl, sockfd);
+
+    /*Initiate and do handshake*/
+    ret = wolfSSL_accept(ssl);
+
+    if(ret != SSL_SUCCESS){
+        printf(stderr, "cannot do handshake.\n");
+        exit(EXIT_FAILURE);
+    }
+
     return wait_and_receive_packet(buffer);
 }
 
