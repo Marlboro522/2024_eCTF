@@ -37,8 +37,10 @@
 #endif
 
 #include <wolfssl/options.h>
-#include <wolfssl.ssl.h>
+#include <wolfssl/ssl.h>
 #include <wolfssl/wolfcrypt/asn.h>
+#include <wolfssl/wolfcrypt/types.h>
+#include <wolfssl/wolfcrypt/rsa.h>
 
 // Includes from containerized build
 #include "ectf_params.h"
@@ -116,8 +118,8 @@ flash_entry flash_status;
 void* create_cert(){
 
     /*Initialize cert*/
-    Cert newCert;
-    InitCert(newCert);
+    Cert* newCert;
+    wc_InitCert(newCert);
 
     /*Initialize cert info*/
     strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
@@ -128,15 +130,27 @@ void* create_cert(){
     strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
     strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
 
+    /*generate key and rng*/
+    RsaKey key;
+    RNG    rng;
+    int    ret;
+
+    wc_InitRng(&rng);
+    wc_InitRsaKey(&key, 0);
+
+    ret = wc_MakeRsaKey(&key, 1024, 65537, &rng);
+    if (ret != 0)
+        fprintf(stderr, "not able to make key.\n");
+
     /*generate self signed cert*/
     byte derCert[4096];
 
-    int certSz = MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
+    int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
     if (certSz < 0){
         fprintf(stderr, "cannot make cert.\n");
         exit(EXIT_FAILURE);
     }//if
-    return &derCert;
+    return derCert;
 
 }
 
@@ -156,11 +170,11 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
     //client
 
     /*Initialize wolfSSL*/
-    wolfssl_Init();
+    wolfSSL_Init();
 
     /*Create context*/
     WOLFSSL_CTX* ctx;
-    if(ctx = wolfSSL_CTX_new(wolfSSL_v3_client_method())== NULL){
+    if((ctx = wolfSSL_CTX_new(wolfSSLv3_client_method()))== NULL){
         fprintf(stderr, "cannot create context.\n");
         exit(EXIT_FAILURE);
     }//if
@@ -169,8 +183,10 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
     wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
 
     /*Create cert*/
-    byte cert[];
+    int cert;
     cert = create_cert();
+
+    int buff;
 
     buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
 
@@ -181,18 +197,15 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
     }//if
 
     /*Create SSL connection*/
-    WOLFSSL* = ssl;
+    WOLFSSL* ssl;
 
     if( (ssl = wolfSSL_new(ctx)) == NULL) {
         fprintf(stderr, "cannot create ssl connection.\n");
         exit(EXIT_FAILURE);
     }
 
-    sockfd = wolfSSL_get_fd(ssl);
-    Connect(sockfd, (SA *) &address, sizeof(address));
-    wolfSSL_set_fd(ssl, sockfd);
-
     /*Initiate and do handshake*/
+    int ret;
     ret = wolfSSL_connect(ssl);
 
     if(ret != SSL_SUCCESS){
@@ -219,11 +232,11 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
     //server
 
     /*Initialize wolfSSL*/
-    wolfssl_Init();
+    wolfSSL_Init();
 
     /*Create context*/
     WOLFSSL_CTX* ctx;
-    if(ctx = wolfSSL_CTX_new(wolfSSL_v3_server_method())== NULL){
+    if((ctx = wolfSSL_CTX_new(wolfSSLv3_server_method()))== NULL){
         fprintf(stderr, "cannot create context.\n");
         exit(EXIT_FAILURE);
     }//if
@@ -232,8 +245,10 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
     wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
 
     /*Create cert*/
-    byte cert[];
+    int cert;
     cert = create_cert();
+
+    int buff;
 
     buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
 
@@ -244,18 +259,15 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
     }//if
 
     /*Create SSL connection*/
-    WOLFSSL* = ssl;
+    WOLFSSL* ssl;
 
     if( (ssl = wolfSSL_new(ctx)) == NULL) {
         fprintf(stderr, "cannot create ssl connection.\n");
         exit(EXIT_FAILURE);
     }
 
-    sockfd = wolfSSL_get_fd(ssl);
-    Connect(sockfd, (SA *) &address, sizeof(address));
-    wolfSSL_set_fd(ssl, sockfd);
-
     /*Initiate and do handshake*/
+    int ret;
     ret = wolfSSL_accept(ssl);
 
     if(ret != SSL_SUCCESS){
