@@ -176,7 +176,7 @@ void secure_send(uint8_t* buffer, uint8_t len) {
     ret = wolfSSL_connect(ssl);
 
     if(ret != SSL_SUCCESS){
-        printf(stderr, "cannot do handshake.\n");
+        fprintf(stderr, "cannot do handshake.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -236,7 +236,7 @@ int secure_receive(uint8_t* buffer) {
     ret = wolfSSL_accept(ssl);
 
     if(ret != SSL_SUCCESS){
-        printf(stderr, "cannot do handshake.\n");
+        fprintf(stderr, "cannot do handshake.\n");
         exit(EXIT_FAILURE);
     }
 
