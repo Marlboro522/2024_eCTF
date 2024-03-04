@@ -33,10 +33,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#endif
+
 #include <wolfssl/options.h>
 #include <wolfssl.ssl.h>
 #include <wolfssl/wolfcrypt/asn.h>
-#endif
 
 /********************************* CONSTANTS **********************************/
 
@@ -152,7 +153,7 @@ void secure_send(uint8_t* buffer, uint8_t len) {
     byte cert[];
     cert = create_cert();
 
-    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1)
+    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
 
     /*Check if the cert worked*/
     if (buff != SSL_SUCCESS) {
@@ -212,7 +213,7 @@ int secure_receive(uint8_t* buffer) {
     byte cert[];
     cert = create_cert();
 
-    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1)
+    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
 
     /*Check if the cert worked*/
     if (buff != SSL_SUCCESS) {
