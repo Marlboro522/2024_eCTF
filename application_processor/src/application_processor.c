@@ -34,6 +34,8 @@
 #ifdef POST_BOOT
 #include <stdint.h>
 #include <stdio.h>
+#include "mxc_delay.h"
+#include <string.h>
 #endif
 
 #include <wolfssl/options.h>
@@ -68,6 +70,12 @@
 
 //Key size for encryption in bytes
 #define KEY_SIZE 32
+
+//TLS commincation reqs
+
+#define CERTIFICATE_ADDRESS 0x10045FFF
+#define PRIVATE_KEY_ADDRESS 0x10060000
+
 /******************************** TYPE DEFINITIONS ********************************/
 // Data structure for sending commands to component
 // Params allows for up to MAX_I2C_MESSAGE_LEN - 1 bytes to be send
@@ -110,47 +118,88 @@ flash_entry flash_status;
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
- * @brief Create Cert
+ * @brief TLS based commincation initialization
  * 
- * Create a cert used for verification of identity
+ * Create a certtificate and key used for verification of identity
 
 */
-void* create_cert(){
+void* tls_init(){
 
     /*Initialize cert*/
-    Cert* newCert;
-    wc_InitCert(newCert);
+    // Cert* newCert;
+    // wc_InitCert(newCert);
 
-    /*Initialize cert info*/
-    strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
-    strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
-    strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
-    strncpy(myCert.subject.org, "RGB", CTC_NAME_SIZE); //Change
-    strncpy(myCert.subject.unit, "CTF", CTC_NAME_SIZE); //change
-    strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
-    strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
+    // /*Initialize cert info*/
+    // strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
+    // strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
+    // strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
+    // strncpy(myCert.subject.org, "RGB", CTC_NAME_SIZE); //Change
+    // strncpy(myCert.subject.unit, "CTF", CTC_NAME_SIZE); //change
+    // strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
+    // strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
 
-    /*generate key and rng*/
-    RsaKey key;
-    RNG    rng;
-    int    ret;
+    // /*generate key and rng*/
+    // RsaKey key;
+    // RNG    rng;
+    // int    ret;
 
-    wc_InitRng(&rng);
-    wc_InitRsaKey(&key, 0);
+    // wc_InitRng(&rng);
+    // wc_InitRsaKey(&key, 0);
 
-    ret = wc_MakeRsaKey(&key, 1024, 65537, &rng);
-    if (ret != 0)
-        fprintf(stderr, "not able to make key.\n");
+    // ret = wc_MakeRsaKey(&key, 1024, 65537, &rng);
+    // if (ret != 0)
+    //     fprintf(stderr, "not able to make key.\n");
 
-    /*generate self signed cert*/
-    byte derCert[4096];
+    // /*generate self signed cert*/
+    // byte derCert[4096];
 
-    int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
-    if (certSz < 0){
-        fprintf(stderr, "cannot make cert.\n");
-        exit(EXIT_FAILURE);
-    }//if
-    return derCert;
+    // int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
+    // if (certSz < 0){
+    //     fprintf(stderr, "cannot make cert.\n");
+    //     exit(EXIT_FAILURE);
+    // }//if
+    // return derCert;
+    //And I said, Let there be a Certificate
+    WOLFSSL_X509* cert;
+    WC_RNG rng;
+    ecc_key key;
+    if (wc_InitRng(&rng) != 0) {
+        return -1;
+    }if (ecc_make_key(&rng, ECC_SECP256R1, 0, &key) != 0) {
+        wc_FreeRng(&rng);
+        return -1;
+    }cert = wolfSSL_X509_new();
+    if (cert == NULL) {
+        wc_FreeRng(&rng);
+        return -1;
+    }wolfSSL_X509_set_subject_name(cert, "TLS");
+    wolfSSL_X509_set_issuer_name(cert, "AP");
+    wolfSSL_X509_set_lifetime(cert, -1, -1);
+    //Signing
+    if (wolfSSL_X509_set_serial(cert, 1) != 1 ||
+        wolfSSL_X509_self_sign(cert, &key) != 1) {
+        wolfSSL_X509_free(cert);
+        wc_FreeRng(&rng);
+        return -1;
+    }
+    //Wtiing it to flash memory with the non-volatile addresses defined abobve. 
+    //Needs the cert tto be in bytes fo the simple flash header to work. 
+    byte der_cert[2048]; 
+    int der_cert_len = wolfSSL_X509_size(cert);
+    byte der_key[2048];  
+    int der_key_len = ecc_export_x963(&key, der_key, sizeof(der_key));
+    if (flash_simple_write(CERTIFICATE_ADDRESS, der_cert, der_cert_len) != 0) {
+        wolfSSL_X509_free(cert);
+        wc_FreeRng(&rng);
+        return -1; // Error writing certificate to flash
+    }if (flash_simple_write(PRIVATE_KEY_ADDRESS, der_key, der_key_len) != 0) {
+        wolfSSL_X509_free(cert);
+        wc_FreeRng(&rng);
+        return -1; // Error writing private key to flash
+    }wolfSSL_X509_free(cert);
+    wc_FreeRng(&rng);
+
+    return 0;
 
 }
 
@@ -170,7 +219,8 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
     //client
 
     /*Initialize wolfSSL*/
-    wolfSSL_Init();
+    // wolfSSL_Init();
+    tls_init();
 
     /*Create context*/
     WOLFSSL_CTX* ctx;
@@ -499,12 +549,20 @@ int validate_pin() {
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
+    uint8_t salt[SALT_LEN+1]; // +1 for null terminator
+    char new_p[21];
     generate_key(key);
     generate_random_iv(iv);
-    encrypt_n(AP_PIN, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
+    gen_salt((char *)salt);
+    strcpy(new_p, AP_PIN);    
+    strcat(new_p,(char *) salt);
+    encrypt_n(new_p, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
+    memset(new_p, 0, 21);
     char buf[50];
     recv_input("Enter PIN: ",buf);
-    if(encrypt_n(buf,strlen(buf)+ 1,u_CIPHER,key,iv)!=0){
+    strcpy(new_p, buf);
+    strcat(new_p, (char *)salt);
+    if(encrypt_n(new_p,strlen(buf)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
@@ -513,6 +571,8 @@ int validate_pin() {
         return SUCCESS_RETURN;
     }
     // HAL_Delay(5000);
+    print_info("Delaying...");
+    MXC_Delay(MXC_DELAY_SEC(5));
     return ERROR_RETURN;
 }
 

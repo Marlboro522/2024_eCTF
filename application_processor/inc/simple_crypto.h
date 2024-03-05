@@ -8,6 +8,7 @@
 #define BLOCK_SIZE 16
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
+#define SALT_LEN 13
 //Fucntion prototypes
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size);
@@ -21,8 +22,10 @@ int encrypt_n(const char *pin, int pin_len, uint8_t *encrypted_pin,
 
 int compare_pins(const uint8_t *encrypted_pin, const uint8_t *encrypted_pin1);
 
+void gen_salt(char *salt);
+
 void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str);
 
-void hash_pin(const char* pin, uint8_t* hash);
+// void hash_pin(const char* pin, uint8_t* hash);
 
-void enroll_pin(const char *pin);
+// void enroll_pin(const char *pin);

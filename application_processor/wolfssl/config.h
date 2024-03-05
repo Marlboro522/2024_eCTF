@@ -8,16 +8,16 @@
 #define BUILD_USER_RSA /**/
 
 /* Define to 1 to enable debugging code. */
-#define DEBUG 1
+#define DEBUG 0
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
-/* #undef HAVE_ARPA_INET_H */
+#define HAVE_ARPA_INET_H 1
 
 /* Define to 1 if you have the 'atexit' function. */
 #define HAVE_ATEXIT 1
 
 /* Define to 1 if __atomic operations work. */
-/* #undef HAVE_C___ATOMIC */
+#define HAVE_C___ATOMIC 1
 
 /* Define to 1 if you have the declaration of 'atexit', and to 0 if you don't.
    */
@@ -25,11 +25,11 @@
 
 /* Define to 1 if you have the declaration of 'getaddrinfo', and to 0 if you
    don't. */
-#define HAVE_DECL_GETADDRINFO 0
+#define HAVE_DECL_GETADDRINFO 1
 
 /* Define to 1 if you have the declaration of 'gethostbyname', and to 0 if you
    don't. */
-#define HAVE_DECL_GETHOSTBYNAME 0
+#define HAVE_DECL_GETHOSTBYNAME 1
 
 /* Define to 1 if you have the declaration of 'gettimeofday', and to 0 if you
    don't. */
@@ -45,7 +45,7 @@
 
 /* Define to 1 if you have the declaration of 'inet_ntoa', and to 0 if you
    don't. */
-#define HAVE_DECL_INET_NTOA 0
+#define HAVE_DECL_INET_NTOA 1
 
 /* Define to 1 if you have the declaration of 'memset', and to 0 if you don't.
    */
@@ -53,14 +53,14 @@
 
 /* Define to 1 if you have the declaration of 'socket', and to 0 if you don't.
    */
-#define HAVE_DECL_SOCKET 0
+#define HAVE_DECL_SOCKET 1
 
 /* Define to 1 if you have the declaration of 'strftime', and to 0 if you
    don't. */
 #define HAVE_DECL_STRFTIME 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-/* #undef HAVE_DLFCN_H */
+#define HAVE_DLFCN_H 1
 
 /* Define to 1 if you have the <errno.h> header file. */
 #define HAVE_ERRNO_H 1
@@ -69,10 +69,10 @@
 #define HAVE_FCNTL_H 1
 
 /* Define to 1 if you have the 'getaddrinfo' function. */
-/* #undef HAVE_GETADDRINFO */
+#define HAVE_GETADDRINFO 1
 
 /* Define to 1 if you have the 'gethostbyname' function. */
-/* #undef HAVE_GETHOSTBYNAME */
+#define HAVE_GETHOSTBYNAME 1
 
 /* Define to 1 if you have the 'gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
@@ -84,7 +84,7 @@
 /* #undef HAVE_GMTIME_S */
 
 /* Define to 1 if you have the 'inet_ntoa' function. */
-/* #undef HAVE_INET_NTOA */
+#define HAVE_INET_NTOA 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -102,7 +102,7 @@
 /* #undef HAVE_LIBHSM_LIB */
 
 /* Define to 1 if you have the 'network' library (-lnetwork). */
-/* #undef HAVE_LIBNETWORK */
+#define HAVE_LIBNETWORK 1
 
 /* Define to 1 if you have the 'pthread' library (-lpthread). */
 /* #undef HAVE_LIBPTHREAD */
@@ -121,34 +121,34 @@
 #define HAVE_MEMSET 1
 
 /* Define to 1 if you have the <netdb.h> header file. */
-/* #undef HAVE_NETDB_H */
+#define HAVE_NETDB_H 1
 
 /* Define to 1 if you have the <netinet/in.h> header file. */
-/* #undef HAVE_NETINET_IN_H */
+#define HAVE_NETINET_IN_H 1
 
 /* Define to 1 if you have the <pcap/pcap.h> header file. */
 /* #undef HAVE_PCAP_PCAP_H */
 
 /* Define if you have POSIX threads libraries and header files. */
-/* #undef HAVE_PTHREAD */
+#define HAVE_PTHREAD 1
 
 /* Have PTHREAD_PRIO_INHERIT. */
-/* #undef HAVE_PTHREAD_PRIO_INHERIT */
+#define HAVE_PTHREAD_PRIO_INHERIT 1
 
 /* Define to 1 if you have the <Security/SecCertificate.h> header file. */
-/* #undef HAVE_SECURITY_SECCERTIFICATE_H */
+#define HAVE_SECURITY_SECCERTIFICATE_H 1
 
 /* Define to 1 if you have the <Security/SecPolicy.h> header file. */
-/* #undef HAVE_SECURITY_SECPOLICY_H */
+#define HAVE_SECURITY_SECPOLICY_H 1
 
 /* Define to 1 if you have the <Security/SecTrustSettings.h> header file. */
-/* #undef HAVE_SECURITY_SECTRUSTSETTINGS_H */
+#define HAVE_SECURITY_SECTRUSTSETTINGS_H 1
 
 /* Define to 1 if you have the <Security/SecTrust.h> header file. */
-/* #undef HAVE_SECURITY_SECTRUST_H */
+#define HAVE_SECURITY_SECTRUST_H 1
 
 /* Define to 1 if you have the 'socket' function. */
-/* #undef HAVE_SOCKET */
+#define HAVE_SOCKET 1
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #define HAVE_STDDEF_H 1
@@ -172,10 +172,10 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
-/* #undef HAVE_SYS_IOCTL_H */
+#define HAVE_SYS_IOCTL_H 1
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
-/* #undef HAVE_SYS_SOCKET_H */
+#define HAVE_SYS_SOCKET_H 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -187,7 +187,7 @@
 #define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have the <sys/un.h> header file. */
-/* #undef HAVE_SYS_UN_H */
+#define HAVE_SYS_UN_H 1
 
 /* Define to 1 if you have the <time.h> header file. */
 #define HAVE_TIME_H 1
@@ -203,7 +203,7 @@
 #define HAVE_VISIBILITY 1
 
 /* Define to 1 if the system has the type '__uint128_t'. */
-/* #undef HAVE___UINT128_T */
+#define HAVE___UINT128_T 1
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
@@ -231,7 +231,7 @@
 /* #undef PTHREAD_CREATE_JOINABLE */
 
 /* The size of 'long', as computed by sizeof. */
-#define SIZEOF_LONG 4
+#define SIZEOF_LONG 8
 
 /* The size of 'long long', as computed by sizeof. */
 #define SIZEOF_LONG_LONG 8

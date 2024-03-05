@@ -2,9 +2,9 @@
  
 package="wolfssl"
 version="5.6.6"
-libs="-lwolfssl"
+libs="-lwolfssl -lnetwork -lpthread"
  
-prefix="/Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin"
+prefix="/usr/local"
 exec_prefix="${prefix}"
 bindir="${exec_prefix}/bin"
 sbindir="${exec_prefix}/sbin"
@@ -17,8 +17,8 @@ libdir="${exec_prefix}/lib"
 infodir="${datarootdir}/info"
 mandir="${datarootdir}/man"
 includedir="${prefix}/include"
-target="arm-none-eabi"
-host="arm-none-eabi"
+target="x86_64-apple-darwin22.6.0"
+host="x86_64-apple-darwin22.6.0"
 build="x86_64-apple-darwin22.6.0"
  
 if test "$#" -eq 0; then

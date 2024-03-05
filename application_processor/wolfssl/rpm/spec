@@ -37,7 +37,7 @@ you will need to install %{name}-devel.
 %setup -q
 
 %build
-%configure  '--host=arm-none-eabi' 'CC=arm-none-eabi-gcc' 'LD=arm-none-eabi-ld' 'AR=arm-none-eabi-ar' 'RANLIB=arm-none-eabi-ranlib' 'STRIP=arm-none-eabi-strip' '--prefix=/Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/' '-enable-harden' '-enable-eccencrypt' '-enable-debug' 'CFLAGS=-mcpu=cortex-m4 --specs=nosys.specs -DHAVE_PK_CALLBACKS -DWOLFSSL_USER_IO -DNO_WRITEV' '--disable-filesystem' '--enable-fastmath' '--disable-shared' 'host_alias=arm-none-eabi'
+%configure  '--enable-wolfclu'
 %{__make} %{?_smp_mflags}
 if [ "no" = "yes" ]
 then

@@ -5,7 +5,7 @@
 //Macros
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
-#define FLASH_ADDRESS 0x0800FC00
+// #define FLASH_ADDRESS 0x0800FC00
 
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data, int block_size) {
     int padded_len = block_size * ((data_len + block_size - 1) / block_size); // Calculate the padded length
@@ -73,20 +73,24 @@ void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
     }
 }
 
-void hash_pin(const char* pin, uint8_t* hash) {
-    Sha256 sha;
-    wc_InitSha256(&sha);
-    wc_Sha256Update(&sha, (const byte*)pin, strlen(pin));
-    wc_Sha256Final(&sha, hash);
+void gen_salt(char *salt){
+    WC_RNG rng;
+
+    wc_InitRng(&rng);
+    // Generate random salt
+    wc_RNG_GenerateBlock(&rng, (uint8_t *)salt, SALT_LEN);
+
+    wc_FreeRng(&rng);
 }
 
-void enroll_pin(const char* pin) {
-    uint8_t hash[SHA256_DIGEST_SIZE];
-    uint8_t encrypted_hash[AES_BLOCK_SIZE];
 
-    hash_pin(pin, hash);
-    encrypt_pin(hash, encrypted_hash);
+// void enroll_pin(const char* pin) {
+//     uint8_t hash[SHA256_DIGEST_SIZE];
+//     uint8_t encrypted_hash[AES_BLOCK_SIZE];
 
-    flash_write(encrypted_hash, AES_BLOCK_SIZE, FLASH_ADDRESS);
-}
+//     hash_pin(pin, hash);
+//     encrypt_pin(hash, encrypted_hash);
+
+//     flash_write(encrypted_hash, AES_BLOCK_SIZE, FLASH_ADDRESS);
+// }
 

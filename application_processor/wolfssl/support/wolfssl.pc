@@ -1,4 +1,4 @@
-prefix=/Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin
+prefix=/usr/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
