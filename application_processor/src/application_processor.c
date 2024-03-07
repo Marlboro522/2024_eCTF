@@ -42,7 +42,8 @@
 #include <wolfssl/ssl.h>
 #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include <wolfssl/wolfcrypt/rsa.h>
+#include <wolfssl/wolfcrypt/ecc.h>
+#include <wolfssl/wolfcrypt/user_settings.h>
 
 // Includes from containerized build
 #include "ectf_params.h"
@@ -71,6 +72,7 @@
 //Key size for encryption in bytes
 #define KEY_SIZE 32
 
+#define WOLFSSL_ECC
 //TLS commincation reqs
 
 #define CERTIFICATE_ADDRESS 0x10045FFF
@@ -117,90 +119,34 @@ typedef enum {
 flash_entry flash_status;
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
-/**
- * @brief TLS based commincation initialization
- * 
- * Create a certtificate and key used for verification of identity
-
-*/
-void* tls_init(){
-
-    /*Initialize cert*/
-    // Cert* newCert;
-    // wc_InitCert(newCert);
-
-    // /*Initialize cert info*/
-    // strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
-    // strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
-    // strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
-    // strncpy(myCert.subject.org, "RGB", CTC_NAME_SIZE); //Change
-    // strncpy(myCert.subject.unit, "CTF", CTC_NAME_SIZE); //change
-    // strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
-    // strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
-
-    // /*generate key and rng*/
-    // RsaKey key;
-    // RNG    rng;
-    // int    ret;
-
-    // wc_InitRng(&rng);
-    // wc_InitRsaKey(&key, 0);
-
-    // ret = wc_MakeRsaKey(&key, 1024, 65537, &rng);
-    // if (ret != 0)
-    //     fprintf(stderr, "not able to make key.\n");
-
-    // /*generate self signed cert*/
-    // byte derCert[4096];
-
-    // int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
-    // if (certSz < 0){
-    //     fprintf(stderr, "cannot make cert.\n");
-    //     exit(EXIT_FAILURE);
-    // }//if
-    // return derCert;
-    //And I said, Let there be a Certificate
-    WOLFSSL_X509* cert;
-    WC_RNG rng;
-    ecc_key key;
-    if (wc_InitRng(&rng) != 0) {
-        return -1;
-    }if (ecc_make_key(&rng, ECC_SECP256R1, 0, &key) != 0) {
-        wc_FreeRng(&rng);
-        return -1;
-    }cert = wolfSSL_X509_new();
-    if (cert == NULL) {
-        wc_FreeRng(&rng);
-        return -1;
-    }wolfSSL_X509_set_subject_name(cert, "TLS");
-    wolfSSL_X509_set_issuer_name(cert, "AP");
-    wolfSSL_X509_set_lifetime(cert, -1, -1);
-    //Signing
-    if (wolfSSL_X509_set_serial(cert, 1) != 1 ||
-        wolfSSL_X509_self_sign(cert, &key) != 1) {
-        wolfSSL_X509_free(cert);
-        wc_FreeRng(&rng);
-        return -1;
+#define KEY_SIZE_ 512
+#define SIGNATURE_SIZE 64
+ecc_key sender_private_key;
+ecc_key reciever_public_key;
+//Didn't work
+// void initialize_keys(){
+//     wc_ecc_init(&sender_private_key);
+//     wc_ecc_init(&reciever_public_key);
+//     if(wc_ecc_make_key(wc_ecc_x963((const byte*)PUBLIC_KEY),sizeof(PUBLIC_KEY),&sender_private_key)!=0){
+//         print_error("Error making sender key");
+//     }
+// }
+int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { int ret;
+    wc_ecc_init(private_key);
+    ret =
+        wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
+    if(ret!=0){
+        print_error("Failure...s");
     }
-    //Wtiing it to flash memory with the non-volatile addresses defined abobve. 
-    //Needs the cert tto be in bytes fo the simple flash header to work. 
-    byte der_cert[2048]; 
-    int der_cert_len = wolfSSL_X509_size(cert);
-    byte der_key[2048];  
-    int der_key_len = ecc_export_x963(&key, der_key, sizeof(der_key));
-    if (flash_simple_write(CERTIFICATE_ADDRESS, der_cert, der_cert_len) != 0) {
-        wolfSSL_X509_free(cert);
-        wc_FreeRng(&rng);
-        return -1; // Error writing certificate to flash
-    }if (flash_simple_write(PRIVATE_KEY_ADDRESS, der_key, der_key_len) != 0) {
-        wolfSSL_X509_free(cert);
-        wc_FreeRng(&rng);
-        return -1; // Error writing private key to flash
-    }wolfSSL_X509_free(cert);
-    wc_FreeRng(&rng);
-
-    return 0;
-
+    ret = wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
+    return ret;
+}
+int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
+    int ret;
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &reciever_public_key);
+    if(ret!=0){
+        print_error("Failure...v");
+    }return ret;
 }
 
 /**
@@ -214,56 +160,17 @@ void* tls_init(){
  * This function must be implemented by your team to align with the security requirements.
 
 */
-int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
-    
-    //client
-
-    /*Initialize wolfSSL*/
-    // wolfSSL_Init();
-    tls_init();
-
-    /*Create context*/
-    WOLFSSL_CTX* ctx;
-    if((ctx = wolfSSL_CTX_new(wolfSSLv3_client_method()))== NULL){
-        fprintf(stderr, "cannot create context.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*enable peer verifiction*/
-    wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
-
-    /*Create cert*/
-    int cert;
-    cert = create_cert();
-
-    int buff;
-
-    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
-
-    /*Check if the cert worked*/
-    if (buff != SSL_SUCCESS) {
-        fprintf(stderr, "no cert on file.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*Create SSL connection*/
-    WOLFSSL* ssl;
-
-    if( (ssl = wolfSSL_new(ctx)) == NULL) {
-        fprintf(stderr, "cannot create ssl connection.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    /*Initiate and do handshake*/
-    int ret;
-    ret = wolfSSL_connect(ssl);
-
-    if(ret != SSL_SUCCESS){
-        fprintf(stderr, "cannot do handshake.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return send_packet(address, len, buffer);
+int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_key,ecc_key* public_key) {
+    //Need this funciton to send_packet over some kind of secure channel...... 
+    //Only have to be authentic and Integral, no need of confidentiality...
+    //Let's see........
+    uint8_t signat[SIGNATURE_SIZE];
+    if(sign(buffer,len,private_key,public_key,signat)!=0){
+        return ERROR_RETURN;
+    } uint8_t signed_packet[len+SIGNATURE_SIZE];
+    memcpy(signed_packet,buffer,len);
+    memcpy(signed_packet + len, signat, SIGNATURE_SIZE);
+    return send_packet(address, len+SIGNATURE_SIZE, buffer);
 }
 
 /**
@@ -278,54 +185,16 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-
-    //server
-
-    /*Initialize wolfSSL*/
-    wolfSSL_Init();
-
-    /*Create context*/
-    WOLFSSL_CTX* ctx;
-    if((ctx = wolfSSL_CTX_new(wolfSSLv3_server_method()))== NULL){
-        fprintf(stderr, "cannot create context.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*enable peer verifiction*/
-    wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
-
-    /*Create cert*/
-    int cert;
-    cert = create_cert();
-
-    int buff;
-
-    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
-
-    /*Check if the cert worked*/
-    if (buff != SSL_SUCCESS) {
-        fprintf(stderr, "no cert on file.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*Create SSL connection*/
-    WOLFSSL* ssl;
-
-    if( (ssl = wolfSSL_new(ctx)) == NULL) {
-        fprintf(stderr, "cannot create ssl connection.\n");
-        exit(EXIT_FAILURE);
+    int r_len=poll_and_receive_packet(address, buffer);
+    if(r_len<SUCCESS_RETURN){
+        return ERROR_RETURN;
+    }uint8_t r_sign[SIGNATURE_SIZE];
+    memcpy(r_sign, buffer+r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
+    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)!=0){
+        return ERROR_RETURN;
     }
-
-    /*Initiate and do handshake*/
-    int ret;
-    ret = wolfSSL_accept(ssl);
-
-    if(ret != SSL_SUCCESS){
-        fprintf(stderr, "cannot do handshake.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return poll_and_receive_packet(address, buffer);
+    int len = r_len - SIGNATURE_SIZE;
+    return len;
 }
 
 /**
@@ -340,6 +209,7 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
  * This function must be implemented by your team.
 */
 int get_provisioned_ids(uint32_t* buffer) {
+    //should have commented more on this... 
     memcpy(buffer, flash_status.component_ids, flash_status.component_cnt * sizeof(uint32_t));
     return flash_status.component_cnt;
 }
@@ -554,24 +424,28 @@ int validate_pin() {
     generate_key(key);
     generate_random_iv(iv);
     gen_salt((char *)salt);
-    strcpy(new_p, AP_PIN);    
-    strcat(new_p,(char *) salt);
-    encrypt_n(new_p, strlen(AP_PIN) + 1, o_CIPHER, key, iv);
-    memset(new_p, 0, 21);
     char buf[50];
     recv_input("Enter PIN: ",buf);
-    strcpy(new_p, buf);
-    strcat(new_p, (char *)salt);
-    if(encrypt_n(new_p,strlen(buf)+ 1,u_CIPHER,key,iv)!=0){
+    if(strlen(buf)>6){
+        MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
-    }
+    }strncpy(new_p, buf,6);
+    strncat(new_p, (char *)salt,13);
+    if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
+        return ERROR_RETURN;
+    }memset(new_p, 0, 21);
+    strncpy(new_p, AP_PIN,6);    
+    strncat(new_p,(char *) salt,13);
+    if(encrypt_n(new_p, strlen(AP_PIN) + 1, o_CIPHER, key, iv)){
+        return ERROR_RETURN;
+        }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
         // print_info("Entered the commpare pins");
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
     // HAL_Delay(5000);
-    print_info("Delaying...");
+    // print_info("Delaying...");
     MXC_Delay(MXC_DELAY_SEC(5));
     return ERROR_RETURN;
 }
@@ -584,11 +458,17 @@ int validate_token() {
     uint8_t iv[KEY_SIZE];
     generate_key(key);
     generate_random_iv(iv);
-    encrypt_n(AP_TOKEN, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv);
-
     char buf[50];
     recv_input("Enter token: ", buf);
+    if(strlen(buf)>16){
+        // print_info("Delaying...");
+        MXC_Delay(MXC_DELAY_SEC(5));
+        return ERROR_RETURN;
+    }
     if(encrypt_n(buf,strlen(buf) +1 ,u_CIPHER,key,iv)!=0){
+        return ERROR_RETURN;
+    }
+    if(encrypt_n(AP_TOKEN, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)){
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
@@ -596,6 +476,7 @@ int validate_token() {
         return SUCCESS_RETURN;
     }
     print_error("Invalid Token!\n");
+    MXC_Delay(MXC_DELAY_SECONDS(5));
     return ERROR_RETURN;
 }
 

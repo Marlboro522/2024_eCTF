@@ -82,8 +82,10 @@ function(FIND_WOLFSSL_DIRECTORY OUTPUT_FOUND_WOLFSSL_DIRECTORY)
     else()
         get_filename_component(CURRENT_SEARCH_DIR "$ENV{WOLFSSL_ROOT}" ABSOLUTE)
         IS_WOLFSSL_SOURCE("${CURRENT_SEARCH_DIR}" FOUND_WOLFSSL)
-        if("${FOUND_WOLFSSL}")
-            message(STATUS "Found WOLFSSL_ROOT via Environment Variable:")
+        if( FOUND_WOLFSSL )
+            message(STATUS "Found WOLFSSL_ROOT via Environment Variable: ${CURRENT_SEARCH_DIR}")
+            set(${OUTPUT_FOUND_WOLFSSL_DIRECTORY} ${CURRENT_SEARCH_DIR} PARENT_SCOPE)
+            return()
         else()
             message(FATAL_ERROR "WOLFSSL_ROOT Environment Variable defined, but path not found:")
             message(STATUS "$ENV{WOLFSSL_ROOT}")
@@ -156,8 +158,8 @@ if(CMAKE_BUILD_EARLY_EXPANSION)
     idf_component_register(
                             REQUIRES "${COMPONENT_REQUIRES}"
                             PRIV_REQUIRES # esp_hw_support
-                                          esp_timer
-                                          driver # this will typically only be needed for wolfSSL benchmark
+                                          # esp_timer
+                                          # driver # this will typically only be needed for wolfSSL benchmark
                            )
 
 else()

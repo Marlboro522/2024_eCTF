@@ -731,8 +731,6 @@ BUILD_ASYNCCRYPT_FALSE
 BUILD_ASYNCCRYPT_TRUE
 BUILD_MCAPI_FALSE
 BUILD_MCAPI_TRUE
-BUILD_FAST_RSA_FALSE
-BUILD_FAST_RSA_TRUE
 INCLUDE_SP_INT
 BUILD_SP_INT_FALSE
 BUILD_SP_INT_TRUE
@@ -808,10 +806,6 @@ BUILD_LIBXMSS_FALSE
 BUILD_LIBXMSS_TRUE
 BUILD_LIBLMS_FALSE
 BUILD_LIBLMS_TRUE
-BUILD_USER_CRYPTO_FALSE
-BUILD_USER_CRYPTO_TRUE
-BUILD_USER_RSA_FALSE
-BUILD_USER_RSA_TRUE
 BUILD_CRL_MONITOR_FALSE
 BUILD_CRL_MONITOR_TRUE
 BUILD_CRL_FALSE
@@ -949,8 +943,8 @@ BUILD_ARMASM_INLINE_FALSE
 BUILD_ARMASM_INLINE_TRUE
 BUILD_ARMASM_FALSE
 BUILD_ARMASM_TRUE
-BUILD_XTS_FALSE
-BUILD_XTS_TRUE
+BUILD_AESXTS_FALSE
+BUILD_AESXTS_TRUE
 BUILD_AESCCM_FALSE
 BUILD_AESCCM_TRUE
 BUILD_AESGCM_FALSE
@@ -999,9 +993,6 @@ IS_VCS_CHECKOUT_FALSE
 IS_VCS_CHECKOUT_TRUE
 LIBM
 LIBSUFFIX
-IPPLINK
-IPPHEADERS
-IPPLIBS
 ENABLED_CRYPT_TESTS
 HAVE_VALGRIND
 HAVE_OPENSSL_CMD
@@ -1052,6 +1043,7 @@ MANIFEST_TOOL
 RANLIB
 ac_ct_AR
 AR
+FILECMD
 LN_S
 NM
 ac_ct_DUMPBIN
@@ -1401,6 +1393,7 @@ enable_md5
 enable_sha
 enable_siphash
 enable_cmac
+enable_aesxts
 enable_xts
 enable_webserver
 enable_webclient
@@ -1418,7 +1411,6 @@ enable_ocspstapling
 enable_ocspstapling2
 enable_crl
 enable_crl_monitor
-with_user_crypto
 with_wnr
 enable_sni
 enable_maxfragment
@@ -1477,7 +1469,6 @@ with_octeon_sync
 with_intelqa
 with_intelqa_sync
 with_arm_target
-enable_fast_rsa
 enable_staticmemory
 enable_mcapi
 enable_cryptodev
@@ -1493,6 +1484,7 @@ enable_hashflags
 enable_defaultdhparams
 with_max_rsa_bits
 with_max_ecc_bits
+enable_linuxkm_lkcapi_register
 with_libsuffix
 enable_context_extra_user_data
 enable_iotsafe
@@ -1501,6 +1493,7 @@ enable_makeclean
 enable_usersettings
 enable_optflags
 enable_sys_ca_certs
+enable_dual_alg_certs
 enable_openssl_compatible_defaults
 enable_jobserver
 '
@@ -2437,7 +2430,8 @@ Optional Features:
   --enable-sha            Enable SHA (default: enabled)
   --enable-siphash        Enable SipHash (default: disabled)
   --enable-cmac           Enable CMAC (default: disabled)
-  --enable-xts            Enable XTS (default: disabled)
+  --enable-aesxts         Enable AES XTS (default: disabled)
+  --enable-xts            Please use --enable-aesxts
   --enable-webserver      Enable Web Server (default: disabled)
   --enable-webclient      Enable Web Client (HTTP) (default: disabled)
   --enable-rc2            Enable RC2 encryption (default: disabled)
@@ -2527,7 +2521,6 @@ Optional Features:
                           (default: disabled)
   --enable-pkcs11         Enable pkcs11 access (default: disabled)
   --enable-pkcs8          Enable PKCS #8 key packages (default: enabled)
-  --enable-fast-rsa       Enable RSA using Intel IPP (default: disabled)
   --enable-staticmemory   Enable static memory use (default: disabled)
   --enable-mcapi          Enable Microchip API (default: disabled)
   --enable-cryptodev      DEPRECATED, use cryptocb instead
@@ -2547,6 +2540,12 @@ Optional Features:
   --enable-defaultdhparams
                           Enables option for default dh parameters (default:
                           disabled)
+  --enable-linuxkm-lkcapi-register
+                          Register wolfCrypt implementations with the Linux
+                          Kernel Crypto API backplane. Possible values are
+                          "none", "all", "cbc(aes)", "cfb(aes)", "gcm(aes)",
+                          and "xts(aes)", or a comma-separate combination.
+                          (default: none)
   --enable-context-extra-user-data
                           Enables option for storing user-defined data in TLS
                           API contexts, with optional argument the number of
@@ -2562,6 +2561,8 @@ Optional Features:
                           (default: enabled)
   --enable-sys-ca-certs   Enable ability to load CA certs from OS (default:
                           enabled)
+  --enable-dual-alg-certs Enable support for dual key/signature certificates
+                          in TLS 1.3 as defined in X9.146 (default: disabled)
   --disable-openssl-compatible-defaults
                           Disable OpenSSL compatible defaults when enabled by
                           other options (default: enabled)
@@ -2604,7 +2605,6 @@ Optional Packages:
                           PATH to directory with wolfSentry library
   --with-wolfsentry-include=PATH
                           PATH to directory with wolfSentry header files
-  --with-user-crypto=PATH Path to USER_CRYPTO install (default /usr/local)
   --with-wnr=PATH         Path to Whitewood netRandom install (default
                           /usr/local)
   --with-libz=PATH        PATH to libz install (default /usr/)
@@ -6369,8 +6369,8 @@ esac
 
 
 
-macro_version='2.4.6'
-macro_revision='2.4.6'
+macro_version='2.4.7'
+macro_revision='2.4.7'
 
 
 
@@ -6936,13 +6936,13 @@ else
 	mingw*) lt_bad_file=conftest.nm/nofile ;;
 	*) lt_bad_file=/dev/null ;;
 	esac
-	case `"$tmp_nm" -B $lt_bad_file 2>&1 | sed '1q'` in
+	case `"$tmp_nm" -B $lt_bad_file 2>&1 | $SED '1q'` in
 	*$lt_bad_file* | *'Invalid file or object type'*)
 	  lt_cv_path_NM="$tmp_nm -B"
 	  break 2
 	  ;;
 	*)
-	  case `"$tmp_nm" -p /dev/null 2>&1 | sed '1q'` in
+	  case `"$tmp_nm" -p /dev/null 2>&1 | $SED '1q'` in
 	  */dev/null*)
 	    lt_cv_path_NM="$tmp_nm -p"
 	    break 2
@@ -7083,7 +7083,7 @@ esac
   fi
 fi
 
-    case `$DUMPBIN -symbols -headers /dev/null 2>&1 | sed '1q'` in
+    case `$DUMPBIN -symbols -headers /dev/null 2>&1 | $SED '1q'` in
     *COFF*)
       DUMPBIN="$DUMPBIN -symbols -headers"
       ;;
@@ -7188,7 +7188,7 @@ else case e in #(
     lt_cv_sys_max_cmd_len=8192;
     ;;
 
-  bitrig* | darwin* | dragonfly* | freebsd* | netbsd* | openbsd*)
+  bitrig* | darwin* | dragonfly* | freebsd* | midnightbsd* | netbsd* | openbsd*)
     # This has been around since 386BSD, at least.  Likely further.
     if test -x /sbin/sysctl; then
       lt_cv_sys_max_cmd_len=`/sbin/sysctl -n kern.argmax`
@@ -7231,7 +7231,7 @@ else case e in #(
   sysv5* | sco5v6* | sysv4.2uw2*)
     kargmax=`grep ARG_MAX /etc/conf/cf.d/stune 2>/dev/null`
     if test -n "$kargmax"; then
-      lt_cv_sys_max_cmd_len=`echo $kargmax | sed 's/.*[	 ]//'`
+      lt_cv_sys_max_cmd_len=`echo $kargmax | $SED 's/.*[	 ]//'`
     else
       lt_cv_sys_max_cmd_len=32768
     fi
@@ -7441,6 +7441,116 @@ esac
 
 
 if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}file", so it can be a program name with args.
+set dummy ${ac_tool_prefix}file; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_FILECMD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$FILECMD"; then
+  ac_cv_prog_FILECMD="$FILECMD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_FILECMD="${ac_tool_prefix}file"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+FILECMD=$ac_cv_prog_FILECMD
+if test -n "$FILECMD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $FILECMD" >&5
+printf "%s\n" "$FILECMD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_FILECMD"; then
+  ac_ct_FILECMD=$FILECMD
+  # Extract the first word of "file", so it can be a program name with args.
+set dummy file; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_FILECMD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$ac_ct_FILECMD"; then
+  ac_cv_prog_ac_ct_FILECMD="$ac_ct_FILECMD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_FILECMD="file"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+ac_ct_FILECMD=$ac_cv_prog_ac_ct_FILECMD
+if test -n "$ac_ct_FILECMD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_FILECMD" >&5
+printf "%s\n" "$ac_ct_FILECMD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_FILECMD" = x; then
+    FILECMD=":"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    FILECMD=$ac_ct_FILECMD
+  fi
+else
+  FILECMD="$ac_cv_prog_FILECMD"
+fi
+
+
+
+
+
+
+
+if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}objdump", so it can be a program name with args.
 set dummy ${ac_tool_prefix}objdump; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -7582,7 +7692,7 @@ beos*)
 
 bsdi[45]*)
   lt_cv_deplibs_check_method='file_magic ELF [0-9][0-9]*-bit [ML]SB (shared object|dynamic lib)'
-  lt_cv_file_magic_cmd='/usr/bin/file -L'
+  lt_cv_file_magic_cmd='$FILECMD -L'
   lt_cv_file_magic_test_file=/shlib/libc.so
   ;;
 
@@ -7616,14 +7726,14 @@ darwin* | rhapsody*)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
-freebsd* | dragonfly*)
+freebsd* | dragonfly* | midnightbsd*)
   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
     case $host_cpu in
     i*86 )
       # Not sure whether the presence of OpenBSD here was a mistake.
       # Let's accept both of them until this is cleared up.
       lt_cv_deplibs_check_method='file_magic (FreeBSD|OpenBSD|DragonFly)/i[3-9]86 (compact )?demand paged shared library'
-      lt_cv_file_magic_cmd=/usr/bin/file
+      lt_cv_file_magic_cmd=$FILECMD
       lt_cv_file_magic_test_file=`echo /usr/lib/libc.so.*`
       ;;
     esac
@@ -7637,7 +7747,7 @@ haiku*)
   ;;
 
 hpux10.20* | hpux11*)
-  lt_cv_file_magic_cmd=/usr/bin/file
+  lt_cv_file_magic_cmd=$FILECMD
   case $host_cpu in
   ia64*)
     lt_cv_deplibs_check_method='file_magic (s[0-9][0-9][0-9]|ELF-[0-9][0-9]) shared object file - IA64'
@@ -7674,7 +7784,7 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
-netbsd* | netbsdelf*-gnu)
+netbsd*)
   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
     lt_cv_deplibs_check_method='match_pattern /lib[^/]+(\.so\.[0-9]+\.[0-9]+|_pic\.a)$'
   else
@@ -7684,7 +7794,7 @@ netbsd* | netbsdelf*-gnu)
 
 newos6*)
   lt_cv_deplibs_check_method='file_magic ELF [0-9][0-9]*-bit [ML]SB (executable|dynamic lib)'
-  lt_cv_file_magic_cmd=/usr/bin/file
+  lt_cv_file_magic_cmd=$FILECMD
   lt_cv_file_magic_test_file=/usr/lib/libnls.so
   ;;
 
@@ -8061,12 +8171,28 @@ esac
 fi
 
 : ${AR=ar}
-: ${AR_FLAGS=cr}
 
 
 
 
 
+
+# Use ARFLAGS variable as AR's operation code to sync the variable naming with
+# Automake.  If both AR_FLAGS and ARFLAGS are specified, AR_FLAGS should have
+# higher priority because thats what people were doing historically (setting
+# ARFLAGS for automake and AR_FLAGS for libtool).  FIXME: Make the AR_FLAGS
+# variable obsoleted/removed.
+
+test ${AR_FLAGS+y} || AR_FLAGS=${ARFLAGS-cr}
+lt_ar_flags=$AR_FLAGS
+
+
+
+
+
+
+# Make AR_FLAGS overridable by 'make ARFLAGS='.  Don't try to run-time override
+# by AR_FLAGS because that was never working and AR_FLAGS is about to die.
 
 
 
@@ -8489,7 +8615,7 @@ esac
 
 if test "$lt_cv_nm_interface" = "MS dumpbin"; then
   # Gets list of data symbols to import.
-  lt_cv_sys_global_symbol_to_import="sed -n -e 's/^I .* \(.*\)$/\1/p'"
+  lt_cv_sys_global_symbol_to_import="$SED -n -e 's/^I .* \(.*\)$/\1/p'"
   # Adjust the below global symbol transforms to fixup imported variables.
   lt_cdecl_hook=" -e 's/^I .* \(.*\)$/extern __declspec(dllimport) char \1;/p'"
   lt_c_name_hook=" -e 's/^I .* \(.*\)$/  {\"\1\", (void *) 0},/p'"
@@ -8507,20 +8633,20 @@ fi
 # Transform an extracted symbol line into a proper C declaration.
 # Some systems (esp. on ia64) link data and code symbols differently,
 # so use this general approach.
-lt_cv_sys_global_symbol_to_cdecl="sed -n"\
+lt_cv_sys_global_symbol_to_cdecl="$SED -n"\
 $lt_cdecl_hook\
 " -e 's/^T .* \(.*\)$/extern int \1();/p'"\
 " -e 's/^$symcode$symcode* .* \(.*\)$/extern char \1;/p'"
 
 # Transform an extracted symbol line into symbol name and symbol address
-lt_cv_sys_global_symbol_to_c_name_address="sed -n"\
+lt_cv_sys_global_symbol_to_c_name_address="$SED -n"\
 $lt_c_name_hook\
 " -e 's/^: \(.*\) .*$/  {\"\1\", (void *) 0},/p'"\
 " -e 's/^$symcode$symcode* .* \(.*\)$/  {\"\1\", (void *) \&\1},/p'"
 
 # Transform an extracted symbol line into symbol name with lib prefix and
 # symbol address.
-lt_cv_sys_global_symbol_to_c_name_address_lib_prefix="sed -n"\
+lt_cv_sys_global_symbol_to_c_name_address_lib_prefix="$SED -n"\
 $lt_c_name_lib_hook\
 " -e 's/^: \(.*\) .*$/  {\"\1\", (void *) 0},/p'"\
 " -e 's/^$symcode$symcode* .* \(lib.*\)$/  {\"\1\", (void *) \&\1},/p'"\
@@ -8544,7 +8670,7 @@ for ac_symprfx in "" "_"; do
   if test "$lt_cv_nm_interface" = "MS dumpbin"; then
     # Fake it for dumpbin and say T for any non-static function,
     # D for any global variable and I for any imported variable.
-    # Also find C++ and __fastcall symbols from MSVC++,
+    # Also find C++ and __fastcall symbols from MSVC++ or ICC,
     # which start with @ or ?.
     lt_cv_sys_global_symbol_pipe="$AWK '"\
 "     {last_section=section; section=\$ 3};"\
@@ -8562,9 +8688,9 @@ for ac_symprfx in "" "_"; do
 "     s[1]~prfx {split(s[1],t,\"@\"); print f,t[1],substr(t[1],length(prfx))}"\
 "     ' prfx=^$ac_symprfx"
   else
-    lt_cv_sys_global_symbol_pipe="sed -n -e 's/^.*[	 ]\($symcode$symcode*\)[	 ][	 ]*$ac_symprfx$sympat$opt_cr$/$symxfrm/p'"
+    lt_cv_sys_global_symbol_pipe="$SED -n -e 's/^.*[	 ]\($symcode$symcode*\)[	 ][	 ]*$ac_symprfx$sympat$opt_cr$/$symxfrm/p'"
   fi
-  lt_cv_sys_global_symbol_pipe="$lt_cv_sys_global_symbol_pipe | sed '/ __gnu_lto/d'"
+  lt_cv_sys_global_symbol_pipe="$lt_cv_sys_global_symbol_pipe | $SED '/ __gnu_lto/d'"
 
   # Check to see that the pipe works correctly.
   pipe_works=no
@@ -8590,8 +8716,11 @@ _LT_EOF
   test $ac_status = 0; }; then
     # Now try to grab the symbols.
     nlist=conftest.nm
-    $ECHO "$as_me:$LINENO: $NM conftest.$ac_objext | $lt_cv_sys_global_symbol_pipe > $nlist" >&5
-    if eval "$NM" conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist 2>&5 && test -s "$nlist"; then
+    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$NM conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist\""; } >&5
+  (eval $NM conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist) 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && test -s "$nlist"; then
       # Try sorting and uniquifying the output.
       if sort "$nlist" | uniq > "$nlist"T; then
 	mv -f "$nlist"T "$nlist"
@@ -8766,7 +8895,7 @@ case $with_sysroot in #(
    fi
    ;; #(
  /*)
-   lt_sysroot=`echo "$with_sysroot" | sed -e "$sed_quote_subst"`
+   lt_sysroot=`echo "$with_sysroot" | $SED -e "$sed_quote_subst"`
    ;; #(
  no|'')
    ;; #(
@@ -8893,7 +9022,7 @@ ia64-*-hpux*)
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-    case `/usr/bin/file conftest.$ac_objext` in
+    case `$FILECMD conftest.$ac_objext` in
       *ELF-32*)
 	HPUX_IA64_MODE=32
 	;;
@@ -8914,7 +9043,7 @@ ia64-*-hpux*)
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
     if test yes = "$lt_cv_prog_gnu_ld"; then
-      case `/usr/bin/file conftest.$ac_objext` in
+      case `$FILECMD conftest.$ac_objext` in
 	*32-bit*)
 	  LD="${LD-ld} -melf32bsmip"
 	  ;;
@@ -8926,7 +9055,7 @@ ia64-*-hpux*)
 	;;
       esac
     else
-      case `/usr/bin/file conftest.$ac_objext` in
+      case `$FILECMD conftest.$ac_objext` in
 	*32-bit*)
 	  LD="${LD-ld} -32"
 	  ;;
@@ -8952,7 +9081,7 @@ mips64*-*linux*)
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
     emul=elf
-    case `/usr/bin/file conftest.$ac_objext` in
+    case `$FILECMD conftest.$ac_objext` in
       *32-bit*)
 	emul="${emul}32"
 	;;
@@ -8960,7 +9089,7 @@ mips64*-*linux*)
 	emul="${emul}64"
 	;;
     esac
-    case `/usr/bin/file conftest.$ac_objext` in
+    case `$FILECMD conftest.$ac_objext` in
       *MSB*)
 	emul="${emul}btsmip"
 	;;
@@ -8968,7 +9097,7 @@ mips64*-*linux*)
 	emul="${emul}ltsmip"
 	;;
     esac
-    case `/usr/bin/file conftest.$ac_objext` in
+    case `$FILECMD conftest.$ac_objext` in
       *N32*)
 	emul="${emul}n32"
 	;;
@@ -8992,14 +9121,14 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-    case `/usr/bin/file conftest.o` in
+    case `$FILECMD conftest.o` in
       *32-bit*)
 	case $host in
 	  x86_64-*kfreebsd*-gnu)
 	    LD="${LD-ld} -m elf_i386_fbsd"
 	    ;;
 	  x86_64-*linux*)
-	    case `/usr/bin/file conftest.o` in
+	    case `$FILECMD conftest.o` in
 	      *x86-64*)
 		LD="${LD-ld} -m elf32_x86_64"
 		;;
@@ -9109,7 +9238,7 @@ printf "%s\n" "$lt_cv_cc_needs_belf" >&6; }
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-    case `/usr/bin/file conftest.o` in
+    case `$FILECMD conftest.o` in
     *64-bit*)
       case $lt_cv_prog_gnu_ld in
       yes*)
@@ -9908,8 +10037,8 @@ int forced_loaded() { return 2;}
 _LT_EOF
       echo "$LTCC $LTCFLAGS -c -o conftest.o conftest.c" >&5
       $LTCC $LTCFLAGS -c -o conftest.o conftest.c 2>&5
-      echo "$AR cr libconftest.a conftest.o" >&5
-      $AR cr libconftest.a conftest.o 2>&5
+      echo "$AR $AR_FLAGS libconftest.a conftest.o" >&5
+      $AR $AR_FLAGS libconftest.a conftest.o 2>&5
       echo "$RANLIB libconftest.a" >&5
       $RANLIB libconftest.a 2>&5
       cat > conftest.c << _LT_EOF
@@ -9937,17 +10066,12 @@ printf "%s\n" "$lt_cv_ld_force_load" >&6; }
       _lt_dar_allow_undefined='$wl-undefined ${wl}suppress' ;;
     darwin1.*)
       _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
-    darwin*) # darwin 5.x on
-      # if running on 10.5 or later, the deployment target defaults
-      # to the OS version, if on x86, and 10.4, the deployment
-      # target defaults to 10.4. Don't you love it?
-      case ${MACOSX_DEPLOYMENT_TARGET-10.0},$host in
-	10.0,*86*-darwin8*|10.0,*-darwin[91]*)
-	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
-	10.[012][,.]*)
-	  _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
-	10.*)
-	  _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
+    darwin*)
+      case $MACOSX_DEPLOYMENT_TARGET,$host in
+        10.[012],*|,*powerpc*-darwin[5-8]*)
+          _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
+        *)
+          _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
       esac
     ;;
   esac
@@ -10675,8 +10799,8 @@ esac
 ofile=libtool
 can_build_shared=yes
 
-# All known linkers require a '.a' archive for static linking (except MSVC,
-# which needs '.lib').
+# All known linkers require a '.a' archive for static linking (except MSVC and
+# ICC, which need '.lib').
 libext=a
 
 with_gnu_ld=$lt_cv_prog_gnu_ld
@@ -11147,12 +11271,6 @@ lt_prog_compiler_static=
 	lt_prog_compiler_pic='-KPIC'
 	lt_prog_compiler_static='-static'
         ;;
-      # flang / f18. f95 an alias for gfortran or flang on Debian
-      flang* | f18* | f95*)
-	lt_prog_compiler_wl='-Wl,'
-	lt_prog_compiler_pic='-fPIC'
-	lt_prog_compiler_static='-static'
-        ;;
       # icc used to be incompatible with GCC.
       # ICC 10 doesn't accept -KPIC any more.
       icc* | ifort*)
@@ -11197,7 +11315,7 @@ lt_prog_compiler_static=
 	lt_prog_compiler_static='-qstaticlink'
 	;;
       *)
-	case `$CC -V 2>&1 | sed 5q` in
+	case `$CC -V 2>&1 | $SED 5q` in
 	*Sun\ Ceres\ Fortran* | *Sun*Fortran*\ [1-7].* | *Sun*Fortran*\ 8.[0-3]*)
 	  # Sun Fortran 8.3 passes all unrecognized flags to the linker
 	  lt_prog_compiler_pic='-KPIC'
@@ -11625,22 +11743,19 @@ printf %s "checking whether the $compiler linker ($LD) supports shared libraries
 
   case $host_os in
   cygwin* | mingw* | pw32* | cegcc*)
-    # FIXME: the MSVC++ port hasn't been tested in a loooong time
+    # FIXME: the MSVC++ and ICC port hasn't been tested in a loooong time
     # When not using gcc, we currently assume that we are using
-    # Microsoft Visual C++.
+    # Microsoft Visual C++ or Intel C++ Compiler.
     if test yes != "$GCC"; then
       with_gnu_ld=no
     fi
     ;;
   interix*)
-    # we just hope/assume this is gcc and not c89 (= MSVC++)
+    # we just hope/assume this is gcc and not c89 (= MSVC++ or ICC)
     with_gnu_ld=yes
     ;;
   openbsd* | bitrig*)
     with_gnu_ld=no
-    ;;
-  linux* | k*bsd*-gnu | gnu*)
-    link_all_deplibs=no
     ;;
   esac
 
@@ -11688,7 +11803,7 @@ printf %s "checking whether the $compiler linker ($LD) supports shared libraries
       whole_archive_flag_spec=
     fi
     supports_anon_versioning=no
-    case `$LD -v | $SED -e 's/(^)\+)\s\+//' 2>&1` in
+    case `$LD -v | $SED -e 's/([^)]\+)\s\+//' 2>&1` in
       *GNU\ gold*) supports_anon_versioning=yes ;;
       *\ [01].* | *\ 2.[0-9].* | *\ 2.10.*) ;; # catch versions < 2.11
       *\ 2.11.93.0.2\ *) supports_anon_versioning=yes ;; # RH7.3 ...
@@ -11800,6 +11915,7 @@ _LT_EOF
 	emximp -o $lib $output_objdir/$libname.def'
       old_archive_From_new_cmds='emximp -o $output_objdir/${libname}_dll.a $output_objdir/$libname.def'
       enable_shared_with_static_runtimes=yes
+      file_list_spec='@'
       ;;
 
     interix[3-9]*)
@@ -11814,7 +11930,7 @@ _LT_EOF
       # 256 KiB-aligned image base between 0x50000000 and 0x6FFC0000 at link
       # time.  Moving up from 0x10000000 also allows more sbrk(2) space.
       archive_cmds='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-h,$soname $wl--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
-      archive_expsym_cmds='sed "s|^|_|" $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-h,$soname $wl--retain-symbols-file,$output_objdir/$soname.expsym $wl--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
+      archive_expsym_cmds='$SED "s|^|_|" $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-h,$soname $wl--retain-symbols-file,$output_objdir/$soname.expsym $wl--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
     gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
@@ -11857,7 +11973,7 @@ _LT_EOF
 	  compiler_needs_object=yes
 	  ;;
 	esac
-	case `$CC -V 2>&1 | sed 5q` in
+	case `$CC -V 2>&1 | $SED 5q` in
 	*Sun\ C*)			# Sun C 5.9
 	  whole_archive_flag_spec='$wl--whole-archive`new_convenience=; for conv in $convenience\"\"; do test -z \"$conv\" || new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` $wl--no-whole-archive'
 	  compiler_needs_object=yes
@@ -11869,7 +11985,7 @@ _LT_EOF
 
         if test yes = "$supports_anon_versioning"; then
           archive_expsym_cmds='echo "{ global:" > $output_objdir/$libname.ver~
-            cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
+            cat $export_symbols | $SED -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
             echo "local: *; };" >> $output_objdir/$libname.ver~
             $CC '"$tmp_sharedflag""$tmp_addflag"' $libobjs $deplibs $compiler_flags $wl-soname $wl$soname $wl-version-script $wl$output_objdir/$libname.ver -o $lib'
         fi
@@ -11885,7 +12001,7 @@ _LT_EOF
 	  archive_cmds='$LD -shared $libobjs $deplibs $linker_flags -soname $soname -o $lib'
 	  if test yes = "$supports_anon_versioning"; then
 	    archive_expsym_cmds='echo "{ global:" > $output_objdir/$libname.ver~
-              cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
+              cat $export_symbols | $SED -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
               echo "local: *; };" >> $output_objdir/$libname.ver~
               $LD -shared $libobjs $deplibs $linker_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
 	  fi
@@ -11896,7 +12012,7 @@ _LT_EOF
       fi
       ;;
 
-    netbsd* | netbsdelf*-gnu)
+    netbsd*)
       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
 	archive_cmds='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
 	wlarc=
@@ -12017,7 +12133,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { if (\$ 2 == "W") { print \$ 3 " weak" } else { print \$ 3 } } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='`func_echo_all $NM | $SED -e '\''s/B\([^B]*\)$/P\1/'\''` -PCpgl $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W") || (\$ 2 == "V") || (\$ 2 == "Z")) && (substr(\$ 1,1,1) != ".")) { if ((\$ 2 == "W") || (\$ 2 == "V") || (\$ 2 == "Z")) { print \$ 1 " weak" } else { print \$ 1 } } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='`func_echo_all $NM | $SED -e '\''s/B\([^B]*\)$/P\1/'\''` -PCpgl $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L") || (\$ 2 == "W") || (\$ 2 == "V") || (\$ 2 == "Z")) && (substr(\$ 1,1,1) != ".")) { if ((\$ 2 == "W") || (\$ 2 == "V") || (\$ 2 == "Z")) { print \$ 1 " weak" } else { print \$ 1 } } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -12290,12 +12406,12 @@ fi
 
     cygwin* | mingw* | pw32* | cegcc*)
       # When not using gcc, we currently assume that we are using
-      # Microsoft Visual C++.
+      # Microsoft Visual C++ or Intel C++ Compiler.
       # hardcode_libdir_flag_spec is actually meaningless, as there is
       # no search path for DLLs.
       case $cc_basename in
-      cl*)
-	# Native MSVC
+      cl* | icl*)
+	# Native MSVC or ICC
 	hardcode_libdir_flag_spec=' '
 	allow_undefined_flag=unsupported
 	always_export_symbols=yes
@@ -12336,7 +12452,7 @@ fi
           fi'
 	;;
       *)
-	# Assume MSVC wrapper
+	# Assume MSVC and ICC wrapper
 	hardcode_libdir_flag_spec=' '
 	allow_undefined_flag=unsupported
 	# Tell ltmain to make .lib files, not .a files.
@@ -12377,8 +12493,8 @@ fi
     output_verbose_link_cmd=func_echo_all
     archive_cmds="\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring $_lt_dar_single_mod$_lt_dsymutil"
     module_cmds="\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags$_lt_dsymutil"
-    archive_expsym_cmds="sed 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring $_lt_dar_single_mod$_lt_dar_export_syms$_lt_dsymutil"
-    module_expsym_cmds="sed -e 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags$_lt_dar_export_syms$_lt_dsymutil"
+    archive_expsym_cmds="$SED 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring $_lt_dar_single_mod$_lt_dar_export_syms$_lt_dsymutil"
+    module_expsym_cmds="$SED -e 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags$_lt_dar_export_syms$_lt_dsymutil"
 
   else
   ld_shlibs=no
@@ -12412,7 +12528,7 @@ fi
       ;;
 
     # FreeBSD 3 and greater uses gcc -shared to do shared libraries.
-    freebsd* | dragonfly*)
+    freebsd* | dragonfly* | midnightbsd*)
       archive_cmds='$CC -shared $pic_flag -o $lib $libobjs $deplibs $compiler_flags'
       hardcode_libdir_flag_spec='-R$libdir'
       hardcode_direct=yes
@@ -12578,7 +12694,6 @@ printf "%s\n" "$lt_cv_irix_exported_symbol" >&6; }
 	if test yes = "$lt_cv_irix_exported_symbol"; then
           archive_expsym_cmds='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname `test -n "$verstring" && func_echo_all "$wl-set_version $wl$verstring"` $wl-update_registry $wl$output_objdir/so_locations $wl-exports_file $wl$export_symbols -o $lib'
 	fi
-	link_all_deplibs=no
       else
 	archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -o $lib'
 	archive_expsym_cmds='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -exports_file $export_symbols -o $lib'
@@ -12600,7 +12715,7 @@ printf "%s\n" "$lt_cv_irix_exported_symbol" >&6; }
       esac
       ;;
 
-    netbsd* | netbsdelf*-gnu)
+    netbsd*)
       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
 	archive_cmds='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'  # a.out
       else
@@ -12667,6 +12782,7 @@ printf "%s\n" "$lt_cv_irix_exported_symbol" >&6; }
 	emximp -o $lib $output_objdir/$libname.def'
       old_archive_From_new_cmds='emximp -o $output_objdir/${libname}_dll.a $output_objdir/$libname.def'
       enable_shared_with_static_runtimes=yes
+      file_list_spec='@'
       ;;
 
     osf3*)
@@ -13360,7 +13476,7 @@ cygwin* | mingw* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | sed -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
 
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
@@ -13370,14 +13486,14 @@ cygwin* | mingw* | pw32* | cegcc*)
       ;;
     pw32*)
       # pw32 DLLs use 'pw' prefix rather than 'lib'
-      library_names_spec='`echo $libname | sed -e 's/^lib/pw/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      library_names_spec='`echo $libname | $SED -e 's/^lib/pw/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
       ;;
     esac
     dynamic_linker='Win32 ld.exe'
     ;;
 
-  *,cl*)
-    # Native MSVC
+  *,cl* | *,icl*)
+    # Native MSVC or ICC
     libname_spec='$name'
     soname_spec='$libname`echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
     library_names_spec='$libname.dll.lib'
@@ -13396,7 +13512,7 @@ cygwin* | mingw* | pw32* | cegcc*)
       done
       IFS=$lt_save_ifs
       # Convert to MSYS style.
-      sys_lib_search_path_spec=`$ECHO "$sys_lib_search_path_spec" | sed -e 's|\\\\|/|g' -e 's| \\([a-zA-Z]\\):| /\\1|g' -e 's|^ ||'`
+      sys_lib_search_path_spec=`$ECHO "$sys_lib_search_path_spec" | $SED -e 's|\\\\|/|g' -e 's| \\([a-zA-Z]\\):| /\\1|g' -e 's|^ ||'`
       ;;
     cygwin*)
       # Convert to unix form, then to dos form, then back to unix form
@@ -13433,7 +13549,7 @@ cygwin* | mingw* | pw32* | cegcc*)
     ;;
 
   *)
-    # Assume MSVC wrapper
+    # Assume MSVC and ICC wrapper
     library_names_spec='$libname`echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext $libname.lib'
     dynamic_linker='Win32 ld.exe'
     ;;
@@ -13466,7 +13582,7 @@ dgux*)
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
-freebsd* | dragonfly*)
+freebsd* | dragonfly* | midnightbsd*)
   # DragonFly does not have aout.  When/if they implement a new
   # versioning mechanism, adjust this.
   if test -x /usr/bin/objformat; then
@@ -13719,18 +13835,6 @@ fi
   # people can always --disable-shared, the test was removed, and we
   # assume the GNU/Linux dynamic linker is in use.
   dynamic_linker='GNU/Linux ld.so'
-  ;;
-
-netbsdelf*-gnu)
-  version_type=linux
-  need_lib_prefix=no
-  need_version=no
-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
-  soname_spec='${libname}${release}${shared_ext}$major'
-  shlibpath_var=LD_LIBRARY_PATH
-  shlibpath_overrides_runpath=no
-  hardcode_into_libs=yes
-  dynamic_linker='NetBSD ld.elf_so'
   ;;
 
 netbsd*)
@@ -14680,30 +14784,41 @@ striplib=
 old_striplib=
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether stripping libraries is possible" >&5
 printf %s "checking whether stripping libraries is possible... " >&6; }
-if test -n "$STRIP" && $STRIP -V 2>&1 | $GREP "GNU strip" >/dev/null; then
-  test -z "$old_striplib" && old_striplib="$STRIP --strip-debug"
-  test -z "$striplib" && striplib="$STRIP --strip-unneeded"
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+if test -z "$STRIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 else
-# FIXME - insert some real tests, host_os isn't really good enough
-  case $host_os in
-  darwin*)
-    if test -n "$STRIP"; then
+  if $STRIP -V 2>&1 | $GREP "GNU strip" >/dev/null; then
+    old_striplib="$STRIP --strip-debug"
+    striplib="$STRIP --strip-unneeded"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+  else
+    case $host_os in
+    darwin*)
+      # FIXME - insert some real tests, host_os isn't really good enough
       striplib="$STRIP -x"
       old_striplib="$STRIP -S"
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-    else
+      ;;
+    freebsd*)
+      if $STRIP -V 2>&1 | $GREP "elftoolchain" >/dev/null; then
+        old_striplib="$STRIP --strip-debug"
+        striplib="$STRIP --strip-unneeded"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+      else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      fi
+      ;;
+    *)
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-    fi
-    ;;
-  *)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    ;;
-  esac
+      ;;
+    esac
+  fi
 fi
 
 
@@ -16799,7 +16914,7 @@ then
         RANLIB=ranlib
     fi
     xxx_ranlib_flags=$(${RANLIB} --help 2>&1)
-    AM_CFLAGS="$AM_CFLAGS -DHAVE_REPRODUCIBLE_BUILD"
+
     case $xxx_ar_flags in #(
   *'use zero for timestamps and uids/gids'*) :
     AR_FLAGS="Dcr" lt_ar_flags="Dcr" ;; #(
@@ -16812,6 +16927,32 @@ esac
   *) :
      ;;
 esac
+
+    AM_CFLAGS="$AM_CFLAGS -DHAVE_REPRODUCIBLE_BUILD -g0"
+
+    # opportunistically use -ffile-prefix-map (added in GCC8 and LLVM10)
+
+    if "$CC" -ffile-prefix-map=/tmp=. -x c - -o /dev/null >/dev/null 2>&1 <<'        EOF'
+        #include <stdlib.h>
+        int main(int argc, char **argv) {
+            (void)argc; (void)argv; return 0;
+        }
+        EOF
+    then
+        AM_CFLAGS="$AM_CFLAGS -ffile-prefix-map=\$(abs_top_srcdir)/= -ffile-prefix-map=\$(top_srcdir)/="
+    fi
+
+    # opportunistically use linker option --build-id=none
+
+    if "$CC" -Wl,--build-id=none -x c - -o /dev/null >/dev/null 2>&1 <<'        EOF'
+        #include <stdlib.h>
+        int main(int argc, char **argv) {
+            (void)argc; (void)argv; return 0;
+        }
+        EOF
+    then
+        AM_LDFLAGS="$AM_LDFLAGS -Wl,--build-id=none"
+    fi
 fi
 
 
@@ -17185,6 +17326,7 @@ then
     # this set is also enabled by enable-all-crypto:
     test "$enable_atomicuser" = "" && enable_atomicuser=yes
     test "$enable_aesgcm" = "" && enable_aesgcm=yes
+    test "$enable_aesgcm_stream" = "" && test "$enable_aesgcm" = "yes" && enable_aesgcm_stream=yes
     test "$enable_aesccm" = "" && enable_aesccm=yes
     test "$enable_aesctr" = "" && enable_aesctr=yes
     test "$enable_aeseax" = "" && enable_aeseax=yes
@@ -17210,7 +17352,6 @@ then
     test "$enable_psk" = "" && enable_psk=yes
     test "$enable_cmac" = "" && enable_cmac=yes
     test "$enable_siphash" = "" && enable_siphash=yes
-    test "$enable_xts" = "" && enable_xts=yes
     test "$enable_ocsp" = "" && enable_ocsp=yes
     test "$enable_ocspstapling" = "" && test "$enable_ocsp" != "no" && enable_ocspstapling=yes
     test "$enable_ocspstapling2" = "" && test "$enable_ocsp" != "no" && enable_ocspstapling2=yes
@@ -17252,6 +17393,7 @@ then
     test "$enable_session_ticket" = "" && enable_session_ticket=yes
     test "$enable_earlydata" = "" && enable_earlydata=yes
     test "$enable_ech" = "" && enable_ech=yes
+    test "$enable_srtp" = "" && enable_srtp=yes
 
     if test "$ENABLED_32BIT" != "yes"
     then
@@ -17261,7 +17403,6 @@ then
 
     if test "$ENABLED_LINUXKM_DEFAULTS" != "yes"
     then
-        test "$enable_aesgcm_stream" = "" && test "$enable_aesgcm" = "yes" && enable_aesgcm_stream=yes
         test "$enable_compkey" = "" && enable_compkey=yes
         test "$enable_quic" = "" && test "$enable_cryptonly" != "yes" && enable_quic=yes
         AM_CFLAGS="$AM_CFLAGS -DHAVE_CRL_IO -DHAVE_IO_TIMEOUT"
@@ -17326,7 +17467,8 @@ then
         fi
     fi
 
-    if test "$ENABLED_FIPS" = "no" || test "$ENABLED_FIPS" = "dev"; then
+    if test "$ENABLED_FIPS" = "no" || test "$FIPS_VERSION" = "dev"; then
+        test "$enable_aesxts" = "" && enable_aesxts=yes
         test "$enable_aessiv" = "" && enable_aessiv=yes
     fi
 
@@ -17378,6 +17520,7 @@ if test "$ENABLED_ALL_CRYPT" = "yes"
 then
     test "$enable_atomicuser" = "" && enable_atomicuser=yes
     test "$enable_aesgcm" = "" && enable_aesgcm=yes
+    test "$enable_aesgcm_stream" = "" && test "$enable_aesgcm" = "yes" && enable_aesgcm_stream=yes
     test "$enable_aesccm" = "" && enable_aesccm=yes
     test "$enable_aesctr" = "" && enable_aesctr=yes
     test "$enable_aeseax" = "" && enable_aeseax=yes
@@ -17403,7 +17546,6 @@ then
     test "$enable_psk" = "" && enable_psk=yes
     test "$enable_cmac" = "" && enable_cmac=yes
     test "$enable_siphash" = "" && enable_siphash=yes
-    test "$enable_xts" = "" && enable_xts=yes
     test "$enable_ocsp" = "" && enable_ocsp=yes
     test "$enable_ocspstapling" = "" && test "$enable_ocsp" != "no" && enable_ocspstapling=yes
     test "$enable_ocspstapling2" = "" && test "$enable_ocsp" != "no" && enable_ocspstapling2=yes
@@ -17429,6 +17571,7 @@ then
     test "$enable_cryptocb" = "" && enable_cryptocb=yes
     test "$enable_anon" = "" && enable_anon=yes
     test "$enable_ssh" = "" && test "$enable_hmac" != "no" && enable_ssh=yes
+    test "$enable_srtp_kdf" = "" && enable_srtp_kdf=yes
 
     if test "$ENABLED_32BIT" != "yes"
     then
@@ -17438,7 +17581,6 @@ then
 
     if test "$ENABLED_LINUXKM_DEFAULTS" != "yes"
     then
-        test "$enable_aesgcm_stream" = "" && test "$enable_aesgcm" = "yes" && enable_aesgcm_stream=yes
         test "$enable_compkey" = "" && enable_compkey=yes
     fi
 
@@ -17471,7 +17613,8 @@ then
         fi
     fi
 
-    if test "$ENABLED_FIPS" = "no" || test "$ENABLED_FIPS" = "dev"; then
+    if test "$ENABLED_FIPS" = "no" || test "$FIPS_VERSION" = "dev"; then
+        test "$enable_aesxts" = "" && enable_aesxts=yes
         test "$enable_aessiv" = "" && enable_aessiv=yes
     fi
 
@@ -17691,6 +17834,10 @@ do
   wolfssl)
     ENABLED_WC_XMSS=yes
     AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_WC_XMSS"
+    ;;
+  small)
+    ENABLED_WC_XMSS=yes
+    AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_WC_XMSS_SMALL"
     ;;
   *)
     as_fn_error $? "Invalid choice for XMSS : $ENABLED_XMSS." "$LINENO" 5
@@ -23865,29 +24012,25 @@ fi
 
 
 # AES-XTS
-# Check whether --enable-xts was given.
-if test ${enable_xts+y}
+# Check whether --enable-aesxts was given.
+if test ${enable_aesxts+y}
 then :
-  enableval=$enable_xts;  ENABLED_XTS=$enableval
+  enableval=$enable_aesxts;  ENABLED_AESXTS=$enableval
 else case e in #(
-  e)  ENABLED_XTS=no
+  e)  ENABLED_AESXTS=no
      ;;
 esac
 fi
 
 
-if test "x$ENABLED_XTS" = "xyes"
+# legacy old option name, for compatibility:
+# Check whether --enable-xts was given.
+if test ${enable_xts+y}
 then :
-  AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_AES_XTS -DWOLFSSL_AES_DIRECT"
+  enableval=$enable_xts;  ENABLED_AESXTS=$enableval
+
 fi
-if test "x$ENABLED_XTS" = "xyes" && test "x$ENABLED_INTELASM" = "xyes"
-then :
-  AM_CCASFLAGS="$AM_CCASFLAGS -DWOLFSSL_AES_XTS"
-fi
-if test "x$ENABLED_XTS" = "xyes" && test "x$ENABLED_AESNI" = "xyes"
-then :
-  AM_CCASFLAGS="$AM_CCASFLAGS -DWOLFSSL_AES_XTS"
-fi
+
 
 # Web Server Build
 # Check whether --enable-webserver was given.
@@ -24019,6 +24162,11 @@ then :
   ENABLED_AESCCM="yes"; AM_CFLAGS="$AM_CFLAGS -DHAVE_AESCCM"
 fi
 
+        if test "$ENABLED_AESXTS" = "yes" && (test "$FIPS_VERSION" != "dev" || test "$enable_aesxts" != "yes")
+then :
+  ENABLED_AESXTS="no"
+fi
+
         if test "$ENABLED_RSAPSS" != "yes" && (test "$FIPS_VERSION" != "dev" || test "$enable_rsapss" != "no")
 then :
   ENABLED_RSAPSS="yes"; AM_CFLAGS="$AM_CFLAGS -DWC_RSA_PSS"
@@ -24086,7 +24234,8 @@ fi
         if (test "$ENABLED_AESCCM" = "yes" && test "$HAVE_AESCCM_PORT" != "yes") ||
                (test "$ENABLED_AESCTR" = "yes" && test "$HAVE_AESCTR_PORT" != "yes") ||
                (test "$ENABLED_AESGCM" = "yes" && test "$HAVE_AESGCM_PORT" != "yes") ||
-               (test "$ENABLED_AESOFB" = "yes" && test "$HAVE_AESOFB_PORT" != "yes")
+               (test "$ENABLED_AESOFB" = "yes" && test "$HAVE_AESOFB_PORT" != "yes") ||
+               (test "$ENABLED_AESXTS" = "yes" && test "$HAVE_AESXTS_PORT" != "yes")
 then :
   AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_AES_DIRECT -DHAVE_AES_ECB"
 fi
@@ -24244,6 +24393,20 @@ case $SELFTEST_VERSION in #(
   *) :
      ;;
 esac
+
+
+if test "x$ENABLED_AESXTS" = "xyes"
+then :
+  AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_AES_XTS -DWOLFSSL_AES_DIRECT"
+fi
+if test "x$ENABLED_AESXTS" = "xyes" && test "x$ENABLED_INTELASM" = "xyes"
+then :
+  AM_CCASFLAGS="$AM_CCASFLAGS -DWOLFSSL_AES_XTS"
+fi
+if test "x$ENABLED_AESXTS" = "xyes" && test "x$ENABLED_AESNI" = "xyes"
+then :
+  AM_CCASFLAGS="$AM_CCASFLAGS -DWOLFSSL_AES_XTS"
+fi
 
 
 # Set SHA-3 flags
@@ -24684,125 +24847,6 @@ then
         fi
         break;;
     esac
-fi
-
-
-# USER CRYPTO
-ENABLED_USER_CRYPTO="no"
-ENABLED_USER_RSA="no"
-
-printf "%s\n" "#define BUILD_USER_RSA /**/" >>confdefs.h
-
-trycryptodir=""
-
-# Check whether --with-user-crypto was given.
-if test ${with_user_crypto+y}
-then :
-  withval=$with_user_crypto;
-        CPPFLAGS="$CPPFLAGS -DHAVE_USER_CRYPTO"
-        LIBS="$LIBS -lusercrypto"
-
-        if test "x$withval" != "xno" ; then
-            trycryptodir=$withval
-        fi
-        if test "x$withval" = "xyes" ; then
-            trycryptodir="/usr/local"
-        fi
-
-        LDFLAGS="$LDFLAGS -L$trycryptodir/lib"
-        CPPFLAGS="$CPPFLAGS -I$trycryptodir/include"
-
-        #Look for RSA Init function in usercrypto lib
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wc_InitRsaKey in -lusercrypto" >&5
-printf %s "checking for wc_InitRsaKey in -lusercrypto... " >&6; }
-if test ${ac_cv_lib_usercrypto_wc_InitRsaKey+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lusercrypto  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char wc_InitRsaKey (void);
-int
-main (void)
-{
-return wc_InitRsaKey ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_usercrypto_wc_InitRsaKey=yes
-else case e in #(
-  e) ac_cv_lib_usercrypto_wc_InitRsaKey=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_usercrypto_wc_InitRsaKey" >&5
-printf "%s\n" "$ac_cv_lib_usercrypto_wc_InitRsaKey" >&6; }
-if test "x$ac_cv_lib_usercrypto_wc_InitRsaKey" = xyes
-then :
-  user_rsa_linked=yes
-else case e in #(
-  e) user_rsa_linked=no ;;
-esac
-fi
-
-
-       if test "x$user_rsa_linked" = "xyes" ; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: User user_rsa.h being used" >&5
-printf "%s\n" "$as_me: User user_rsa.h being used" >&6;}
-            AM_CFLAGS="$AM_CFLAGS -DHAVE_USER_RSA"
-            ENABLED_USER_RSA=yes
-            ENABLED_USER_CRYPTO=yes
-       fi
-
-
-        #Display check and find result of link attempts
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for USER_CRYPTO" >&5
-printf %s "checking for USER_CRYPTO... " >&6; }
-        if test "x$ENABLED_USER_CRYPTO" = "xno" ; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-            as_fn_error $? "USER_CRYPTO not found. Either move to /usr/include and /usr/lib or
-                    Specify its path using --with-user-crypto=/dir/" "$LINENO" 5
-        else
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-            # Check if .la is available if not then rely on exported path
-            if test -e $trycryptodir/lib/libusercrypto.la
-            then
-                LIB_ADD="$trycryptodir/lib/libusercrypto.la $LIB_ADD"
-            else
-                LIB_ADD="-lusercrypto $LIB_ADD"
-            fi
-            AM_LDFLAGS="$AM_LDFLAGS -L$trycryptodir/lib"
-            AM_CFLAGS="$AM_CFLAGS -DHAVE_USER_CRYPTO"
-        fi
-
-
-fi
-
-
-if test "$ENABLED_USER_CRYPTO" = "yes" && test "$ENABLED_FIPS" = "yes"
-then
-    as_fn_error $? "cannot enable user crypto and fips, user crypto possibility of using code in fips boundary." "$LINENO" 5
 fi
 
 # Whitewood netRandom client library
@@ -27648,322 +27692,6 @@ fi
 # End - Single Precision option handling                                       #
 ################################################################################
 
-# Fast RSA using Intel IPP
-ippdir="${srcdir}/IPP"
-ipplib="lib" # if autoconf guesses 32bit system changes lib directory
-fastRSA_found=no
-abs_path=`pwd`
-
-# set up variables used
-IPPLIBS=
-IPPHEADERS=
-IPPLINK=
-
-# Check whether --enable-fast-rsa was given.
-if test ${enable_fast_rsa+y}
-then :
-  enableval=$enable_fast_rsa;  ENABLED_FAST_RSA=$enableval
-else case e in #(
-  e)  ENABLED_FAST_RSA=no  ;;
-esac
-fi
-
-
-# Fast RSA does not support RSA-PSS
-if test "$ENABLED_RSAPSS" = "yes"; then
-    ENABLED_FAST_RSA=no
-fi
-
-if test "$ENABLED_USER_RSA" = "no" && test "$ENABLED_FIPS" = "no"; then
-
-    if test "$ac_cv_sizeof_long" = "4" && test "$ac_cv_sizeof_long_long" = "8"; then
-        ipplib="lib_32" # 32 bit OS detected
-    fi
-
-#   Use static IPP Libraries
-if test "$enable_shared" = "no" && test "$ENABLED_FAST_RSA" = "yes"; then
-    case $host_os in
-    *darwin*)
-        ipplib="$ipplib/mac_static"
-        as_fn_error $? "Issue with static linking to libippcp.a on Mac.
-                Dynamic IPP libraries supported on Mac" "$LINENO" 5
-        break;;
-
-    *linux*)
-        ipplib="$ipplib/linux_static"
-        break;;
-    *)
-        ENABLED_FAST_RSA=no
-    esac
-
-    if test -e $srcdir/IPP/$ipplib/libippcore.a && test -e $srcdir/IPP/$ipplib/libippcp.a
-    then
-        :
-    else
-        ENABLED_FAST_RSA=no
-    fi
-           for ac_header in IPP/include/ipp.h IPP/include/ippcp.h
-do :
-  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
-ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"
-then :
-  cat >>confdefs.h <<_ACEOF
-#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
-_ACEOF
- AM_CPPFLAGS="-I$srcdir/IPP/include $AM_CPPFLAGS"
-else case e in #(
-  e) ENABLED_FAST_RSA=no ;;
-esac
-fi
-
-done
-    LIB_STATIC_ADD="$srcdir/IPP/$ipplib/libippcp.a $srcdir/IPP/$ipplib/libippcore.a $LIB_STATIC_ADD"
-    if test "$ENABLED_FAST_RSA" = "no"; then
-        as_fn_error $? "Could not find fast rsa libraries" "$LINENO" 5
-    fi
-else
-
-#   Check for and use bundled IPP libraries
-if test "$ENABLED_FAST_RSA" = "yes"; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Using local IPP crypto library" >&5
-printf "%s\n" "$as_me: Using local IPP crypto library" >&6;}
-
-    as_ac_Header=`printf "%s\n" "ac_cv_header_$abs_path/IPP/include/ippcp.h" | sed "$as_sed_sh"`
-ac_fn_c_check_header_compile "$LINENO" "$abs_path/IPP/include/ippcp.h" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"
-then :
-
-        # build and default locations on linux and mac
-        STORE_LDFLAGS=${LDFLAGS}
-        STORE_CPPFLAGS=${CPPFLAGS}
-
-        # using LDFLAGS instead of AM_ temporarily to test link to library
-        LDFLAGS="-L$ippdir/$ipplib -lippcp -lippcore"
-        CPPFLAGS="-I$ippdir/include"
-               for ac_header in ippcp.h
-do :
-  ac_fn_c_check_header_compile "$LINENO" "ippcp.h" "ac_cv_header_ippcp_h" "$ac_includes_default"
-if test "x$ac_cv_header_ippcp_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_IPPCP_H 1" >>confdefs.h
- { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ippsRSAEncrypt_PKCSv15 in -lippcp" >&5
-printf %s "checking for ippsRSAEncrypt_PKCSv15 in -lippcp... " >&6; }
-if test ${ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lippcp  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char ippsRSAEncrypt_PKCSv15 (void);
-int
-main (void)
-{
-return ippsRSAEncrypt_PKCSv15 ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15=yes
-else case e in #(
-  e) ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15" >&5
-printf "%s\n" "$ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15" >&6; }
-if test "x$ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15" = xyes
-then :
-  fastRSA_found=yes
-else case e in #(
-  e) fastRSA_found=no ;;
-esac
-fi
-
-else case e in #(
-  e) fastRSA_found=no ;;
-esac
-fi
-
-done
-        name="$ippdir/$ipplib/libippcp"
-        case $host_os in
-        *darwin*)
-            # check file existence and conditionally set variables
-            if test -e $abs_path/IPP/$ipplib/libippcp.dylib
-            then
-                IPPLIBS="${name}.dylib ${name}-9.0.dylib ${name}e9-9.0.dylib ${name}g9-9.0.dylib ${name}h9-9.0.dylib ${name}k0-9.0.dylib ${name}l9-9.0.dylib ${name}n8-9.0.dylib ${name}p8-9.0.dylib ${name}s8-9.0.dylib ${name}y8-9.0.dylib IPP/lib/libippcore.dylib IPP/lib/libippcore-9.0.dylib"
-                IPPLINK="mkdir -p src/.libs && ln -f ${name}.dylib src/.libs/libippcp.dylib && ln -f ${srcdir}/${name}-9.0.dylib src/.libs/libippcp-9.0.dylib && ln -f ${srcdir}/${name}e9-9.0.dylib src/.libs/libippcpe9-9.0.dylib && ln -f ${srcdir}/${name}g9-9.0.dylib src/.libs/libippcpg9-9.0.dylib && ln -f ${srcdir}/${name}h9-9.0.dylib src/.libs/libippcph9-9.0.dylib && ln -f ${srcdir}/${name}k0-9.0.dylib src/.libs/libippcpk0-9.0.dylib && ln -f ${srcdir}/${name}l9-9.0.dylib src/.libs/libippcpl9-9.0.dylib && ln -f ${srcdir}/${name}n8-9.0.dylib src/.libs/libippcpn8-9.0.dylib && ln -f ${srcdir}/${name}p8-9.0.dylib src/.libs/libippcpp8-9.0.dylib && ln -f ${srcdir}/${name}s8-9.0.dylib src/.libs/libippcps8-9.0.dylib && ln -f ${srcdir}/${name}y8-9.0.dylib src/.libs/libippcpy8-9.0.dylib && ln -f ${srcdir}/IPP/lib/libippcore.dylib src/.libs/libippcore.dylib && ln -f ${srcdir}/IPP/lib/libippcore-9.0.dylib src/.libs/libippcore-9.0.dylib"
-            else
-                fastRSA_found=no
-            fi
-            break;;
-
-        *linux*)
-            # check file existence and conditionally set variables
-            if test -e $abs_path/IPP/$ipplib/libippcp.so.9.0
-            then
-                if test "$ac_cv_sizeof_long" = "4" && test "$ac_cv_sizeof_long_long" = "8"; then
-                    IPPLIBS="${name}.so.9.0 ${name}g9.so.9.0 ${name}h9.so.9.0 ${name}p8.so.9.0 ${name}px.so.9.0 ${name}s8.so.9.0 ${name}.so ${name}w7.so.9.0 IPP/$ipplib/libippcore.so IPP/$ipplib/libippcore.so.9.0"
-                    IPPLINK="mkdir -p src/.libs && ln -f ${name}.so.9.0 src/.libs/libippcp.so.9.0 && ln -f ${name}g9.so.9.0 src/.libs/libippcpg9.so.9.0 && ln -f ${name}h9.so.9.0 src/.libs/libippcph9.so.9.0 && ln -f ${name}p8.so.9.0 src/.libs/libippcpp8.so.9.0 && ln -f ${name}px.so.9.0 src/.libs/libippcppx.so.9.0 && ln -f ${name}s8.so.9.0 src/.libs/libippcps8.so.9.0 && ln -f ${name}.so src/.libs/libippcp.so && ln -f ${name}w7.so.9.0 src/.libs/libippcpw7.so.9.0 && ln -f IPP/$ipplib/libippcore.so src/.libs/libippcore.so && ln -f IPP/$ipplib/libippcore.so.9.0 src/.libs/libippcore.so.9.0"
-                else
-                    IPPLIBS="${name}.so.9.0 ${name}e9.so.9.0 ${name}k0.so.9.0 ${name}l9.so.9.0 ${name}m7.so.9.0 ${name}mx.so.9.0 ${name}.so ${name}n8.so.9.0 ${name}y8.so.9.0 IPP/lib/libippcore.so IPP/lib/libippcore.so.9.0"
-                    IPPLINK="mkdir -p src/.libs && ln -f ${name}.so.9.0 src/.libs/libippcp.so.9.0 && ln -f ${name}e9.so.9.0 src/.libs/libippcpe9.so.9.0 && ln -f ${name}k0.so.9.0 src/.libs/libippcpk0.so.9.0 && ln -f ${name}l9.so.9.0 src/.libs/libippcpl9.so.9.0 && ln -f ${name}m7.so.9.0 src/.libs/libippcpm7.so.9.0 && ln -f ${name}mx.so.9.0 src/.libs/libippcpmx.so.9.0 && ln -f ${name}.so src/.libs/libippcp.so && ln -f ${name}n8.so.9.0 src/.libs/libippcpn8.so.9.0 && ln -f ${name}y8.so.9.0 src/.libs/libippcpy8.so.9.0 && ln -f IPP/lib/libippcore.so src/.libs/libippcore.so && ln -f IPP/lib/libippcore.so.9.0 src/.libs/libippcore.so.9.0"
-                fi
-            else
-                fastRSA_found=no
-            fi
-            break;;
-        *)
-            fastRSA_found=no
-        esac
-
-        if test "$fastRSA_found" = "yes"; then
-            # was successful so add tested LDFLAGS to AM_ flags
-            AM_LDFLAGS="${AM_LDFLAGS} ${LDFLAGS}"
-            AM_CPPFLAGS="${AM_CPPFLAGS} ${CPPFLAGS}"
-            IPPHEADERS="${srcdir}/IPP/include/*.h"
-        fi
-
-        # restore LDFLAGS to user set
-        LDFLAGS=${STORE_LDFLAGS}
-        CPPFLAGS=${STORE_CPPFLAGS}
-
-else case e in #(
-  e) fastRSA_found=no ;;
-esac
-fi
-
-fi
-
-# Don't cache the result so it can be checked
-{ ac_cv_header_ippcp_h=; unset ac_cv_header_ippcp_h;}
-{ ac_cv_header_ipp_h=; unset ac_cv_header_ipp_h;}
-{ ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15=; unset ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15;};
-
-#   Check link and see if user has pre-existing IPP Libraries if not using local
-if test "$ENABLED_FAST_RSA" = "yes" && test "$fastRSA_found" = "no"; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking if IPP crypto library installed" >&5
-printf "%s\n" "$as_me: Checking if IPP crypto library installed" >&6;}
-    ac_fn_c_check_header_compile "$LINENO" "ippcp.h" "ac_cv_header_ippcp_h" "$ac_includes_default"
-if test "x$ac_cv_header_ippcp_h" = xyes
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ippsRSAEncrypt_PKCSv15 in -lippcp" >&5
-printf %s "checking for ippsRSAEncrypt_PKCSv15 in -lippcp... " >&6; }
-if test ${ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lippcp  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char ippsRSAEncrypt_PKCSv15 (void);
-int
-main (void)
-{
-return ippsRSAEncrypt_PKCSv15 ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15=yes
-else case e in #(
-  e) ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15" >&5
-printf "%s\n" "$ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15" >&6; }
-if test "x$ac_cv_lib_ippcp_ippsRSAEncrypt_PKCSv15" = xyes
-then :
-
-            fastRSA_found=yes
-            AM_LDFLAGS="${AM_LDFLAGS} -lippcore -lippcp"
-
-else case e in #(
-  e)  fastRSA_found=no ;;
-esac
-fi
-
-
-else case e in #(
-  e) fastRSA_found=no ;;
-esac
-fi
-
-
-    # Error out on not finding libraries
-    if test "$fastRSA_found" = "no"; then
-        as_fn_error $? "Could not find fast rsa libraries" "$LINENO" 5
-    fi
-fi
-fi # end of if for shared library
-else # if user rsa is set than do not use fast rsa option
-    if test "$ENABLED_FAST_RSA" = "yes"; then
-        as_fn_error $? "Could not use fast rsa libraries with user crypto or fips" "$LINENO" 5
-    fi
-fi # end of if for user rsa crypto or fips
-
-#   End result of checking for IPP Libraries
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fast RSA" >&5
-printf %s "checking for fast RSA... " >&6; }
-if test "$ENABLED_FAST_RSA" = "yes"; then
-    AM_CFLAGS="$AM_CFLAGS -DHAVE_FAST_RSA -DHAVE_USER_RSA"
-    # add in user crypto header that uses Intel IPP
-    AM_CPPFLAGS="$AM_CPPFLAGS -I$srcdir/wolfcrypt/user-crypto/include"
-    if test "$enable_shared" = "yes"; then
-        LIBS="$LIBS -lippcore -lippcp"
-        LIB_ADD="-lippcp -lippcore $LIB_ADD"
-    else
-        LIB_ADD="$srcdir/IPP/$ipplib/libippcp.a $srcdir/IPP/$ipplib/libippcore.a $LIB_ADD"
-    fi
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-
-
-
-
 # static memory use
 # Check whether --enable-staticmemory was given.
 if test ${enable_staticmemory+y}
@@ -29108,6 +28836,42 @@ if test -n "$MPI_MAX_KEY_BITS" -o -n "$WITH_MAX_ECC_BITS"; then
    fi
 fi
 
+# Check whether --enable-linuxkm-lkcapi-register was given.
+if test ${enable_linuxkm_lkcapi_register+y}
+then :
+  enableval=$enable_linuxkm_lkcapi_register; ENABLED_LINUXKM_LKCAPI_REGISTER=$enableval
+else case e in #(
+  e) ENABLED_LINUXKM_LKCAPI_REGISTER=none
+     ;;
+esac
+fi
+
+if test "$ENABLED_LINUXKM_LKCAPI_REGISTER" != "none"
+then
+    AM_CFLAGS="$AM_CFLAGS -DLINUXKM_LKCAPI_REGISTER"
+
+    if test "$ENABLED_AESGCM" != "no" && test "$ENABLED_AESGCM_STREAM" = "no" && test "$ENABLED_ARMASM" = "no" && test "$ENABLED_FIPS" = "no"; then
+        ENABLED_AESGCM_STREAM=yes
+    fi
+
+    for lkcapi_alg in $(echo "$ENABLED_LINUXKM_LKCAPI_REGISTER" | tr ',' ' ')
+    do
+        case "$lkcapi_alg" in
+        all) AM_CFLAGS="$AM_CFLAGS -DLINUXKM_LKCAPI_REGISTER_ALL"           ;;
+        'cbc(aes)') test "$ENABLED_AESCBC" != "no" || as_fn_error $? "linuxkm-lkcapi-register ${lkcapi_alg}: AES-CBC implementation not enabled." "$LINENO" 5
+                    AM_CFLAGS="$AM_CFLAGS -DLINUXKM_LKCAPI_REGISTER_AESCBC" ;;
+        'cfb(aes)') test "$ENABLED_AESCFB" != "no" || as_fn_error $? "linuxkm-lkcapi-register ${lkcapi_alg}: AES-CFB implementation not enabled." "$LINENO" 5
+                    AM_CFLAGS="$AM_CFLAGS -DLINUXKM_LKCAPI_REGISTER_AESCFB" ;;
+        'gcm(aes)') test "$ENABLED_AESGCM" != "no" || as_fn_error $? "linuxkm-lkcapi-register ${lkcapi_alg}: AES-GCM implementation not enabled." "$LINENO" 5
+                    test "$ENABLED_AESGCM_STREAM" != "no" || as_fn_error $? "linuxkm-lkcapi-register ${lkcapi_alg}: --enable-aesgcm-stream is required for LKCAPI." "$LINENO" 5
+                    AM_CFLAGS="$AM_CFLAGS -DLINUXKM_LKCAPI_REGISTER_AESGCM" ;;
+        'xts(aes)') test "$ENABLED_AESXTS" != "no" || as_fn_error $? "linuxkm-lkcapi-register ${lkcapi_alg}: AES-XTS implementation not enabled." "$LINENO" 5
+                    AM_CFLAGS="$AM_CFLAGS -DLINUXKM_LKCAPI_REGISTER_AESXTS" ;;
+        *) as_fn_error $? "Unsupported LKCAPI algorithm \"$lkcapi_alg\"." "$LINENO" 5      ;;
+        esac
+    done
+fi
+
 # Library Suffix
 LIBSUFFIX=""
 
@@ -29214,6 +28978,17 @@ then :
   enableval=$enable_sys_ca_certs;  ENABLED_SYS_CA_CERTS=$enableval
 else case e in #(
   e)  ENABLED_SYS_CA_CERTS=yes
+     ;;
+esac
+fi
+
+
+# Check whether --enable-dual-alg-certs was given.
+if test ${enable_dual_alg_certs+y}
+then :
+  enableval=$enable_dual_alg_certs;  ENABLED_DUAL_ALG_CERTS=$enableval
+else case e in #(
+  e)  ENABLED_DUAL_ALG_CERTS=no
      ;;
 esac
 fi
@@ -29683,6 +29458,11 @@ fi
 if test "x$ENABLED_SYS_CA_CERTS" = "xyes"
 then :
   AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_SYS_CA_CERTS"
+fi
+
+if test "x$ENABLED_DUAL_ALG_CERTS" = "xyes"
+then :
+  AM_CFLAGS="$AM_CFLAGS -DWOLFSSL_DUAL_ALG_CERTS"
 fi
 
 if test "x$ENABLED_ALTNAMES" = "xyes"
@@ -36826,9 +36606,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "$ENABLED_FASTMATH" = "yes"; then
         as_fn_error $? "--enable-fastmath is incompatible with --enable-linuxkm (exceeds stack limit)." "$LINENO" 5
     fi
-    if test "$ENABLED_FAST_RSA" = "yes"; then
-        as_fn_error $? "--enable-fastrsa is incompatible with --enable-linuxkm." "$LINENO" 5
-    fi
     if test "$ENABLED_LIBZ_RSA" = "yes"; then
         as_fn_error $? "--with-libz is incompatible with --enable-linuxkm." "$LINENO" 5
     fi
@@ -36994,12 +36771,12 @@ else
   BUILD_AESCCM_FALSE=
 fi
 
- if test "x$ENABLED_XTS" = "xyes" || test "x$ENABLED_USERSETTINGS" = "xyes"; then
-  BUILD_XTS_TRUE=
-  BUILD_XTS_FALSE='#'
+ if test "x$ENABLED_AESXTS" = "xyes" || test "x$ENABLED_USERSETTINGS" = "xyes"; then
+  BUILD_AESXTS_TRUE=
+  BUILD_AESXTS_FALSE='#'
 else
-  BUILD_XTS_TRUE='#'
-  BUILD_XTS_FALSE=
+  BUILD_AESXTS_TRUE='#'
+  BUILD_AESXTS_FALSE=
 fi
 
  if test "x$ENABLED_ARMASM" = "xyes"; then
@@ -37548,22 +37325,6 @@ else
   BUILD_CRL_MONITOR_FALSE=
 fi
 
- if test "x$ENABLED_USER_RSA" = "xyes" ; then
-  BUILD_USER_RSA_TRUE=
-  BUILD_USER_RSA_FALSE='#'
-else
-  BUILD_USER_RSA_TRUE='#'
-  BUILD_USER_RSA_FALSE=
-fi
-
- if test "x$ENABLED_USER_CRYPTO" = "xyes"; then
-  BUILD_USER_CRYPTO_TRUE=
-  BUILD_USER_CRYPTO_FALSE='#'
-else
-  BUILD_USER_CRYPTO_TRUE='#'
-  BUILD_USER_CRYPTO_FALSE=
-fi
-
  if test "x$ENABLED_LIBLMS" = "xyes"; then
   BUILD_LIBLMS_TRUE=
   BUILD_LIBLMS_FALSE='#'
@@ -37872,14 +37633,6 @@ if test -z "$BUILD_SP_INT_TRUE"; then :
   INCLUDE_SP_INT="yes"
 fi
 
- if test "x$ENABLED_FAST_RSA" = "xyes"; then
-  BUILD_FAST_RSA_TRUE=
-  BUILD_FAST_RSA_FALSE='#'
-else
-  BUILD_FAST_RSA_TRUE='#'
-  BUILD_FAST_RSA_FALSE=
-fi
-
  if test "x$ENABLED_MCAPI" = "xyes"; then
   BUILD_MCAPI_TRUE=
   BUILD_MCAPI_FALSE='#'
@@ -38136,6 +37889,14 @@ else
   BUILD_ARIA_FALSE=
 fi
 
+ if test "x$ENABLED_XILINX" = "xyes"; then
+  BUILD_XILINX_TRUE=
+  BUILD_XILINX_FALSE='#'
+else
+  BUILD_XILINX_TRUE='#'
+  BUILD_XILINX_FALSE=
+fi
+
 
 if test "$ENABLED_REPRODUCIBLE_BUILD" != "yes" &&
    (test "$ax_enable_debug" = "yes" ||
@@ -38161,6 +37922,7 @@ AM_LDFLAGS="$AM_LDFLAGS $EXTRA_LDFLAGS"
 
   HEX_VERSION=`echo $VERSION | sed 's|\-a-z0-9*$||' | \
     awk -F. '{printf "0x%0.2d%0.3d%0.3d", $1, $2, $3}'`
+
 
 
 
@@ -38709,8 +38471,8 @@ if test -z "${BUILD_AESCCM_TRUE}" && test -z "${BUILD_AESCCM_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_AESCCM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${BUILD_XTS_TRUE}" && test -z "${BUILD_XTS_FALSE}"; then
-  as_fn_error $? "conditional \"BUILD_XTS\" was never defined.
+if test -z "${BUILD_AESXTS_TRUE}" && test -z "${BUILD_AESXTS_FALSE}"; then
+  as_fn_error $? "conditional \"BUILD_AESXTS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_ARMASM_TRUE}" && test -z "${BUILD_ARMASM_FALSE}"; then
@@ -38985,14 +38747,6 @@ if test -z "${BUILD_CRL_MONITOR_TRUE}" && test -z "${BUILD_CRL_MONITOR_FALSE}"; 
   as_fn_error $? "conditional \"BUILD_CRL_MONITOR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${BUILD_USER_RSA_TRUE}" && test -z "${BUILD_USER_RSA_FALSE}"; then
-  as_fn_error $? "conditional \"BUILD_USER_RSA\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${BUILD_USER_CRYPTO_TRUE}" && test -z "${BUILD_USER_CRYPTO_FALSE}"; then
-  as_fn_error $? "conditional \"BUILD_USER_CRYPTO\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${BUILD_LIBLMS_TRUE}" && test -z "${BUILD_LIBLMS_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_LIBLMS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -39141,10 +38895,6 @@ if test -z "${BUILD_SP_INT_TRUE}" && test -z "${BUILD_SP_INT_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_SP_INT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${BUILD_FAST_RSA_TRUE}" && test -z "${BUILD_FAST_RSA_FALSE}"; then
-  as_fn_error $? "conditional \"BUILD_FAST_RSA\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${BUILD_MCAPI_TRUE}" && test -z "${BUILD_MCAPI_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_MCAPI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -39271,6 +39021,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_ARIA_TRUE}" && test -z "${BUILD_ARIA_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_ARIA\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILD_XILINX_TRUE}" && test -z "${BUILD_XILINX_FALSE}"; then
+  as_fn_error $? "conditional \"BUILD_XILINX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -39901,12 +39655,14 @@ lt_cv_to_host_file_cmd='`$ECHO "$lt_cv_to_host_file_cmd" | $SED "$delay_single_q
 lt_cv_to_tool_file_cmd='`$ECHO "$lt_cv_to_tool_file_cmd" | $SED "$delay_single_quote_subst"`'
 reload_flag='`$ECHO "$reload_flag" | $SED "$delay_single_quote_subst"`'
 reload_cmds='`$ECHO "$reload_cmds" | $SED "$delay_single_quote_subst"`'
+FILECMD='`$ECHO "$FILECMD" | $SED "$delay_single_quote_subst"`'
 deplibs_check_method='`$ECHO "$deplibs_check_method" | $SED "$delay_single_quote_subst"`'
 file_magic_cmd='`$ECHO "$file_magic_cmd" | $SED "$delay_single_quote_subst"`'
 file_magic_glob='`$ECHO "$file_magic_glob" | $SED "$delay_single_quote_subst"`'
 want_nocaseglob='`$ECHO "$want_nocaseglob" | $SED "$delay_single_quote_subst"`'
 sharedlib_from_linklib_cmd='`$ECHO "$sharedlib_from_linklib_cmd" | $SED "$delay_single_quote_subst"`'
 AR='`$ECHO "$AR" | $SED "$delay_single_quote_subst"`'
+lt_ar_flags='`$ECHO "$lt_ar_flags" | $SED "$delay_single_quote_subst"`'
 AR_FLAGS='`$ECHO "$AR_FLAGS" | $SED "$delay_single_quote_subst"`'
 archiver_list_spec='`$ECHO "$archiver_list_spec" | $SED "$delay_single_quote_subst"`'
 STRIP='`$ECHO "$STRIP" | $SED "$delay_single_quote_subst"`'
@@ -40030,13 +39786,13 @@ LN_S \
 lt_SP2NL \
 lt_NL2SP \
 reload_flag \
+FILECMD \
 deplibs_check_method \
 file_magic_cmd \
 file_magic_glob \
 want_nocaseglob \
 sharedlib_from_linklib_cmd \
 AR \
-AR_FLAGS \
 archiver_list_spec \
 STRIP \
 RANLIB \
@@ -40873,6 +40629,7 @@ See 'config.log' for more details" "$LINENO" 5; }
     cat <<_LT_EOF >> "$cfgfile"
 #! $SHELL
 # Generated automatically by $as_me ($PACKAGE) $VERSION
+# Libtool was configured on host `(hostname || uname -n) 2>/dev/null | sed 1q`:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.
@@ -41001,6 +40758,9 @@ to_host_file_cmd=$lt_cv_to_host_file_cmd
 # convert \$build files to toolchain format.
 to_tool_file_cmd=$lt_cv_to_tool_file_cmd
 
+# A file(cmd) program that detects file types.
+FILECMD=$lt_FILECMD
+
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method=$lt_deplibs_check_method
 
@@ -41019,8 +40779,11 @@ sharedlib_from_linklib_cmd=$lt_sharedlib_from_linklib_cmd
 # The archiver.
 AR=$lt_AR
 
+# Flags to create an archive (by configure).
+lt_ar_flags=$lt_ar_flags
+
 # Flags to create an archive.
-AR_FLAGS=$lt_AR_FLAGS
+AR_FLAGS=\${ARFLAGS-"\$lt_ar_flags"}
 
 # How to feed a file listing to the archiver.
 archiver_list_spec=$lt_archiver_list_spec
@@ -41396,7 +41159,7 @@ ltmain=$ac_aux_dir/ltmain.sh
   # if finds mixed CR/LF and LF-only lines.  Since sed operates in
   # text mode, it properly converts lines to CR/LF.  This bash problem
   # is reportedly fixed, but why not run on old versions too?
-  sed '$q' "$ltmain" >> "$cfgfile" \
+  $SED '$q' "$ltmain" >> "$cfgfile" \
      || (rm -f "$cfgfile"; exit 1)
 
    mv -f "$cfgfile" "$ofile" ||
@@ -41698,6 +41461,7 @@ echo "   * AES-CCM:                    $ENABLED_AESCCM"
 echo "   * AES-CTR:                    $ENABLED_AESCTR"
 echo "   * AES-CFB:                    $ENABLED_AESCFB"
 echo "   * AES-OFB:                    $ENABLED_AESOFB"
+echo "   * AES-XTS:                    $ENABLED_AESXTS"
 echo "   * AES-SIV:                    $ENABLED_AESSIV"
 echo "   * AES-EAX:                    $ENABLED_AESEAX"
 echo "   * AES Bitspliced:             $ENABLED_AESBS"
@@ -41865,8 +41629,6 @@ echo "   * Examples:                   $ENABLED_EXAMPLES"
 echo "   * Crypt tests:                $ENABLED_CRYPT_TESTS"
 echo "   * Stack sizes in tests:       $ENABLED_STACKSIZE"
 echo "   * Heap stats in tests:        $ENABLED_TRACKMEMORY"
-echo "   * User Crypto:                $ENABLED_USER_CRYPTO"
-echo "   * Fast RSA:                   $ENABLED_FAST_RSA"
 echo "   * Asynchronous Crypto:        $ENABLED_ASYNCCRYPT"
 echo "   * Asynchronous Crypto (sim):  $ENABLED_ASYNCCRYPT_SW"
 echo "   * Cavium Nitrox:              $ENABLED_CAVIUM"
@@ -41895,11 +41657,14 @@ echo "   * NXP SE050:                  $ENABLED_SE050"
 echo "   * Maxim Integrated MAXQ10XX:  $ENABLED_MAXQ10XX"
 echo "   * PSA:                        $ENABLED_PSA"
 echo "   * System CA certs:            $ENABLED_SYS_CA_CERTS"
+echo "   * Dual alg cert support:      $ENABLED_DUAL_ALG_CERTS"
 echo "   * ERR Queues per Thread:      $ENABLED_ERRORQUEUEPERTHREAD"
 echo "   * rwlock:                     $ENABLED_RWLOCK"
 echo "   * keylog export:              $ENABLED_KEYLOG_EXPORT"
 echo ""
 echo "---"
+
+echo "./configure flags: $(./config.status --config)"
 
 fi # $silent != yes
 

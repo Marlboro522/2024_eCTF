@@ -130,9 +130,15 @@ if(HAVE___UINT128_T)
     list(APPEND WOLFSSL_DEFINITIONS "-DHAVE___UINT128_T")
 endif()
 
-include(TestBigEndian)
-
-test_big_endian(WORDS_BIGENDIAN)
+if(CMAKE_VERSION VERSION_LESS "3.20")
+    # TestBigEndian was deprecated in 3.20
+    include(TestBigEndian)
+    test_big_endian(IS_BIG_ENDIAN)
+    set(CMAKE_C_BYTE_ORDER "LITTLE_ENDIAN")
+    if(IS_BIG_ENDIAN)
+        set(CMAKE_C_BYTE_ORDER "BIG_ENDIAN")
+    endif()
+endif()
 
 # Thread local storage
 include(CheckCSourceCompiles)
@@ -214,6 +220,8 @@ if(WOLFSSL_REPRODUCIBLE_BUILD)
     set(CMAKE_C_ARCHIVE_APPEND "<CMAKE_AR> Dq  <TARGET> <LINK_FLAGS> <OBJECTS>")
     set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -D <TARGET>")
 endif()
+
+add_option("WOLFSSL_INSTALL" "Create install target for WolfSSL project" "yes" "yes;no")
 
 # Support for forcing 32-bit mode
 # TODO: detect platform from other options
@@ -574,7 +582,7 @@ if(WOLFSSL_LEAN_PSK OR (WOLFSSL_LEAN_TLS AND NOT WOLFSSL_TLS13))
     override_cache(WOLFSSL_AESGCM "no")
 endif()
 
-if(WOLFSSL_AESGCM AND NOT WORDS_BIGENDIAN)
+if(WOLFSSL_AESGCM AND CMAKE_C_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
     override_cache(WOLFSSL_AESGCM "4bit")
 endif()
 
@@ -1662,17 +1670,14 @@ if(WOLFSSL_FAST_MATH)
         list(APPEND WOLFSSL_DEFINITIONS "-DUSE_FAST_MATH")
         set(WOLFSSL_SLOWMATH "no")
     endif()
-
-    if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64|AMD64")
-        # Have settings.h set FP_MAX_BITS higher if user didn't set directly
-        list(APPEND WOLFSSL_DEFINITIONS "-DWOLFSSL_X86_64_BUILD")
-    endif()
 endif()
 
 # TODO: - Fast huge math
 
 # Set processor-specific build macros
 if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64|AMD64")
+    set(WOLFSSL_X86_64_BUILD ON)
+    add_option("WOLFSSL_X86_64_BUILD_ASM" "Build ASM files" "yes" "yes;no")
     list(APPEND WOLFSSL_DEFINITIONS "-DWOLFSSL_X86_64_BUILD")
 elseif("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "aarch64|arm64")
     list(APPEND WOLFSSL_DEFINITIONS "-DWOLFSSL_AARCH64_BUILD")
@@ -1753,13 +1758,15 @@ else()
     list(APPEND WOLFSSL_DEFINITIONS "-DWC_NO_ASYNC_THREADING")
 endif()
 
-# TODO: - cryptodev
-#       - Session export
+# TODO: - Session export
 
 add_option("WOLFSSL_CRYPTOCB"
     "Enable crypto callbacks (default: disabled)"
     "no" "yes;no")
 
+add_option("WOLFSSL_PKCALLBACKS"
+    "Enable public key callbacks (default: disabled)"
+    "no" "yes;no")
 
 add_option("WOLFSSL_OLD_NAMES"
     "Keep backwards compat with old names (default: enabled)"
@@ -1960,6 +1967,11 @@ if(WOLFSSL_CRYPTOCB)
     list(APPEND WOLFSSL_DEFINITIONS "-DWOLF_CRYPTO_CB")
 endif()
 
+# Public Key Callbacks
+if(WOLFSSL_PKCALLBACKS)
+    list(APPEND WOLFSSL_DEFINITIONS "-DHAVE_PK_CALLBACKS")
+endif()
+
 if(WOLFSSL_OCSPSTAPLING)
     list(APPEND WOLFSSL_DEFINITIONS "-DHAVE_CERTIFICATE_STATUS_REQUEST" "-DHAVE_TLS_EXTENSIONS")
     override_cache(WOLFSSL_OCSP "yes")
@@ -2075,7 +2087,7 @@ endif()
 # Suppress some warnings about separate compilation, inlining
 add_definitions("-DWOLFSSL_IGNORE_FILE_WARN")
 # Generate user options header
-message("Generating user options header...")
+message(STATUS "Generating user options header...")
 if (${CMAKE_DISABLE_SOURCE_CHANGES})
     set(WOLFSSL_BUILD_OUT_OF_TREE_DEFAULT "${CMAKE_DISABLE_SOURCE_CHANGES}")
 else()
@@ -2516,82 +2528,96 @@ list(JOIN HEADER_EXCLUDE "|" EXCLUDED_HEADERS_REGEX)
 string(PREPEND EXCLUDED_HEADERS_REGEX "(")
 string(APPEND  EXCLUDED_HEADERS_REGEX ")")
 
-set(INSTALLED_EXAMPLES
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/echoserver/echoserver.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-server.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-client-dtls.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-client.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-server-dtls.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/echoclient/echoclient.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/server/server.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/benchmark/tls_bench.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/client/client.c)
+if(WOLFSSL_INSTALL)
 
-# Install the library
-install(TARGETS wolfssl
-        EXPORT wolfssl-targets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        )
-# Install the headers
-install(DIRECTORY ${WOLFSSL_OUTPUT_BASE}/wolfssl/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/wolfssl
-        FILES_MATCHING PATTERN "*.h"
-        REGEX ${EXCLUDED_HEADERS_REGEX} EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/wolfssl
-        FILES_MATCHING PATTERN "*.h"
-        REGEX ${EXCLUDED_HEADERS_REGEX} EXCLUDE)
+    set(INSTALLED_EXAMPLES
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/echoserver/echoserver.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-server.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-client-dtls.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-client.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/sctp/sctp-server-dtls.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/echoclient/echoclient.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/server/server.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/benchmark/tls_bench.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/client/client.c)
 
-# Install the examples
-install(FILES ${INSTALLED_EXAMPLES}
-        DESTINATION ${CMAKE_INSTALL_DOCDIR}/example)
-# Install README.txt and taoCert.txt
-install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/doc/README.txt
-        ${CMAKE_CURRENT_SOURCE_DIR}/certs/taoCert.txt
-        DESTINATION ${CMAKE_INSTALL_DOCDIR})
-# Install the export set
-install(EXPORT wolfssl-targets
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/wolfssl
-        FILE wolfssl-targets.cmake
-        NAMESPACE wolfssl::)
 
-# TODO: Distro build + rules for what to include in the distro.
-#       See various include.am files.
+    # Install the library
+    install(TARGETS wolfssl
+            EXPORT wolfssl-targets
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib
+            RUNTIME DESTINATION bin
+            )
+    # Install the headers
+    install(DIRECTORY ${WOLFSSL_OUTPUT_BASE}/wolfssl/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/wolfssl
+            FILES_MATCHING PATTERN "*.h"
+            REGEX ${EXCLUDED_HEADERS_REGEX} EXCLUDE)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/wolfssl
+            FILES_MATCHING PATTERN "*.h"
+            REGEX ${EXCLUDED_HEADERS_REGEX} EXCLUDE)
 
-set(prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix "\${prefix}")
-set(libdir "\${exec_prefix}/lib")
-set(includedir "\${prefix}/include")
-set(VERSION ${PROJECT_VERSION})
+    # Install the examples
+    install(FILES ${INSTALLED_EXAMPLES}
+            DESTINATION ${CMAKE_INSTALL_DOCDIR}/example)
+    # Install README.txt and taoCert.txt
+    install(FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/doc/README.txt
+            ${CMAKE_CURRENT_SOURCE_DIR}/certs/taoCert.txt
+            DESTINATION ${CMAKE_INSTALL_DOCDIR})
+    # Install the export set
+    install(EXPORT wolfssl-targets
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/wolfssl
+            FILE wolfssl-targets.cmake
+            NAMESPACE wolfssl::)
 
-configure_file(support/wolfssl.pc.in ${CMAKE_CURRENT_BINARY_DIR}/support/wolfssl.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/support/wolfssl.pc
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+    # TODO: Distro build + rules for what to include in the distro.
+    #       See various include.am files.
 
-include(CMakePackageConfigHelpers)
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-  "${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/wolfssl"
-  NO_SET_AND_CHECK_MACRO
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO
-)
+    set(prefix ${CMAKE_INSTALL_PREFIX})
+    set(exec_prefix "\${prefix}")
+    set(libdir "\${exec_prefix}/lib")
+    set(includedir "\${prefix}/include")
+    set(VERSION ${PROJECT_VERSION})
 
-export(EXPORT wolfssl-targets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/wolfssl-targets.cmake"
-  NAMESPACE wolfssl::
-)
+    # Setting libm in Libs.private of wolfssl.pc.
+    # See "Link Libraries" in above about `m` insertion to LINK_LIBRARIES
+    get_target_property(_wolfssl_dep_libs wolfssl LINK_LIBRARIES)
+    list(FIND _wolfssl_dep_libs m _dep_libm)
+    if ("${_dep_libm}" GREATER -1)
+      set(LIBM -lm)
+    else()
+      set(LIBM)
+    endif()
 
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config-version.cmake"
-  VERSION "${wolfssl_VERSION_MAJOR}.${wolfssl_VERSION_MINOR}"
-  COMPATIBILITY AnyNewerVersion
-)
+    configure_file(support/wolfssl.pc.in ${CMAKE_CURRENT_BINARY_DIR}/support/wolfssl.pc @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/support/wolfssl.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config-version.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/wolfssl
-)
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/wolfssl"
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+    )
+
+    export(EXPORT wolfssl-targets
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/wolfssl-targets.cmake"
+    NAMESPACE wolfssl::
+    )
+
+    write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config-version.cmake"
+    VERSION "${wolfssl_VERSION_MAJOR}.${wolfssl_VERSION_MINOR}"
+    COMPATIBILITY AnyNewerVersion
+    )
+
+    install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/wolfssl-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/wolfssl
+    )
+endif()

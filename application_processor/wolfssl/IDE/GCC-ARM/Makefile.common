@@ -1,17 +1,17 @@
 # Set to @ if you want to suppress command echo
-CMD_ECHO = 
+CMD_ECHO =
 
 # Important directories
 BUILD_DIR = ./Build
 
 # Toolchain location and prefix
 #TOOLCHAIN =
-TOOLCHAIN ?= /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/arm-none-eabi-
+TOOLCHAIN ?= /opt/gcc-arm-none-eabi/bin/arm-none-eabi-
 
 # Tools selection
 CC = $(TOOLCHAIN)gcc
-AS = $(TOOLCHAIN)as
-LD = $(TOOLCHAIN)ld
+AS = $(CC)
+LD = $(CC)
 AR = $(TOOLCHAIN)ar
 NM = $(TOOLCHAIN)nm
 OBJCOPY ?= $(TOOLCHAIN)objcopy
@@ -22,12 +22,12 @@ SIZE ?= $(TOOLCHAIN)size
 USER_SETTINGS_DIR ?= ./Header
 INC = -I$(USER_SETTINGS_DIR) \
       -I../..
-INC2 = /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/lib/gcc/arm-none-eabi/13.2.1/arm/v5te/hard
+
 # Defines
 DEF = -DWOLFSSL_USER_SETTINGS
 
 # Architecture
-ARCHFLAGS += -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mabi=aapcs -DUSE_WOLF_ARM_STARTUP
+ARCHFLAGS ?= -mcpu=cortex-m4 -mthumb -mabi=aapcs -DUSE_WOLF_ARM_STARTUP
 #ARCHFLAGS = -mcpu=cortex-m0 -mthumb -mabi=aapcs -DUSE_WOLF_ARM_STARTUP
 #ARCHFLAGS = -mcpu=cortex-r5 -mthumb -mabi=aapcs
 #ARCHFLAGS = -mcpu=cortex-a53 -mthumb -mabi=aapcs
@@ -36,26 +36,24 @@ ARCHFLAGS += -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mabi=aapcs -DUSE_WOLF_ARM
 ASFLAGS ?= $(ARCHFLAGS)
 CFLAGS_EXTRA ?= -Wno-cpp
 CFLAGS ?= $(ARCHFLAGS) -std=gnu99 -Wall $(CFLAGS_EXTRA)
-#CFLAGS+= -I/Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/
-CCFLAGS ?= $(ARCHFLAGS)
+LDFLAGS ?= $(ARCHFLAGS)
 
 FIPS?=1
 # LD: Link with nosys
-#LDFLAGS += --specs=nosys.specs
+LDFLAGS += --specs=nosys.specs
 
 # LD: Link with nano or rdimon implementation for standard library
-#LDFLAGS += --specs=nano.specs
+LDFLAGS += --specs=nano.specs
 #LDFLAGS += --specs=rdimon.specs
 
 # LD: generate map
-LDFLAGS += -Map=$(BUILD_DIR)/$(BIN).map
+LDFLAGS += -Wl,-Map=$(BUILD_DIR)/$(BIN).map
 
 # LD: Entry point
-#LDFLAGS += -lc
-LDFLAGS += -ereset_handler
+LDFLAGS += -Wl,-ereset_handler
 
 # Math lib (for DH)
-LIBS += -lm
+LIBS = -lm
 
 # Memory Map
 SRC_LD = -T./linker.ld
@@ -63,12 +61,12 @@ SRC_LD = -T./linker.ld
 # Optimization level and place functions / data into separate sections to allow dead code removal
 CFLAGS += -Os -ffunction-sections -fdata-sections -fno-builtin
 # Remove unused sections and link time optimizations
-LDFLAGS += -Wl,--start-group -lc_nano -lnosys -Wl,--endgroup
-LDFLAGS += -static
+LDFLAGS += -Wl,--gc-sections -flto
+
 # Debugging
-DBGFLAGS = -ggdb -g3
+#DBGFLAGS = -ggdb -g3
 CFLAGS += $(DBGFLAGS)
-#LDFLAGS += $(DBGFLAGS)
+LDFLAGS += $(DBGFLAGS)
 
 
 # FILES

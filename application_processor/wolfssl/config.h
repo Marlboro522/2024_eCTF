@@ -4,9 +4,6 @@
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 
-/* User RSA is being defined */
-#define BUILD_USER_RSA /**/
-
 /* Define to 1 to enable debugging code. */
 #define DEBUG 0
 
@@ -88,15 +85,6 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
-
-/* Define to 1 if you have the <ippcp.h> header file. */
-/* #undef HAVE_IPPCP_H */
-
-/* Define to 1 if you have the <IPP/include/ippcp.h> header file. */
-/* #undef HAVE_IPP_INCLUDE_IPPCP_H */
-
-/* Define to 1 if you have the <IPP/include/ipp.h> header file. */
-/* #undef HAVE_IPP_INCLUDE_IPP_H */
 
 /* Define to 1 if you have the 'hsm_lib' library (-lhsm_lib). */
 /* #undef HAVE_LIBHSM_LIB */
@@ -248,10 +236,10 @@
 #define TLS _Thread_local
 
 /* Define if the code was built from VCS. */
-#define VCS_CHECKOUT 0
+#define VCS_CHECKOUT 1
 
 /* VCS system */
-#define VCS_SYSTEM "none"
+#define VCS_SYSTEM "git"
 
 /* Use __declspec(dllexport) when building library */
 /* #undef WOLFSSL_DLL */

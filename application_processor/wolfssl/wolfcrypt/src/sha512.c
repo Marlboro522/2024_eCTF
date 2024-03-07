@@ -39,8 +39,8 @@
      * By default the HW acceleration is on for ESP32 Chipsets,
      * but individual components can be turned off. See user_settings.h
      */
+    #define TAG "wc_sha_512"
     #define WOLFSSL_USE_ESP32_CRYPT_HASH_HW
-    static const char* TAG = "wc_sha_512";
 #else
     #undef WOLFSSL_USE_ESP32_CRYPT_HASH_HW
 #endif
@@ -321,8 +321,6 @@ static int InitSha512_256(wc_Sha512* sha512)
 #if defined(USE_INTEL_SPEEDUP) && \
     (defined(HAVE_INTEL_AVX1) || defined(HAVE_INTEL_AVX2))
 
-#ifdef WOLFSSL_SHA512
-
     /*****
     Intel AVX1/AVX2 Macro Control Structure
 
@@ -452,37 +450,40 @@ static int InitSha512_256(wc_Sha512* sha512)
             }
             else
         #endif
-            if (1) {
+            {
                 Transform_Sha512_p = Transform_Sha512_AVX2;
                 Transform_Sha512_Len_p = Transform_Sha512_AVX2_Len;
                 Transform_Sha512_is_vectorized = 1;
             }
-        #ifdef HAVE_INTEL_RORX
-            else {
-                Transform_Sha512_p = Transform_Sha512_AVX1_RORX;
-                Transform_Sha512_Len_p = Transform_Sha512_AVX1_RORX_Len;
-                Transform_Sha512_is_vectorized = 1;
-            }
-        #endif
         }
         else
     #endif
     #if defined(HAVE_INTEL_AVX1)
         if (IS_INTEL_AVX1(intel_flags)) {
-            Transform_Sha512_p = Transform_Sha512_AVX1;
-            Transform_Sha512_Len_p = Transform_Sha512_AVX1_Len;
-            Transform_Sha512_is_vectorized = 1;
+        #ifdef HAVE_INTEL_RORX
+            if (IS_INTEL_BMI2(intel_flags)) {
+                Transform_Sha512_p = Transform_Sha512_AVX1_RORX;
+                Transform_Sha512_Len_p = Transform_Sha512_AVX1_RORX_Len;
+                Transform_Sha512_is_vectorized = 1;
+            }
+            else
+        #endif
+            {
+                Transform_Sha512_p = Transform_Sha512_AVX1;
+                Transform_Sha512_Len_p = Transform_Sha512_AVX1_Len;
+                Transform_Sha512_is_vectorized = 1;
+            }
         }
         else
     #endif
         {
             Transform_Sha512_p = _Transform_Sha512;
-            Transform_Sha512_is_vectorized = 1;
+            Transform_Sha512_Len_p = NULL;
+            Transform_Sha512_is_vectorized = 0;
         }
 
         transform_check = 1;
     }
-#endif /* WOLFSSL_SHA512 */
 
 #else
     #define Transform_Sha512(sha512) _Transform_Sha512(sha512)
@@ -938,7 +939,11 @@ static WC_INLINE int Sha512Final(wc_Sha512* sha512)
 
     /* pad with zeros */
     if (sha512->buffLen > WC_SHA512_PAD_SIZE) {
-        XMEMSET(&local[sha512->buffLen], 0, WC_SHA512_BLOCK_SIZE - sha512->buffLen);
+        if (sha512->buffLen < WC_SHA512_BLOCK_SIZE ) {
+            XMEMSET(&local[sha512->buffLen], 0,
+                WC_SHA512_BLOCK_SIZE - sha512->buffLen);
+        }
+
         sha512->buffLen += WC_SHA512_BLOCK_SIZE - sha512->buffLen;
 #if defined(LITTLE_ENDIAN_ORDER)
     #if defined(USE_INTEL_SPEEDUP) && \
@@ -1613,20 +1618,23 @@ int wc_Sha512Copy(wc_Sha512* src, wc_Sha512* dst)
     if (ret == 0) {
         ret = esp_sha512_ctx_copy(src, dst);
     }
-    #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    #elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
+          defined(CONFIG_IDF_TARGET_ESP8684) || \
+          defined(CONFIG_IDF_TARGET_ESP32C3) || \
           defined(CONFIG_IDF_TARGET_ESP32C6)
         ESP_LOGV(TAG, "No SHA-512 HW on the ESP32-C3");
+
     #elif defined(CONFIG_IDF_TARGET_ESP32S2) || \
           defined(CONFIG_IDF_TARGET_ESP32S3)
-    if (ret == 0) {
-        ret = esp_sha512_ctx_copy(src, dst);
-    }
+        if (ret == 0) {
+            ret = esp_sha512_ctx_copy(src, dst);
+        }
     #else
         ESP_LOGW(TAG, "No SHA384 HW or not yet implemented for %s",
                        CONFIG_IDF_TARGET);
     #endif
 
-#endif
+#endif /* WOLFSSL_USE_ESP32_CRYPT_HASH_HW */
 
 #ifdef WOLFSSL_HASH_FLAGS
      dst->flags |= WC_HASH_FLAG_ISCOPY;
@@ -1893,7 +1901,9 @@ int wc_Sha384Copy(wc_Sha384* src, wc_Sha384* dst)
 #if defined(WOLFSSL_USE_ESP32_CRYPT_HASH_HW)
     #if defined(CONFIG_IDF_TARGET_ESP32)
         esp_sha384_ctx_copy(src, dst);
-    #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    #elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
+          defined(CONFIG_IDF_TARGET_ESP8684) || \
+          defined(CONFIG_IDF_TARGET_ESP32C3) || \
           defined(CONFIG_IDF_TARGET_ESP32C6)
         ESP_LOGV(TAG, "No SHA-384 HW on the ESP32-C3");
     #elif defined(CONFIG_IDF_TARGET_ESP32S2) || \
