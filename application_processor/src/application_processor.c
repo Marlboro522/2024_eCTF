@@ -39,8 +39,8 @@
 #endif
 
 #include <wolfssl/options.h>
-#include <wolfssl/ssl.h>
-#include <wolfssl/wolfcrypt/asn.h>
+// #include <wolfssl/ssl.h>
+// #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
 #include <wolfssl/wolfcrypt/ecc.h>
 #include <wolfssl/wolfcrypt/user_settings.h>
@@ -75,8 +75,8 @@
 #define WOLFSSL_ECC
 //TLS commincation reqs
 
-#define CERTIFICATE_ADDRESS 0x10045FFF
-#define PRIVATE_KEY_ADDRESS 0x10060000
+// #define CERTIFICATE_ADDRESS 0x10045FFF
+// #define PRIVATE_KEY_ADDRESS 0x10060000
 
 /******************************** TYPE DEFINITIONS ********************************/
 // Data structure for sending commands to component
@@ -121,8 +121,8 @@ flash_entry flash_status;
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 #define KEY_SIZE_ 512
 #define SIGNATURE_SIZE 64
-ecc_key sender_private_key;
-ecc_key reciever_public_key;
+// ecc_key sender_private_key;
+// ecc_key reciever_public_key;
 //Didn't work
 // void initialize_keys(){
 //     wc_ecc_init(&sender_private_key);
@@ -143,7 +143,7 @@ int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, ui
 }
 int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
     int ret;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &reciever_public_key);
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, private_key);
     if(ret!=0){
         print_error("Failure...v");
     }return ret;
