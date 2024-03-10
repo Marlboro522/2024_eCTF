@@ -39,7 +39,7 @@
 #endif
 
 #include <wolfssl/options.h>
-// #include <wolfssl/ssl.h>
+#include <wolfssl/ssl.h>
 // #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
 #include <wolfssl/wolfcrypt/ecc.h>
@@ -131,15 +131,17 @@ flash_entry flash_status;
 //         print_error("Error making sender key");
 //     }
 // }
-int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { int ret;
+int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { 
+    int ret;
+    int pubKey;
     wc_ecc_init(private_key);
     ret =
         wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
     if(ret!=0){
         print_error("Failure...s");
     }
-    ret = wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
-    return ret;
+    pubKey = wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
+    return pubKey;
 }
 int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
     int ret;

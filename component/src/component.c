@@ -92,19 +92,22 @@ uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
 uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
+#define KEY_SIZE_ 512
+#define SIGNATURE_SIZE 64
 /**
  * @brief Create Cert
  * 
  * Create a cert used for verification of identity
 
 */
+/*
 void* create_cert(){
 
-    /*Initialize cert*/
+    Initialize cert
     Cert* newCert;
     wc_InitCert(newCert);
 
-    /*Initialize cert info*/
+    Initialize cert info
     strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
     strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
     strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
@@ -113,7 +116,7 @@ void* create_cert(){
     strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
     strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
 
-    /*generate key and rng*/
+    generate key and rng
     RsaKey key;
     RNG    rng;
     int    ret;
@@ -125,7 +128,7 @@ void* create_cert(){
     if (ret != 0)
         fprintf(stderr, "not able to make key.\n");
 
-    /*generate self signed cert*/
+    generate self signed cert
     byte derCert[4096];
 
     int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
@@ -136,7 +139,26 @@ void* create_cert(){
     return derCert;
 
 }
-
+*/
+int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { 
+    int ret;
+    int pubKey;
+    wc_ecc_init(private_key);
+    ret =
+        wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
+    if(ret!=0){
+        print_error("Failure...s");
+    }
+    pubKey = wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
+    return pubKey;
+}
+int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
+    int ret;
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, private_key);
+    if(ret!=0){
+        print_error("Failure...v");
+    }return ret;
+}
 /**
  * @brief Secure Send 
  * 
@@ -148,53 +170,14 @@ void* create_cert(){
 */
 void secure_send(uint8_t* buffer, uint8_t len) {
 
-    //client
+    uint8_t signat[SIGNATURE_SIZE];
+    if(sign(buffer,len,private_key,public_key,signat)!=0){
+        return ERROR_RETURN;
+    } uint8_t signed_packet[len+SIGNATURE_SIZE];
+    memcpy(signed_packet,buffer,len);
+    memcpy(signed_packet + len, signat, SIGNATURE_SIZE);  
 
-    /*Initialize wolfSSL*/
-    wolfSSL_Init();
-
-    /*Create context*/
-    WOLFSSL_CTX* ctx;
-    if((ctx = wolfSSL_CTX_new(wolfSSLv3_client_method()))== NULL){
-        fprintf(stderr, "cannot create context.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*enable peer verifiction*/
-    wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
-
-    /*Create cert*/
-    int cert;
-    cert = create_cert();
-
-    int buff;
-
-    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
-
-    /*Check if the cert worked*/
-    if (buff != SSL_SUCCESS) {
-        fprintf(stderr, "no cert on file.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*Create SSL connection*/
-    WOLFSSL* ssl;
-
-    if((ssl = wolfSSL_new(ctx)) == NULL) {
-        fprintf(stderr, "cannot create ssl connection.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    /*Initiate and do handshake*/
-    int ret;
-    ret = wolfSSL_connect(ssl);
-
-    if(ret != SSL_SUCCESS){
-        fprintf(stderr, "cannot do handshake.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    send_packet_and_ack(len, buffer); 
+    send_packet_and_ack(len+SIGNATURE_SIZE, buffer); 
 }
 
 /**
@@ -208,52 +191,16 @@ void secure_send(uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(uint8_t* buffer) {
-
-        /*Initialize wolfSSL*/
-    wolfSSL_Init();
-
-    /*Create context*/
-    WOLFSSL_CTX* ctx;
-    if((ctx = wolfSSL_CTX_new(wolfSSLv3_server_method()))== NULL){
-        fprintf(stderr, "cannot create context.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*enable peer verifiction*/
-    wolfSSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, 0);
-
-    /*Create cert*/
-    int cert;
-    cert = create_cert();
-
-    int buff;
-
-    buff = wolfSSL_CTX_load_verify_buffer(ctx,cert,sizeof(cert),SSL_FILETYPE_ASN1);
-
-    /*Check if the cert worked*/
-    if (buff != SSL_SUCCESS) {
-        fprintf(stderr, "no cert on file.\n");
-        exit(EXIT_FAILURE);
-    }//if
-
-    /*Create SSL connection*/
-    WOLFSSL* ssl;
-
-    if( (ssl = wolfSSL_new(ctx)) == NULL) {
-        fprintf(stderr, "cannot create ssl connection.\n");
-        exit(EXIT_FAILURE);
+    int r_len=wait_and_receive_packet(buffer);
+    if(r_len<SUCCESS_RETURN){
+        return ERROR_RETURN;
+    }uint8_t r_sign[SIGNATURE_SIZE];
+    memcpy(r_sign, buffer+r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
+    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)!=0){
+        return ERROR_RETURN;
     }
-
-    /*Initiate and do handshake*/
-    int ret;
-    ret = wolfSSL_accept(ssl);
-
-    if(ret != SSL_SUCCESS){
-        fprintf(stderr, "cannot do handshake.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return wait_and_receive_packet(buffer);
+    int len = r_len - SIGNATURE_SIZE;
+    return len;
 }
 
 /******************************* FUNCTION DEFINITIONS *********************************/
