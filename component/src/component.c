@@ -36,10 +36,10 @@
 #endif
 
 #include <wolfssl/options.h>
-#include <wolfssl/ssl.h>
+// #include <wolfssl/ssl.h>
 #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include <wolfssl/wolfcrypt/rsa.h>
+#include <wolfssl/wolfcrypt/ecc.h>
 
 /********************************* CONSTANTS **********************************/
 
@@ -97,53 +97,14 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 static ecc_key sender_private_key;
 static ecc_key receiver_public_key;
-void initialize
-/**
- * @brief Create Cert
- * 
- * Create a cert used for verification of identity
-
-*/
-/*
-void* create_cert(){
-
-    Initialize cert
-    Cert* newCert;
-    wc_InitCert(newCert);
-
-    Initialize cert info
-    strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
-    strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
-    strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
-    strncpy(myCert.subject.org, "RGB", CTC_NAME_SIZE); //Change
-    strncpy(myCert.subject.unit, "CTF", CTC_NAME_SIZE); //change
-    strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
-    strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
-
-    generate key and rng
-    RsaKey key;
-    RNG    rng;
-    int    ret;
-
-    wc_InitRng(&rng);
-    wc_InitRsaKey(&key, 0);
-
-    ret = wc_MakeRsaKey(&key, 1024, 65537, &rng);
-    if (ret != 0)
-        fprintf(stderr, "not able to make key.\n");
-
-    generate self signed cert
-    byte derCert[4096];
-
-    int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
-    if (certSz < 0){
-        fprintf(stderr, "cannot make cert.\n");
-        exit(EXIT_FAILURE);
-    }//if
-    return derCert;
-
+void initialize_keys(){
+    wc_ecc_init(&sender_private_key);
+    wc_ecc_init(&receiver_public_key);
+    if (wc_ecc_make_key(NULL, 16, &sender_private_key) != 0) {
+        print_error("Error making sender key");
+    }
 }
-*/
+
 int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { 
     int ret;
     int pubKey;

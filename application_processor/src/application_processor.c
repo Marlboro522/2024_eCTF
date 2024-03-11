@@ -39,7 +39,7 @@
 #endif
 
 #include <wolfssl/options.h>
-// #include <wolfssl/ssl.h>
+#include <wolfssl/ssl.h>
 #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
 #include <wolfssl/wolfcrypt/ecc.h>
@@ -130,11 +130,12 @@ flash_entry flash_status;
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 //Need lesser size to be he key here.... unable to emulate TI error.....
-#define KEY_SIZE_ 16 // 128 bits = 16 bytes
-#define SIGNATURE_SIZE 64 // Assuming a fixed signature size
+#define KEY_SIZE_ 16 
+#define SIGNATURE_SIZE 64
+#define HAVE_ECC
 
-static ecc_key sender_private_key;
-static ecc_key receiver_public_key;
+ecc_key sender_private_key;
+ecc_key receiver_public_key;
 
 void initialize_keys(){
     wc_ecc_init(&sender_private_key);
