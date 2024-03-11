@@ -36403,10 +36403,8 @@ static THREAD_LS_T int sp_cache_256_last = -1;
 static THREAD_LS_T int sp_cache_256_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_256 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_256_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_256_lock);
+    static wolfSSL_Mutex sp_cache_256_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -36504,12 +36502,10 @@ static int sp_256_ecc_mulmod_8(sp_point_256* r, const sp_point_256* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_256 == 0) {
             wc_InitMutex(&sp_cache_256_lock);
             initCacheMutex_256 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_256_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -36827,10 +36823,8 @@ static THREAD_LS_T int sp_cache_256_last = -1;
 static THREAD_LS_T int sp_cache_256_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_256 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_256_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_256_lock);
+    static wolfSSL_Mutex sp_cache_256_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -36928,12 +36922,10 @@ static int sp_256_ecc_mulmod_8(sp_point_256* r, const sp_point_256* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_256 == 0) {
             wc_InitMutex(&sp_cache_256_lock);
             initCacheMutex_256 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_256_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -46280,10 +46272,8 @@ static THREAD_LS_T int sp_cache_384_last = -1;
 static THREAD_LS_T int sp_cache_384_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_384 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_384_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_384_lock);
+    static wolfSSL_Mutex sp_cache_384_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -46381,12 +46371,10 @@ static int sp_384_ecc_mulmod_12(sp_point_384* r, const sp_point_384* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_384 == 0) {
             wc_InitMutex(&sp_cache_384_lock);
             initCacheMutex_384 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_384_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -46720,10 +46708,8 @@ static THREAD_LS_T int sp_cache_384_last = -1;
 static THREAD_LS_T int sp_cache_384_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_384 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_384_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_384_lock);
+    static wolfSSL_Mutex sp_cache_384_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -46821,12 +46807,10 @@ static int sp_384_ecc_mulmod_12(sp_point_384* r, const sp_point_384* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_384 == 0) {
             wc_InitMutex(&sp_cache_384_lock);
             initCacheMutex_384 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_384_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -58278,10 +58262,8 @@ static THREAD_LS_T int sp_cache_521_last = -1;
 static THREAD_LS_T int sp_cache_521_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_521 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_521_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_521_lock);
+    static wolfSSL_Mutex sp_cache_521_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -58379,12 +58361,10 @@ static int sp_521_ecc_mulmod_17(sp_point_521* r, const sp_point_521* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_521 == 0) {
             wc_InitMutex(&sp_cache_521_lock);
             initCacheMutex_521 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_521_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -58738,10 +58718,8 @@ static THREAD_LS_T int sp_cache_521_last = -1;
 static THREAD_LS_T int sp_cache_521_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_521 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_521_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_521_lock);
+    static wolfSSL_Mutex sp_cache_521_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -58839,12 +58817,10 @@ static int sp_521_ecc_mulmod_17(sp_point_521* r, const sp_point_521* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_521 == 0) {
             wc_InitMutex(&sp_cache_521_lock);
             initCacheMutex_521 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_521_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -72611,10 +72587,8 @@ static THREAD_LS_T int sp_cache_1024_last = -1;
 static THREAD_LS_T int sp_cache_1024_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_1024 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_1024_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_1024_lock);
+    static wolfSSL_Mutex sp_cache_1024_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -72712,12 +72686,10 @@ static int sp_1024_ecc_mulmod_32(sp_point_1024* r, const sp_point_1024* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_1024 == 0) {
             wc_InitMutex(&sp_cache_1024_lock);
             initCacheMutex_1024 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_1024_lock) != 0) {
             err = BAD_MUTEX_E;
         }
@@ -72970,10 +72942,8 @@ static THREAD_LS_T int sp_cache_1024_last = -1;
 static THREAD_LS_T int sp_cache_1024_inited = 0;
 
 #ifndef HAVE_THREAD_LS
-    #ifndef WOLFSSL_MUTEX_INITIALIZER
     static volatile int initCacheMutex_1024 = 0;
-    #endif
-    static wolfSSL_Mutex sp_cache_1024_lock WOLFSSL_MUTEX_INITIALIZER_CLAUSE(sp_cache_1024_lock);
+    static wolfSSL_Mutex sp_cache_1024_lock;
 #endif
 
 /* Get the cache entry for the point.
@@ -73071,12 +73041,10 @@ static int sp_1024_ecc_mulmod_32(sp_point_1024* r, const sp_point_1024* g,
 #endif
 #ifndef HAVE_THREAD_LS
     if (err == MP_OKAY) {
-        #ifndef WOLFSSL_MUTEX_INITIALIZER
         if (initCacheMutex_1024 == 0) {
             wc_InitMutex(&sp_cache_1024_lock);
             initCacheMutex_1024 = 1;
         }
-        #endif
         if (wc_LockMutex(&sp_cache_1024_lock) != 0) {
             err = BAD_MUTEX_E;
         }

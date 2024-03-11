@@ -220,18 +220,18 @@ tests/unit_test-api.o: tests/api.c .build_params config.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arpa/inet.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/in.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet6/in6.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h \
-  wolfssl/test.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/assert.h \
-  wolfssl/wolfcrypt/mem_track.h wolfssl/wolfcrypt/asn.h \
-  wolfssl/wolfcrypt/dh.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/tcp.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h \
+  wolfssl/test.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/assert.h \
+  wolfssl/wolfcrypt/mem_track.h wolfssl/wolfcrypt/asn.h \
+  wolfssl/wolfcrypt/dh.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/tcp.h \
   tests/unit.h examples/server/server.h wolfssl/wolfcrypt/aes.h \
   wolfssl/wolfcrypt/wc_encrypt.h wolfssl/wolfcrypt/chacha.h \
   wolfssl/wolfcrypt/poly1305.h wolfssl/wolfcrypt/chacha20_poly1305.h \
@@ -245,10 +245,7 @@ tests/unit_test-api.o: tests/api.c .build_params config.h \
   wolfssl/openssl/ec.h wolfssl/openssl/dh.h wolfssl/openssl/opensslv.h \
   wolfssl/wolfcrypt/des3.h wolfssl/wolfcrypt/arc4.h \
   wolfssl/wolfcrypt/pwdbased.h wolfssl/wolfcrypt/coding.h \
-  wolfssl/openssl/objects.h wolfssl/openssl/bio.h wolfssl/openssl/ssl.h \
-  wolfssl/openssl/tls1.h wolfssl/openssl/x509.h wolfssl/openssl/crypto.h \
-  wolfssl/openssl/conf.h wolfssl/openssl/ecdsa.h wolfssl/openssl/pkcs7.h \
-  wolfssl/wolfcrypt/pkcs7.h
+  wolfssl/openssl/objects.h wolfssl/openssl/bio.h
 
 .build_params:
 
@@ -722,6 +719,18 @@ wolfssl/wolfio.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet6/in6.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h:
 
 wolfssl/test.h:
@@ -734,19 +743,7 @@ wolfssl/wolfcrypt/asn.h:
 
 wolfssl/wolfcrypt/dh.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/tcp.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h:
 
 tests/unit.h:
 
@@ -819,19 +816,3 @@ wolfssl/wolfcrypt/coding.h:
 wolfssl/openssl/objects.h:
 
 wolfssl/openssl/bio.h:
-
-wolfssl/openssl/ssl.h:
-
-wolfssl/openssl/tls1.h:
-
-wolfssl/openssl/x509.h:
-
-wolfssl/openssl/crypto.h:
-
-wolfssl/openssl/conf.h:
-
-wolfssl/openssl/ecdsa.h:
-
-wolfssl/openssl/pkcs7.h:
-
-wolfssl/wolfcrypt/pkcs7.h:

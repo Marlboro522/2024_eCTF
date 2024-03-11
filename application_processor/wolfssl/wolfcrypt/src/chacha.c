@@ -200,7 +200,6 @@ int wc_Chacha_SetKey(ChaCha* ctx, const byte* key, word32 keySz)
     return 0;
 }
 
-#ifndef USE_INTEL_CHACHA_SPEEDUP
 /**
   * Converts word into bytes with rotations having been done.
   */
@@ -229,7 +228,6 @@ static WC_INLINE void wc_Chacha_wordtobyte(word32 x[CHACHA_CHUNK_WORDS],
 #endif
     }
 }
-#endif /* !USE_INTEL_CHACHA_SPEEDUP */
 
 
 #ifdef HAVE_XCHACHA
@@ -327,7 +325,6 @@ extern void chacha_encrypt_avx2(ChaCha* ctx, const byte* m, byte* c,
 #endif
 
 
-#ifndef USE_INTEL_CHACHA_SPEEDUP
 /**
   * Encrypt a stream of bytes
   */
@@ -375,8 +372,6 @@ static void wc_Chacha_encrypt_bytes(ChaCha* ctx, const byte* m, byte* c,
         ctx->left = CHACHA_CHUNK_BYTES - bytes;
     }
 }
-#endif /* !USE_INTEL_CHACHA_SPEEDUP */
-
 
 /**
   * API to encrypt/decrypt a message of any size.
@@ -428,10 +423,10 @@ int wc_Chacha_Process(ChaCha* ctx, byte* output, const byte* input,
         chacha_encrypt_x64(ctx, input, output, msglen);
         return 0;
     }
-#else
-    wc_Chacha_encrypt_bytes(ctx, input, output, msglen);
-    return 0;
 #endif
+    wc_Chacha_encrypt_bytes(ctx, input, output, msglen);
+
+    return 0;
 }
 
 void wc_Chacha_purge_current_block(ChaCha* ctx) {

@@ -93,11 +93,6 @@ struct wc_IOTSAFE {
     word16 ecdh_keypair_slot;
     word16 peer_pubkey_slot;
     word16 peer_cert_slot;
-#elif (IOTSAFE_ID_SIZE == 4)
-    word32 privkey_id;
-    word32 ecdh_keypair_slot;
-    word32 peer_pubkey_slot;
-    word32 peer_cert_slot;
 #else
 #error "IOTSAFE: ID_SIZE not supported"
 #endif

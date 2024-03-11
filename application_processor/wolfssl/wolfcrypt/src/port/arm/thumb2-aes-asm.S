@@ -714,19 +714,15 @@ AES_set_encrypt_key:
 #else
 	BEQ.W	L_AES_set_encrypt_key_start_192
 #endif
-	LDR	r4, [r0]
-	LDR	r5, [r0, #4]
-	LDR	r6, [r0, #8]
-	LDR	r7, [r0, #12]
+	LDRD	r4, r5, [r0]
+	LDRD	r6, r7, [r0, #8]
 	REV	r4, r4
 	REV	r5, r5
 	REV	r6, r6
 	REV	r7, r7
 	STM	r2!, {r4, r5, r6, r7}
-	LDR	r4, [r0, #16]
-	LDR	r5, [r0, #20]
-	LDR	r6, [r0, #24]
-	LDR	r7, [r0, #28]
+	LDRD	r4, r5, [r0, #16]
+	LDRD	r6, r7, [r0, #24]
 	REV	r4, r4
 	REV	r5, r5
 	REV	r6, r6
@@ -809,12 +805,9 @@ L_AES_set_encrypt_key_loop_256:
 	B.N	L_AES_set_encrypt_key_end
 #endif
 L_AES_set_encrypt_key_start_192:
-	LDR	r4, [r0]
-	LDR	r5, [r0, #4]
-	LDR	r6, [r0, #8]
-	LDR	r7, [r0, #12]
-	LDR	r8, [r0, #16]
-	LDR	r9, [r0, #20]
+	LDRD	r4, r5, [r0]
+	LDRD	r6, r7, [r0, #8]
+	LDRD	r8, r9, [r0, #16]
 	REV	r4, r4
 	REV	r5, r5
 	REV	r6, r6
@@ -878,10 +871,8 @@ L_AES_set_encrypt_key_loop_192:
 	B.N	L_AES_set_encrypt_key_end
 #endif
 L_AES_set_encrypt_key_start_128:
-	LDR	r4, [r0]
-	LDR	r5, [r0, #4]
-	LDR	r6, [r0, #8]
-	LDR	r7, [r0, #12]
+	LDRD	r4, r5, [r0]
+	LDRD	r6, r7, [r0, #8]
 	REV	r4, r4
 	REV	r5, r5
 	REV	r6, r6
@@ -916,7 +907,7 @@ L_AES_set_encrypt_key_loop_128:
 #endif
 L_AES_set_encrypt_key_end:
 	POP	{r4, r5, r6, r7, r8, r9, r10, pc}
-	/* Cycle Count = 340 */
+	/* Cycle Count = 331 */
 	.size	AES_set_encrypt_key,.-AES_set_encrypt_key
 	.text
 	.align	4

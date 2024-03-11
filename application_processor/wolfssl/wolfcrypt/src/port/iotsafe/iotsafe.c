@@ -749,37 +749,43 @@ static int iotsafe_hkdf_extract(byte* prk, const byte* salt, word32 saltLen,
     int ret;
     char *resp;
     uint16_t hash_algo = 0;
-    int hash_len;
+    int len;
     uint16_t hash_algo_be = 0;
 
     WOLFSSL_MSG("Enter iotsafe_hkdf_extract");
-    switch (digest) {
-#ifndef NO_SHA256
+     switch (digest) {
+        #ifndef NO_SHA256
         case WC_SHA256:
-            hash_algo = (uint16_t)1;
-            hash_len = WC_SHA256_DIGEST_SIZE;
+        hash_algo = (uint16_t)1;
+        if (ikmLen == 0) {
+            len = WC_SHA256_DIGEST_SIZE;
+        }
             break;
-#endif
-#ifdef WOLFSSL_SHA384
+        #endif
+        #ifdef WOLFSSL_SHA384
         case WC_SHA384:
-            hash_algo = (uint16_t)2;
-            hash_len = WC_SHA384_DIGEST_SIZE;
+        hash_algo = (uint16_t)2;
+        if (ikmLen == 0) {
+            len = WC_SHA384_DIGEST_SIZE;
+        }
             break;
-#endif
-#ifdef WOLFSSL_SHA512
+        #endif
+        #ifdef WOLFSSL_TLS13_SHA512
         case WC_SHA512:
-            hash_algo = (uint16_t)4;
-            hash_len = WC_SHA512_DIGEST_SIZE;
+        hash_algo = (uint16_t)4;
+        if (ikmLen == 0) {
+            len = WC_SHA512_DIGEST_SIZE;
+        }
             break;
-#endif
+        #endif
         default:
             return BAD_FUNC_ARG;
             break;
-    }
+     }
 
     if (ikmLen == 0) {
-        ikmLen = hash_len;
-        XMEMSET(ikm, 0, hash_len);
+        ikmLen = len;
+        XMEMSET(ikm, 0, len);
     }
 
 #ifdef DEBUG_IOTSAFE
@@ -806,12 +812,14 @@ static int iotsafe_hkdf_extract(byte* prk, const byte* salt, word32 saltLen,
         WOLFSSL_MSG("Unexpected reply from HKDF extract");
         ret = WC_HW_E;
     } else {
-        ret = hexbuffer_conv(resp, prk, hash_len);
+
+         ret = hexbuffer_conv(resp, prk, 32);
         if (ret < 0)
             ret = WC_HW_E;
         else
             ret = 0;
     }
+
     return ret;
 }
 #endif

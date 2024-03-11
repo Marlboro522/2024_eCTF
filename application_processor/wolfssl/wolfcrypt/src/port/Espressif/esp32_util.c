@@ -482,7 +482,7 @@ int ShowExtendedSystemInfo_config(void)
     show_macro("WOLFSSL_NO_CURRDIR",        STR_IFNDEF(WOLFSSL_NO_CURRDIR));
     show_macro("WOLFSSL_LWIP",              STR_IFNDEF(WOLFSSL_LWIP));
 
-    ESP_LOGI(TAG,  WOLFSSL_ESPIDF_BLANKLINE_MESSAGE);
+    ESP_LOGI(TAG, "");
 #if defined(CONFIG_COMPILER_OPTIMIZATION_DEFAULT)
     ESP_LOGI(TAG, "Compiler Optimization: Default");
 #elif defined(CONFIG_COMPILER_OPTIMIZATION_SIZE)
@@ -494,7 +494,7 @@ int ShowExtendedSystemInfo_config(void)
 #else
     ESP_LOGI(TAG, "Compiler Optimization: Unknown");
 #endif
-    ESP_LOGI(TAG,  WOLFSSL_ESPIDF_BLANKLINE_MESSAGE);
+    ESP_LOGI(TAG, "");
 
     return ESP_OK;
 }
@@ -592,10 +592,9 @@ int ShowExtendedSystemInfo(void)
     ESP_LOGI(TAG, "CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ = %u MHz",
                    CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
             );
-#elif defined(CONFIG_IDF_TARGET_ESP32C3) && \
-      defined(CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ)
-    ESP_LOGI(TAG, "CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ = %u MHz",
-                   CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    ESP_LOGI(TAG, "CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ = %u MHz",
+                   CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
             );
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -629,7 +628,7 @@ int ShowExtendedSystemInfo(void)
 #ifdef INCLUDE_uxTaskGetStackHighWaterMark
     ESP_LOGI(TAG, "Stack HWM: %d", uxTaskGetStackHighWaterMark(NULL));
 #endif
-    ESP_LOGI(TAG,  WOLFSSL_ESPIDF_BLANKLINE_MESSAGE);
+    ESP_LOGI(TAG, "");
 
     ShowExtendedSystemInfo_config();
     ShowExtendedSystemInfo_git();
@@ -665,7 +664,7 @@ int esp_show_mp_attributes(char* c, MATH_INT_T* X)
         ESP_LOGV(MP_TAG, "esp_show_mp_attributes called with X == NULL");
     }
     else {
-        ESP_LOGI(MP_TAG,  WOLFSSL_ESPIDF_BLANKLINE_MESSAGE);
+        ESP_LOGI(MP_TAG, "");
         ESP_LOGI(MP_TAG, "%s.used = %d;", c, X->used);
 #if defined(WOLFSSL_SP_INT_NEGATIVE) || defined(USE_FAST_MATH)
         ESP_LOGI(MP_TAG, "%s.sign = %d;", c, X->sign);
@@ -717,7 +716,7 @@ int esp_show_mp(char* c, MATH_INT_T* X)
                                    i  /* the index, again, for comment   */
                      );
         }
-        ESP_LOGI(MP_TAG,  WOLFSSL_ESPIDF_BLANKLINE_MESSAGE);
+        ESP_LOGI(MP_TAG, "");
     }
     return ret;
 }

@@ -39,11 +39,11 @@
 #endif
 
 #include <wolfssl/options.h>
-#include <wolfssl/ssl.h>
-// #include <wolfssl/wolfcrypt/asn.h>
+// #include <wolfssl/ssl.h>
+#include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
 #include <wolfssl/wolfcrypt/ecc.h>
-#include <wolfssl/wolfcrypt/user_settings.h>
+// #include <wolfssl/wolfcrypt/user_settings.h>
 
 // Includes from containerized build
 #include "ectf_params.h"
@@ -119,37 +119,42 @@ typedef enum {
 flash_entry flash_status;
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
-#define KEY_SIZE_ 512
-#define SIGNATURE_SIZE 64
-// ecc_key sender_private_key;
-// ecc_key reciever_public_key;
-//Didn't work
-// void initialize_keys(){
-//     wc_ecc_init(&sender_private_key);
-//     wc_ecc_init(&reciever_public_key);
-//     if(wc_ecc_make_key(wc_ecc_x963((const byte*)PUBLIC_KEY),sizeof(PUBLIC_KEY),&sender_private_key)!=0){
-//         print_error("Error making sender key");
-//     }
-// }
-int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { 
-    int ret;
-    int pubKey;
-    wc_ecc_init(private_key);
-    ret =
-        wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
-    if(ret!=0){
-        print_error("Failure...s");
+//Need lesser size to be he key here.... unable to emulate TI error.....
+#define KEY_SIZE_ 16 // 128 bits = 16 bytes
+#define SIGNATURE_SIZE 64 // Assuming a fixed signature size
+
+ecc_key sender_private_key;
+ecc_key receiver_public_key;
+
+void initialize_keys(){
+    wc_ecc_init(&sender_private_key);
+    wc_ecc_init(&receiver_public_key);
+    if (wc_ecc_make_key(NULL, 16, &sender_private_key) != 0) {
+        print_error("Error making sender key");
     }
-    pubKey = wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
-    return pubKey;
 }
-int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
+
+int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, uint8_t *sign) { 
     int ret;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, private_key);
-    if(ret!=0){
-        print_error("Failure...v");
-    }return ret;
+
+    wc_ecc_init(private_key);
+    ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
+    if (ret != 0) {
+        print_error("Failure signing");
+    }
+
+    return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
 }
+
+int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign){
+    int ret;
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &receiver_public_key);
+    if (ret != 0) {
+        print_error("Failure verifying");
+    }
+    return ret;
+}
+
 
 /**
  * @brief Secure Send 
@@ -478,7 +483,7 @@ int validate_token() {
         return SUCCESS_RETURN;
     }
     print_error("Invalid Token!\n");
-    MXC_Delay(MXC_DELAY_SECONDS(5));
+    MXC_Delay(MXC_DELAY_SEC(5));
     return ERROR_RETURN;
 }
 

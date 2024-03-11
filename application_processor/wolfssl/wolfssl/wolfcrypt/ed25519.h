@@ -31,6 +31,8 @@
 
 #ifdef HAVE_ED25519
 
+#include <wolfssl/wolfcrypt/fe_operations.h>
+#include <wolfssl/wolfcrypt/ge_operations.h>
 #include <wolfssl/wolfcrypt/random.h>
 #ifndef WOLFSSL_SHA512
 #error ED25519 requires SHA512

@@ -54,7 +54,7 @@
 #include <wolfssl/wolfcrypt/sha256.h>
 
 #ifdef WOLFSSL_ARMASM_NO_NEON
-XALIGNED(16) static const uint32_t L_SHA256_transform_len_k[] = {
+static const uint32_t L_SHA256_transform_len_k[] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
     0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -1459,12 +1459,11 @@ void Transform_Sha256_Len(wc_Sha256* sha256, const byte* data, word32 len)
         : [sha256] "+r" (sha256), [data] "+r" (data), [len] "+r" (len),
           [L_SHA256_transform_len_k] "+r" (L_SHA256_transform_len_k_c)
         :
-        : "memory", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "cc"
 #else
         : [sha256] "+r" (sha256), [data] "+r" (data), [len] "+r" (len)
         : [L_SHA256_transform_len_k] "r" (L_SHA256_transform_len_k)
-        : "memory", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "cc"
 #endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
+        : "memory", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "cc"
     );
 }
 

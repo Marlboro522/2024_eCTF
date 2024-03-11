@@ -644,15 +644,9 @@ int wc_ShaUpdate(wc_Sha* sha, const byte* data, word32 len)
         #endif
 
         #if defined(LITTLE_ENDIAN_ORDER) && !defined(FREESCALE_MMCAU_SHA)
-            #if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-                  defined(CONFIG_IDF_TARGET_ESP8684) || \
-                  defined(CONFIG_IDF_TARGET_ESP32C3) || \
-                  defined(CONFIG_IDF_TARGET_ESP32C6)    \
-                ) && \
-                 defined(WOLFSSL_ESP32_CRYPT) && \
+            #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) \
+              && defined(WOLFSSL_ESP32_CRYPT) && \
                 !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
-                /* For Espressif RISC-V Targets, we *may* need to reverse bytes
-                 * depending on if HW is active or not. */
                 if (esp_sha_need_byte_reversal(&sha->ctx))
             #endif
             {
@@ -728,15 +722,9 @@ int wc_ShaUpdate(wc_Sha* sha, const byte* data, word32 len)
     #endif
 
     #if defined(LITTLE_ENDIAN_ORDER) && !defined(FREESCALE_MMCAU_SHA)
-        #if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-              defined(CONFIG_IDF_TARGET_ESP8684) || \
-              defined(CONFIG_IDF_TARGET_ESP32C3) || \
-              defined(CONFIG_IDF_TARGET_ESP32C6)    \
-            ) && \
+        #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) && \
              defined(WOLFSSL_ESP32_CRYPT) && \
             !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
-            /* For Espressif RISC-V Targets, we *may* need to reverse bytes
-             * depending on if HW is active or not. */
             if (esp_sha_need_byte_reversal(&sha->ctx))
         #endif
         {
@@ -777,15 +765,9 @@ int wc_ShaFinalRaw(wc_Sha* sha, byte* hash)
     }
 
 #ifdef LITTLE_ENDIAN_ORDER
-    #if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-          defined(CONFIG_IDF_TARGET_ESP8684) || \
-          defined(CONFIG_IDF_TARGET_ESP32C3) || \
-          defined(CONFIG_IDF_TARGET_ESP32C6)    \
-        ) && \
+    #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) && \
          defined(WOLFSSL_ESP32_CRYPT) && \
         !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
-        /* For Espressif RISC-V Targets, we *may* need to reverse bytes
-         * depending on if HW is active or not. */
         if (esp_sha_need_byte_reversal(&sha->ctx))
     #endif
     {
@@ -841,10 +823,7 @@ int wc_ShaFinal(wc_Sha* sha, byte* hash)
 
     /* pad with zeros */
     if (sha->buffLen > WC_SHA_PAD_SIZE) {
-        if (sha->buffLen < WC_SHA_BLOCK_SIZE) {
-            XMEMSET(&local[sha->buffLen], 0, WC_SHA_BLOCK_SIZE - sha->buffLen);
-        }
-
+        XMEMSET(&local[sha->buffLen], 0, WC_SHA_BLOCK_SIZE - sha->buffLen);
         sha->buffLen += WC_SHA_BLOCK_SIZE - sha->buffLen;
 
     #if defined(WOLFSSL_USE_ESP32_CRYPT_HASH_HW)
@@ -855,15 +834,9 @@ int wc_ShaFinal(wc_Sha* sha, byte* hash)
     #endif
 
     #if defined(LITTLE_ENDIAN_ORDER) && !defined(FREESCALE_MMCAU_SHA)
-        #if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-              defined(CONFIG_IDF_TARGET_ESP8684) || \
-              defined(CONFIG_IDF_TARGET_ESP32C3) || \
-              defined(CONFIG_IDF_TARGET_ESP32C6)    \
-            ) && \
+        #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) && \
              defined(WOLFSSL_ESP32_CRYPT) && \
             !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
-            /* For Espressif RISC-V Targets, we *may* need to reverse bytes
-             * depending on if HW is active or not. */
             if (esp_sha_need_byte_reversal(&sha->ctx))
         #endif
         {
@@ -902,15 +875,9 @@ int wc_ShaFinal(wc_Sha* sha, byte* hash)
 #endif
 
 #if defined(LITTLE_ENDIAN_ORDER) && !defined(FREESCALE_MMCAU_SHA)
-    #if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-          defined(CONFIG_IDF_TARGET_ESP8684) || \
-          defined(CONFIG_IDF_TARGET_ESP32C3) || \
-          defined(CONFIG_IDF_TARGET_ESP32C6)    \
-        ) && \
+    #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) && \
          defined(WOLFSSL_ESP32_CRYPT) && \
         !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
-        /* For Espressif RISC-V Targets, we *may* need to reverse bytes
-         * depending on if HW is active or not. */
         if (esp_sha_need_byte_reversal(&sha->ctx))
     #endif
     { /* reminder local also points to sha->buffer  */
@@ -935,12 +902,8 @@ int wc_ShaFinal(wc_Sha* sha, byte* hash)
 #endif
 
 
-#if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-      defined(CONFIG_IDF_TARGET_ESP8684) || \
-      defined(CONFIG_IDF_TARGET_ESP32C3) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6)    \
-    ) && \
-    defined(WOLFSSL_ESP32_CRYPT) && !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
+#if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) && \
+     defined(WOLFSSL_ESP32_CRYPT) && !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
 if (sha->ctx.mode == ESP32_SHA_HW) {
     #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     {
@@ -975,14 +938,9 @@ if (sha->ctx.mode == ESP32_SHA_HW) {
 #endif
 
 #ifdef LITTLE_ENDIAN_ORDER
-    #if ( defined(CONFIG_IDF_TARGET_ESP32C2) || \
-          defined(CONFIG_IDF_TARGET_ESP8684) || \
-          defined(CONFIG_IDF_TARGET_ESP32C3) || \
-          defined(CONFIG_IDF_TARGET_ESP32C6)    \
-        ) && \
-        defined(WOLFSSL_ESP32_CRYPT) && !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
-        /* For Espressif RISC-V Targets, we *may* need to reverse bytes
-         * depending on if HW is active or not. */
+    #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)) && \
+         defined(WOLFSSL_ESP32_CRYPT) && \
+        !defined(NO_WOLFSSL_ESP32_CRYPT_HASH)
         if (esp_sha_need_byte_reversal(&sha->ctx))
     #endif
     {

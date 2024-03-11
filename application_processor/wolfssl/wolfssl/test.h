@@ -110,9 +110,7 @@
 #elif defined(WOLFSSL_TIRTOS)
     #include <string.h>
     #include <netdb.h>
-    #if !defined(__ti__) /* conflicts with sys/socket.h */
-        #include <sys/types.h>
-    #endif
+    #include <sys/types.h>
     #include <arpa/inet.h>
     #include <sys/socket.h>
     #include <ti/sysbios/knl/Task.h>
@@ -175,8 +173,6 @@
         int h_length;        /* length of address */
         char** h_addr_list;  /* list of addresses from the name server */
     };
-#elif defined(ARDUINO)
-    /* TODO, define board-specific */
 #else
     #include <string.h>
     #include <sys/types.h>
@@ -657,13 +653,6 @@ char* create_tmp_dir(char* tmpDir, int len);
 int rem_dir(const char* dirName);
 int rem_file(const char* fileName);
 int copy_file(const char* in, const char* out);
-
-#if defined(__MACH__) || defined(__FreeBSD__)
-    int link_file(const char* in, const char* out);
-    #define STAGE_FILE(x,y) link_file((x),(y))
-#else
-    #define STAGE_FILE(x,y) copy_file((x),(y))
-#endif
 
 void signal_ready(tcp_ready* ready);
 
@@ -1295,7 +1284,7 @@ static WC_INLINE void build_addr(SOCKADDR_IN_T* addr, const char* peer,
             int err;
             struct hostent* entry = gethostbyname(peer, &err);
         #elif defined(WOLFSSL_TIRTOS)
-            struct hostent* entry = (struct hostent*)DNSGetHostByName(peer);
+            struct hostent* entry = DNSGetHostByName(peer);
         #elif defined(WOLFSSL_VXWORKS)
             struct hostent* entry = (struct hostent*)hostGetByName((char*)peer);
         #else

@@ -59,32 +59,17 @@
  */
 int wc_dilithium_sign_msg(const byte* in, word32 inLen,
                           byte* out, word32 *outLen,
-                          dilithium_key* key, WC_RNG* rng)
+                          dilithium_key* key)
 {
     int ret = 0;
-
-    /* sanity check on arguments */
-    if ((in == NULL) || (out == NULL) || (outLen == NULL) || (key == NULL)) {
-        return BAD_FUNC_ARG;
-    }
-
-#ifdef WOLF_CRYPTO_CB
-    #ifndef WOLF_CRYPTO_CB_FIND
-    if (key->devId != INVALID_DEVID)
-    #endif
-    {
-        ret = wc_CryptoCb_PqcSign(in, inLen, out, outLen, rng,
-                                  WC_PQC_SIG_TYPE_DILITHIUM, key);
-        if (ret != CRYPTOCB_UNAVAILABLE)
-            return ret;
-        /* fall-through when unavailable */
-        ret = 0;
-    }
-#endif
-
 #ifdef HAVE_LIBOQS
     OQS_SIG *oqssig = NULL;
     size_t localOutLen = 0;
+
+    /* sanity check on arguments */
+    if ((in == NULL) || (out == NULL) || (outLen == NULL) || (key == NULL)) {
+        ret = BAD_FUNC_ARG;
+    }
 
     if ((ret == 0) && (!key->prvKeySet)) {
         ret = BAD_FUNC_ARG;
@@ -105,10 +90,6 @@ int wc_dilithium_sign_msg(const byte* in, word32 inLen,
         }
     }
 
-    if ((ret == 0) && (oqssig == NULL)) {
-        ret = BUFFER_E;
-    }
-
     /* check and set up out length */
     if (ret == 0) {
         if ((key->level == 2) && (*outLen < DILITHIUM_LEVEL2_SIG_SIZE)) {
@@ -126,10 +107,6 @@ int wc_dilithium_sign_msg(const byte* in, word32 inLen,
         localOutLen = *outLen;
     }
 
-    if (ret == 0) {
-        ret = wolfSSL_liboqsRngMutexLock(rng);
-    }
-
     if ((ret == 0) &&
         (OQS_SIG_sign(oqssig, out, &localOutLen, in, inLen, key->k)
          == OQS_ERROR)) {
@@ -139,8 +116,6 @@ int wc_dilithium_sign_msg(const byte* in, word32 inLen,
     if (ret == 0) {
         *outLen = (word32)localOutLen;
     }
-
-    wolfSSL_liboqsRngMutexUnlock();
 
     if (oqssig != NULL) {
         OQS_SIG_free(oqssig);
@@ -167,27 +142,12 @@ int wc_dilithium_verify_msg(const byte* sig, word32 sigLen, const byte* msg,
                             word32 msgLen, int* res, dilithium_key* key)
 {
     int ret = 0;
-
-    if (key == NULL || sig == NULL || msg == NULL || res == NULL) {
-        return BAD_FUNC_ARG;
-    }
-
-#ifdef WOLF_CRYPTO_CB
-    #ifndef WOLF_CRYPTO_CB_FIND
-    if (key->devId != INVALID_DEVID)
-    #endif
-    {
-        ret = wc_CryptoCb_PqcVerify(sig, sigLen, msg, msgLen, res,
-                                    WC_PQC_SIG_TYPE_DILITHIUM, key);
-        if (ret != CRYPTOCB_UNAVAILABLE)
-            return ret;
-        /* fall-through when unavailable */
-        ret = 0;
-    }
-#endif
-
 #ifdef HAVE_LIBOQS
     OQS_SIG *oqssig = NULL;
+
+    if (key == NULL || sig == NULL || msg == NULL || res == NULL) {
+        ret = BAD_FUNC_ARG;
+    }
 
     if ((ret == 0) && (!key->pubKeySet)) {
         ret = BAD_FUNC_ARG;
@@ -206,10 +166,6 @@ int wc_dilithium_verify_msg(const byte* sig, word32 sigLen, const byte* msg,
         else {
             ret = SIG_TYPE_E;
         }
-    }
-
-    if ((ret == 0) && (oqssig == NULL)) {
-        ret = BUFFER_E;
     }
 
     if ((ret == 0) &&
@@ -239,90 +195,13 @@ int wc_dilithium_verify_msg(const byte* sig, word32 sigLen, const byte* msg,
  */
 int wc_dilithium_init(dilithium_key* key)
 {
-    return wc_dilithium_init_ex(key, NULL, INVALID_DEVID);
-}
-
-/* Initialize the dilithium private/public key.
- *
- * key  [in]  Dilithium key.
- * heap [in]  Heap hint.
- * devId[in]  Device ID.
- * returns BAD_FUNC_ARG when key is NULL
- */
-int wc_dilithium_init_ex(dilithium_key* key, void* heap, int devId)
-{
     if (key == NULL) {
         return BAD_FUNC_ARG;
     }
 
-    ForceZero(key, sizeof(*key));
-
-#ifdef WOLF_CRYPTO_CB
-    key->devCtx = NULL;
-    key->devId = devId;
-#endif
-#ifdef WOLF_PRIVATE_KEY_ID
-    key->idLen = 0;
-    key->labelLen = 0;
-#endif
-
-    (void) heap;
-    (void) devId;
-
+    ForceZero(key, sizeof(key));
     return 0;
 }
-
-#ifdef WOLF_PRIVATE_KEY_ID
-int wc_dilithium_init_id(dilithium_key* key, const unsigned char* id, int len,
-                         void* heap, int devId)
-{
-    int ret = 0;
-
-    if (key == NULL)
-        ret = BAD_FUNC_ARG;
-    if (ret == 0 && (len < 0 || len > DILITHIUM_MAX_ID_LEN))
-        ret = BUFFER_E;
-
-    if (ret == 0)
-        ret = wc_dilithium_init_ex(key, heap, devId);
-    if (ret == 0 && id != NULL && len != 0) {
-        XMEMCPY(key->id, id, (size_t)len);
-        key->idLen = len;
-    }
-
-    /* Set the maxiumum level here */
-    wc_dilithium_set_level(key, 5);
-
-    return ret;
-}
-
-int wc_dilithium_init_label(dilithium_key* key, const char* label, void* heap,
-                            int devId)
-{
-    int ret = 0;
-    int labelLen = 0;
-
-    if (key == NULL || label == NULL)
-        ret = BAD_FUNC_ARG;
-    if (ret == 0) {
-        labelLen = (int)XSTRLEN(label);
-        if (labelLen == 0 || labelLen > DILITHIUM_MAX_LABEL_LEN)
-            ret = BUFFER_E;
-    }
-
-    if (ret == 0)
-        ret = wc_dilithium_init_ex(key, heap, devId);
-    if (ret == 0) {
-        XMEMCPY(key->label, label, (size_t)labelLen);
-        key->labelLen = labelLen;
-    }
-
-    /* Set the maxiumum level here */
-    wc_dilithium_set_level(key, 5);
-
-    return ret;
-}
-#endif
 
 /* Set the level of the dilithium private/public key.
  *
@@ -373,7 +252,7 @@ int wc_dilithium_get_level(dilithium_key* key, byte* level)
 void wc_dilithium_free(dilithium_key* key)
 {
     if (key != NULL) {
-        ForceZero(key, sizeof(*key));
+        ForceZero(key, sizeof(key));
     }
 }
 
@@ -537,7 +416,15 @@ int wc_dilithium_import_private_only(const byte* priv, word32 privSz,
          return ret;
     }
 
-    XMEMCPY(key->k, newPriv, newPrivSz);
+    if (key->level == 2) {
+        XMEMCPY(key->k, newPriv, DILITHIUM_LEVEL2_KEY_SIZE);
+    }
+    else if (key->level == 3) {
+        XMEMCPY(key->k, newPriv, DILITHIUM_LEVEL3_KEY_SIZE);
+    }
+    else if (key->level == 5) {
+        XMEMCPY(key->k, newPriv, DILITHIUM_LEVEL5_KEY_SIZE);
+    }
     key->prvKeySet = 1;
 
     return 0;
@@ -601,7 +488,15 @@ int wc_dilithium_import_private_key(const byte* priv, word32 privSz,
 
     if (ret == 0) {
         /* make the private key (priv + pub) */
-        XMEMCPY(key->k, newPriv, newPrivSz);
+        if (key->level == 2) {
+            XMEMCPY(key->k, newPriv, DILITHIUM_LEVEL2_KEY_SIZE);
+        }
+        else if (key->level == 3) {
+            XMEMCPY(key->k, newPriv, DILITHIUM_LEVEL3_KEY_SIZE);
+        }
+        else if (key->level == 5) {
+            XMEMCPY(key->k, newPriv, DILITHIUM_LEVEL5_KEY_SIZE);
+        }
         key->prvKeySet = 1;
     }
 
@@ -696,20 +591,20 @@ int wc_dilithium_export_private(dilithium_key* key, byte* out, word32* outLen)
 
     if (key->level == 2) {
         *outLen = DILITHIUM_LEVEL2_PRV_KEY_SIZE;
-        XMEMCPY(out, key->k, DILITHIUM_LEVEL2_KEY_SIZE);
-        XMEMCPY(out + DILITHIUM_LEVEL2_KEY_SIZE, key->p,
+        XMEMCPY(out, key->k, DILITHIUM_LEVEL2_PRV_KEY_SIZE);
+        XMEMCPY(out + DILITHIUM_LEVEL2_PRV_KEY_SIZE, key->p,
                 DILITHIUM_LEVEL2_PUB_KEY_SIZE);
     }
     else if (key->level == 3) {
         *outLen = DILITHIUM_LEVEL3_PRV_KEY_SIZE;
-        XMEMCPY(out, key->k, DILITHIUM_LEVEL3_KEY_SIZE);
-        XMEMCPY(out + DILITHIUM_LEVEL3_KEY_SIZE, key->p,
+        XMEMCPY(out, key->k, DILITHIUM_LEVEL3_PRV_KEY_SIZE);
+        XMEMCPY(out + DILITHIUM_LEVEL3_PRV_KEY_SIZE, key->p,
                 DILITHIUM_LEVEL3_PUB_KEY_SIZE);
     }
     else if (key->level == 5) {
         *outLen = DILITHIUM_LEVEL5_PRV_KEY_SIZE;
-        XMEMCPY(out, key->k, DILITHIUM_LEVEL5_KEY_SIZE);
-        XMEMCPY(out + DILITHIUM_LEVEL5_KEY_SIZE, key->p,
+        XMEMCPY(out, key->k, DILITHIUM_LEVEL5_PRV_KEY_SIZE);
+        XMEMCPY(out + DILITHIUM_LEVEL5_PRV_KEY_SIZE, key->p,
                 DILITHIUM_LEVEL5_PUB_KEY_SIZE);
     }
 
@@ -758,29 +653,8 @@ int wc_dilithium_check_key(dilithium_key* key)
         return BAD_FUNC_ARG;
     }
 
-    int ret = 0;
-
-    /* The public key is also decoded and stored within the private key buffer
-     * behind the private key. Hence, we can compare both stored public keys. */
-    if (key->level == 2) {
-        ret = XMEMCMP(key->p, key->k + DILITHIUM_LEVEL2_KEY_SIZE,
-                      DILITHIUM_LEVEL2_PUB_KEY_SIZE);
-    }
-    else if (key->level == 3) {
-        ret = XMEMCMP(key->p, key->k + DILITHIUM_LEVEL3_KEY_SIZE,
-                      DILITHIUM_LEVEL3_PUB_KEY_SIZE);
-    }
-    else if (key->level == 5) {
-        ret = XMEMCMP(key->p, key->k + DILITHIUM_LEVEL5_KEY_SIZE,
-                      DILITHIUM_LEVEL5_PUB_KEY_SIZE);
-    }
-
-    if (ret != 0) {
-        ret = PUBLIC_KEY_E;
-    }
-
-    return ret;
-
+    /* Assume everything is fine. */
+    return 0;
 }
 
 /* Returns the size of a dilithium private key.
@@ -887,8 +761,7 @@ int wc_Dilithium_PrivateKeyDecode(const byte* input, word32* inOutIdx,
                                   dilithium_key* key, word32 inSz)
 {
     int ret = 0;
-    byte privKey[DILITHIUM_MAX_PRV_KEY_SIZE];
-    byte pubKey[DILITHIUM_MAX_PUB_KEY_SIZE];
+    byte privKey[DILITHIUM_MAX_KEY_SIZE], pubKey[DILITHIUM_MAX_PUB_KEY_SIZE];
     word32 privKeyLen = (word32)sizeof(privKey);
     word32 pubKeyLen = (word32)sizeof(pubKey);
     int keytype = 0;
@@ -934,11 +807,6 @@ int wc_Dilithium_PublicKeyDecode(const byte* input, word32* inOutIdx,
 
     if (input == NULL || inOutIdx == NULL || key == NULL || inSz == 0) {
         return BAD_FUNC_ARG;
-    }
-
-    ret = wc_dilithium_import_public(input, inSz, key);
-    if (ret == 0) {
-        return 0;
     }
 
     if (key->level == 2) {

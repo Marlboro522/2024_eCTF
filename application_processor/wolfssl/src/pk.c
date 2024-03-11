@@ -50,7 +50,8 @@
 #endif
 
 #if defined(OPENSSL_EXTRA) && !defined(NO_BIO) && defined(WOLFSSL_KEY_GEN) && \
-    (defined(HAVE_ECC) || (!defined(NO_DSA) && !defined(HAVE_SELFTEST)))
+    (!defined(HAVE_USER_RSA) || defined(HAVE_ECC) || \
+     (!defined(NO_DSA) && !defined(HAVE_SELFTEST)))
 /* Forward declaration for wolfSSL_PEM_write_bio_DSA_PUBKEY.
  * Implementation in ssl.c.
  */
@@ -219,8 +220,8 @@ static int pem_read_file_key(XFILE fp, wc_pem_password_cb* cb, void* pass,
 #endif /* !NO_FILESYSTEM */
 #endif
 
-#if defined(OPENSSL_EXTRA) && ((!defined(NO_RSA) && defined(WOLFSSL_KEY_GEN)) \
-    || !defined(WOLFCRYPT_ONLY))
+#if defined(OPENSSL_EXTRA) && ((!defined(NO_RSA) && defined(WOLFSSL_KEY_GEN) \
+    && !defined(HAVE_USER_RSA)) || !defined(WOLFCRYPT_ONLY))
 /* Convert DER data to PEM in an allocated buffer.
  *
  * @param [in]  der    Buffer containing DER data.
@@ -297,7 +298,8 @@ static int der_write_to_bio_as_pem(const unsigned char* der, int derSz,
 #endif
 #endif
 
-#if (!defined(NO_RSA) && defined(WOLFSSL_KEY_GEN)) || \
+#if (!defined(NO_RSA) && defined(WOLFSSL_KEY_GEN) && \
+     !defined(HAVE_USER_RSA)) || \
      (!defined(NO_DH) && defined(WOLFSSL_DH_EXTRA)) || \
      (defined(HAVE_ECC) && defined(WOLFSSL_KEY_GEN))
 #if !defined(NO_FILESYSTEM)
@@ -335,7 +337,7 @@ static int der_write_to_file_as_pem(const unsigned char* der, int derSz,
 
 #if defined(WOLFSSL_KEY_GEN) && \
     (defined(WOLFSSL_PEM_TO_DER) || defined(WOLFSSL_DER_TO_PEM)) && \
-    (!defined(NO_RSA) || defined(HAVE_ECC))
+    ((!defined(NO_RSA) && !defined(HAVE_USER_RSA)) || defined(HAVE_ECC))
 static int der_to_enc_pem_alloc(unsigned char* der, int derSz,
     const EVP_CIPHER *cipher, unsigned char *passwd, int passwdSz, int type,
     void* heap, byte** out, int* outSz)
@@ -530,7 +532,8 @@ static int pk_bn_field_print_fp(XFILE fp, int indent, const char* field,
 #endif /* !NO_CERTS && XFPRINTF && !NO_FILESYSTEM && !NO_STDIO_FILESYSTEM &&
         * (!NO_DSA || !NO_RSA || HAVE_ECC) */
 
-#if defined(XSNPRINTF) && !defined(NO_BIO) && !defined(NO_RSA)
+#if defined(XSNPRINTF) && !defined(NO_BIO) && !defined(NO_RSA) && \
+    !defined(HAVE_FAST_RSA)
 /* snprintf() must be available */
 
 /* Maximum number of extra indent spaces on each line. */
@@ -734,7 +737,7 @@ static int wolfssl_print_number(WOLFSSL_BIO* bio, mp_int* num, const char* name,
     return ret;
 }
 
-#endif /* XSNPRINTF && !NO_BIO && !NO_RSA */
+#endif /* XSNPRINTF && !NO_BIO && !NO_RSA && !HAVE_FAST_RSA */
 
 #if !defined(NO_RSA) || (!defined(NO_DH) && !defined(NO_CERTS) && \
     defined(HAVE_FIPS) && !FIPS_VERSION_GT(2,0)) || defined(HAVE_ECC)
@@ -919,7 +922,8 @@ void wolfSSL_RSA_free(WOLFSSL_RSA* rsa)
     #endif
 
         if (rsa->internal != NULL) {
-        #if !defined(HAVE_FIPS) && defined(WC_RSA_BLINDING)
+        #if !defined(HAVE_FIPS) && !defined(HAVE_USER_RSA) && \
+            !defined(HAVE_FAST_RSA) && defined(WC_RSA_BLINDING)
             /* Check if RNG is owned before freeing it. */
             if (rsa->ownRng) {
                 WC_RNG* rng = ((RsaKey*)(rsa->internal))->rng;
@@ -1018,7 +1022,8 @@ WOLFSSL_RSA* wolfSSL_RSA_new_ex(void* heap, int devId)
             rsaKeyInited = 1;
         }
     }
-    #if !defined(HAVE_FIPS) && defined(WC_RSA_BLINDING)
+    #if !defined(HAVE_FIPS) && !defined(HAVE_USER_RSA) && \
+        !defined(HAVE_FAST_RSA) && defined(WC_RSA_BLINDING)
     if (!err) {
         WC_RNG* rng;
 
@@ -1047,7 +1052,8 @@ WOLFSSL_RSA* wolfSSL_RSA_new_ex(void* heap, int devId)
             /* Won't fail as key and rng are not NULL. */
         }
     }
-    #endif /* !HAVE_FIPS && WC_RSA_BLINDING */
+    #endif /* !HAVE_FIPS && !HAVE_USER_RSA && !HAVE_FAST_RSA &&
+            * WC_RSA_BLINDING */
     if (!err) {
         /* Set wolfCrypt RSA key into RSA key. */
         rsa->internal = key;
@@ -1099,7 +1105,7 @@ int wolfSSL_RSA_up_ref(WOLFSSL_RSA* rsa)
 
 #ifdef OPENSSL_EXTRA
 
-#if defined(WOLFSSL_KEY_GEN)
+#if defined(WOLFSSL_KEY_GEN) && !defined(HAVE_USER_RSA)
 
 /* Allocate a new RSA key and make it a copy.
  *
@@ -1155,10 +1161,12 @@ WOLFSSL_RSA* wolfSSL_RSAPublicKey_dup(WOLFSSL_RSA *rsa)
 
 /* wolfSSL_RSAPrivateKey_dup not supported */
 
-#endif /* WOLFSSL_KEY_GEN */
+#endif /* WOLFSSL_KEY_GEN && !HAVE_USER_RSA */
 
+#ifndef HAVE_USER_RSA
 static int wolfSSL_RSA_To_Der_ex(WOLFSSL_RSA* rsa, byte** outBuf, int publicKey,
     void* heap);
+#endif
 
 /*
  * RSA to/from bin APIs
@@ -1262,6 +1270,8 @@ WOLFSSL_RSA *wolfSSL_d2i_RSAPrivateKey(WOLFSSL_RSA **out,
     return rsa;
 }
 
+#if defined(OPENSSL_EXTRA) && !defined(HAVE_USER_RSA) && \
+    !defined(HAVE_FAST_RSA)
 /* Converts an internal RSA structure to DER format for the private key.
  *
  * If "pp" is null then buffer size only is returned.
@@ -1335,6 +1345,8 @@ int wolfSSL_i2d_RSAPublicKey(WOLFSSL_RSA *rsa, unsigned char **pp)
 
     return ret;
 }
+#endif /* defined(OPENSSL_EXTRA) && !defined(HAVE_USER_RSA) &&
+        * !defined(HAVE_FAST_RSA) */
 
 #endif /* OPENSSL_EXTRA */
 
@@ -1347,7 +1359,8 @@ int wolfSSL_i2d_RSAPublicKey(WOLFSSL_RSA *rsa, unsigned char **pp)
 #if defined(OPENSSL_ALL) || defined(WOLFSSL_ASIO) || defined(WOLFSSL_HAPROXY) \
     || defined(WOLFSSL_NGINX) || defined(WOLFSSL_QT)
 
-#if defined(WOLFSSL_KEY_GEN) && !defined(NO_BIO)
+#if defined(WOLFSSL_KEY_GEN) && !defined(HAVE_USER_RSA) && \
+    !defined(HAVE_FAST_RSA) && !defined(NO_BIO)
 
 /* Read DER data from a BIO.
  *
@@ -1451,7 +1464,8 @@ WOLFSSL_RSA* wolfSSL_d2i_RSAPrivateKey_bio(WOLFSSL_BIO *bio, WOLFSSL_RSA **out)
     XFREE(der, bio ? bio->heap : NULL, DYNAMIC_TYPE_TMP_BUFFER);
     return key;
 }
-#endif /* defined(WOLFSSL_KEY_GEN) && !NO_BIO */
+#endif /* defined(WOLFSSL_KEY_GEN) && !defined(HAVE_USER_RSA) &&
+        * !defined(HAVE_FAST_RSA) && !NO_BIO */
 
 #endif /* OPENSSL_ALL || WOLFSSL_ASIO || WOLFSSL_HAPROXY || WOLFSSL_QT */
 
@@ -1461,6 +1475,7 @@ WOLFSSL_RSA* wolfSSL_d2i_RSAPrivateKey_bio(WOLFSSL_BIO *bio, WOLFSSL_RSA **out)
 
 #ifdef OPENSSL_EXTRA
 
+#ifndef HAVE_USER_RSA
 /* Create a DER encoding of key.
  *
  * Not OpenSSL API.
@@ -1597,6 +1612,7 @@ static int wolfSSL_RSA_To_Der_ex(WOLFSSL_RSA* rsa, byte** outBuf, int publicKey,
     WOLFSSL_LEAVE("wolfSSL_RSA_To_Der", ret);
     return ret;
 }
+#endif /* !HAVE_USER_RSA */
 
 #endif /* OPENSSL_EXTRA */
 
@@ -1756,7 +1772,7 @@ static WOLFSSL_RSA* wolfssl_rsa_d2i(WOLFSSL_RSA** rsa, const unsigned char* in,
 #ifdef OPENSSL_EXTRA
 
 #ifndef NO_BIO
-#if defined(WOLFSSL_KEY_GEN)
+#if defined(WOLFSSL_KEY_GEN) && !defined(HAVE_USER_RSA)
 /* Writes PEM encoding of an RSA public key to a BIO.
  *
  * @param [in] bio  BIO object to write to.
@@ -1796,10 +1812,10 @@ int wolfSSL_PEM_write_bio_RSA_PUBKEY(WOLFSSL_BIO* bio, WOLFSSL_RSA* rsa)
     return ret;
 }
 
-#endif /* WOLFSSL_KEY_GEN */
+#endif /* WOLFSSL_KEY_GEN && !HAVE_USER_RSA */
 #endif /* !NO_BIO */
 
-#if defined(WOLFSSL_KEY_GEN)
+#if defined(WOLFSSL_KEY_GEN) && !defined(HAVE_USER_RSA)
 #ifndef NO_FILESYSTEM
 
 /* Writes PEM encoding of an RSA public key to a file pointer.
@@ -1870,7 +1886,7 @@ int wolfSSL_PEM_write_RSAPublicKey(XFILE fp, WOLFSSL_RSA* rsa)
     return wolfssl_pem_write_rsa_public_key(fp, rsa, RSA_PUBLICKEY_TYPE);
 }
 #endif /* !NO_FILESYSTEM */
-#endif /* WOLFSSL_KEY_GEN */
+#endif /* WOLFSSL_KEY_GEN && !HAVE_USER_RSA */
 
 #ifndef NO_BIO
 /* Create an RSA public key by reading the PEM encoded data from the BIO.
@@ -1967,7 +1983,7 @@ WOLFSSL_RSA* wolfSSL_PEM_read_RSAPublicKey(XFILE fp, WOLFSSL_RSA** rsa,
 
 #endif /* NO_FILESYSTEM */
 
-#if defined(WOLFSSL_KEY_GEN) && \
+#if defined(WOLFSSL_KEY_GEN) && !defined(HAVE_USER_RSA) && \
     (defined(WOLFSSL_PEM_TO_DER) || defined(WOLFSSL_DER_TO_PEM))
 
 /* Writes PEM encoding of an RSA private key to newly allocated buffer.
@@ -2126,7 +2142,7 @@ int wolfSSL_PEM_write_RSAPrivateKey(XFILE fp, WOLFSSL_RSA *rsa,
     return ret;
 }
 #endif /* NO_FILESYSTEM */
-#endif /* WOLFSSL_KEY_GEN && WOLFSSL_PEM_TO_DER */
+#endif /* WOLFSSL_KEY_GEN && !HAVE_USER_RSA && WOLFSSL_PEM_TO_DER */
 
 #ifndef NO_BIO
 /* Create an RSA private key by reading the PEM encoded data from the BIO.
@@ -2274,7 +2290,7 @@ int wolfSSL_RSA_print_fp(XFILE fp, WOLFSSL_RSA* rsa, int indent)
 }
 #endif /* XFPRINTF && !NO_FILESYSTEM && !NO_STDIO_FILESYSTEM */
 
-#if defined(XSNPRINTF) && !defined(NO_BIO)
+#if defined(XSNPRINTF) && !defined(NO_BIO) && !defined(HAVE_FAST_RSA)
 /* snprintf() must be available */
 
 /* Maximum size of a header line. */
@@ -2382,7 +2398,7 @@ int wolfSSL_RSA_print(WOLFSSL_BIO* bio, WOLFSSL_RSA* rsa, int indent)
 
     return ret;
 }
-#endif /* XSNPRINTF && !NO_BIO */
+#endif /* XSNPRINTF && !NO_BIO && !HAVE_FAST_RSA */
 
 #endif /* OPENSSL_EXTRA */
 
@@ -2391,6 +2407,7 @@ int wolfSSL_RSA_print(WOLFSSL_BIO* bio, WOLFSSL_RSA* rsa, int indent)
  */
 
 #if defined(OPENSSL_EXTRA) || defined(OPENSSL_EXTRA_X509_SMALL)
+#if !defined(HAVE_USER_RSA) && !defined(HAVE_FAST_RSA)
 /* Set RSA key data (external) from wolfCrypt RSA key (internal).
  *
  * @param [in, out] rsa  RSA key.
@@ -2483,10 +2500,12 @@ int SetRsaExternal(WOLFSSL_RSA* rsa)
 
     return ret;
 }
+#endif /* !HAVE_USER_RSA && !HAVE_FAST_RSA */
 #endif /* (OPENSSL_EXTRA || OPENSSL_EXTRA_X509_SMALL) */
 
 #ifdef OPENSSL_EXTRA
 
+#if !defined(HAVE_USER_RSA) && !defined(HAVE_FAST_RSA)
 /* Set wolfCrypt RSA key data (internal) from RSA key (external).
  *
  * @param [in, out] rsa  RSA key.
@@ -2582,6 +2601,8 @@ int SetRsaInternal(WOLFSSL_RSA* rsa)
     return ret;
 }
 
+#endif /* HAVE_USER_RSA */
+
 /* Set the RSA method into object.
  *
  * @param [in, out] rsa   RSA key.
@@ -2657,6 +2678,8 @@ int wolfSSL_RSA_bits(const WOLFSSL_RSA* rsa)
 
     return ret;
 }
+
+#ifndef HAVE_USER_RSA
 
 /* Get the BN objects that are the Chinese-Remainder Theorem (CRT) parameters.
  *
@@ -2899,6 +2922,8 @@ int wolfSSL_RSA_set0_key(WOLFSSL_RSA *rsa, WOLFSSL_BIGNUM *n, WOLFSSL_BIGNUM *e,
     return ret;
 }
 
+#endif /* !HAVE_USER_RSA */
+
 /* Get the flags of the RSA key.
  *
  * @param [in] rsa  RSA key.
@@ -3063,6 +3088,7 @@ int wolfSSL_RSA_check_key(const WOLFSSL_RSA* rsa)
  * RSA generate APIs
  */
 
+#if !defined(HAVE_USER_RSA) && !defined(HAVE_FAST_RSA)
 /* Get a random number generator associated with the RSA key.
  *
  * If not able, then get the global if possible.
@@ -3105,6 +3131,7 @@ WC_RNG* WOLFSSL_RSA_GetRNG(WOLFSSL_RSA* rsa, WC_RNG** tmpRng, int* initTmpRng)
 
     return rng;
 }
+#endif
 
 /* Use the wolfCrypt RSA APIs to generate a new RSA key.
  *
@@ -3625,6 +3652,8 @@ int wolfSSL_RSA_verify_PKCS1_PSS(WOLFSSL_RSA *rsa, const unsigned char *mHash,
 
 #if defined(OPENSSL_EXTRA)
 
+#if !defined(HAVE_USER_RSA)
+
 /* Encode the message hash.
  *
  * Used by signing and verification.
@@ -4053,6 +4082,8 @@ int wolfSSL_RSA_verify_ex(int hashAlg, const unsigned char* hash,
  * RSA public/private encrypt/decrypt APIs
  */
 
+#if !defined(HAVE_USER_RSA) && !defined(HAVE_FAST_RSA)
+
 /* Encrypt with the RSA public key.
  *
  * Return compliant with OpenSSL.
@@ -4450,6 +4481,7 @@ int wolfSSL_RSA_private_encrypt(int len, const unsigned char* from,
     WOLFSSL_LEAVE("wolfSSL_RSA_private_encrypt", ret);
     return ret;
 }
+#endif /* !HAVE_USER_RSA && !HAVE_FAST_RSA */
 
 /*
  * RSA misc operation APIs
@@ -4549,6 +4581,7 @@ int wolfSSL_RSA_GenAdd(WOLFSSL_RSA* rsa)
     return ret;
 }
 
+#endif /* !HAVE_USER_RSA */
 
 #ifndef NO_WOLFSSL_STUB
 /* Enable blinding for RSA key operations.
@@ -5033,19 +5066,15 @@ int wolfSSL_DSA_set0_key(WOLFSSL_DSA *d, WOLFSSL_BIGNUM *pub_key,
     WOLFSSL_ENTER("wolfSSL_DSA_set0_key");
 
     /* The private key may be NULL */
-    if (d->pub_key == NULL && pub_key == NULL) {
+    if (pub_key == NULL) {
         WOLFSSL_MSG("Bad parameter");
         return 0;
     }
 
-    if (pub_key != NULL) {
-        wolfSSL_BN_free(d->pub_key);
-        d->pub_key = pub_key;
-    }
-    if (priv_key != NULL) {
-        wolfSSL_BN_free(d->priv_key);
-        d->priv_key = priv_key;
-    }
+    wolfSSL_BN_free(d->pub_key);
+    wolfSSL_BN_free(d->priv_key);
+    d->pub_key = pub_key;
+    d->priv_key = priv_key;
 
     return 1;
 }
@@ -8499,7 +8528,7 @@ int wolfSSL_DH_compute_key(unsigned char* key, const WOLFSSL_BIGNUM* otherPub,
     word32         keySz  = 0;
     int            pubSz  = MAX_DHKEY_SZ;
     int            privSz = MAX_DHKEY_SZ;
-    int            sz     = 0;
+    int            sz;
 #ifdef WOLFSSL_SMALL_STACK
     unsigned char* pub    = NULL;
     unsigned char* priv   = NULL;

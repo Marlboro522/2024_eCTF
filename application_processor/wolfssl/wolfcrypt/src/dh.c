@@ -55,13 +55,6 @@
     #include <wolfcrypt/src/misc.c>
 #endif
 
-#if defined(WOLFSSL_LINUXKM) && !defined(WOLFSSL_SP_ASM)
-    /* force off unneeded vector register save/restore. */
-    #undef SAVE_VECTOR_REGISTERS
-    #define SAVE_VECTOR_REGISTERS(...) WC_DO_NOTHING
-    #undef RESTORE_VECTOR_REGISTERS
-    #define RESTORE_VECTOR_REGISTERS() WC_DO_NOTHING
-#endif
 
 /*
 Possible DH enable options:
@@ -3010,7 +3003,7 @@ int wc_DhGenerateParams(WC_RNG *rng, int modSz, DhKey *dh)
 
     /* loop until p is prime */
     if (ret == 0) {
-        for (;;) {
+        do {
             if (mp_prime_is_prime_ex(&dh->p, 8, &primeCheck, rng) != MP_OKAY)
                 ret = PRIME_GEN_E;
 
@@ -3021,14 +3014,7 @@ int wc_DhGenerateParams(WC_RNG *rng, int modSz, DhKey *dh)
                 else
                     primeCheckCount++;
             }
-
-            if (ret != 0 || primeCheck == MP_YES)
-                break;
-
-            /* linuxkm: release the kernel for a moment before iterating. */
-            RESTORE_VECTOR_REGISTERS();
-            SAVE_VECTOR_REGISTERS(ret = _svr_ret; break;);
-        };
+        } while (ret == 0 && primeCheck == MP_NO);
     }
 
     /* tmp2 += (2*loop_check_prime)

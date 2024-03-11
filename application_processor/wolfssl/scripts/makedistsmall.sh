@@ -62,6 +62,7 @@ rm -rf ./swig
 rm -rf ./tests
 rm -rf ./testsuite
 rm -rf ./tirtos
+rm -rf ./wolfcrypt/user-crypto
 rm -rf ./wrapper
 rm -f -- *.rc *.supp *.ac *.am *.conf *.sh *.cproject *.project *.pl
 rm -f Vagrantfile SCRIPTS-LIST quit input resource.h

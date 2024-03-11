@@ -227,6 +227,12 @@ wolfcrypt/src/src_libwolfssl_la-asn.lo: wolfcrypt/src/asn.c .build_params \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arpa/inet.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/in.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet6/in6.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h \
   wolfssl/wolfcrypt/pkcs12.h wolfssl/wolfcrypt/poly1305.h \
   wolfssl/wolfcrypt/kdf.h wolfssl/wolfcrypt/chacha20_poly1305.h \
@@ -729,6 +735,18 @@ wolfssl/wolfio.h:
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/in.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet6/in6.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h:
 

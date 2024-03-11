@@ -970,14 +970,10 @@ static const char* server_usage_msg[][65] = {
 #ifdef HAVE_SUPPORTED_CURVES
         "--onlyPskDheKe Must use DHE key exchange with PSK\n",          /* 64 */
 #endif
-#ifdef WOLFSSL_DUAL_ALG_CERTS
-        "--altPrivKey <file> Generate alternative signature with this key.\n",
-                                                                        /* 65 */
-#endif
         "\n"
            "For simpler wolfSSL TLS server examples, visit\n"
            "https://github.com/wolfSSL/wolfssl-examples/tree/master/tls\n",
-                                                                        /* 66 */
+                                                                        /* 65 */
         NULL,
     },
 #ifndef NO_MULTIBYTE_PRINT
@@ -1164,15 +1160,10 @@ static const char* server_usage_msg[][65] = {
 #ifdef HAVE_SUPPORTED_CURVES
         "--onlyPskDheKe Must use DHE key exchange with PSK\n",          /* 64 */
 #endif
-#ifdef WOLFSSL_DUAL_ALG_CERTS
-        "--altPrivKey <file> Generate alternative signature with this key.\n",
-                                                                        /* 65 */
-#endif
         "\n"
         "より簡単なwolfSSL TSL クライアントの例については"
                                           "下記にアクセスしてください\n"
-        "https://github.com/wolfSSL/wolfssl-examples/tree/master/tls\n",
-                                                                        /* 66 */
+        "https://github.com/wolfSSL/wolfssl-examples/tree/master/tls\n", /* 65 */
         NULL,
     },
 #endif
@@ -1329,10 +1320,7 @@ static void Usage(void)
 #ifdef HAVE_SUPPORTED_CURVES
     printf("%s", msg[++msgId]);     /* --onlyPskDheKe */
 #endif
-#ifdef WOLFSSL_DUAL_ALG_CERTS
-    printf("%s", msg[++msgId]);     /* --altPrivKey */
-#endif
-    printf("%s", msg[++msgId]);     /* Examples repo link */
+    printf("%s", msg[++msgId]); /* Examples repo link */
 }
 
 #ifdef WOLFSSL_SRTP
@@ -1448,9 +1436,6 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
         {"crl-dir", 1, 265},
 #endif
         {"quieter", 0, 266},
-#ifdef WOLFSSL_DUAL_ALG_CERTS
-        { "altPrivKey", 1, 267},
-#endif
         { 0, 0, 0 }
     };
 #endif
@@ -1615,7 +1600,6 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
     int useX448 = 0;
     int usePqc = 0;
     char* pqcAlg = NULL;
-    char* altPrivKey = NULL;
     int exitWithRet = 0;
     int loadCertKeyIntoSSLObj = 0;
 
@@ -1690,7 +1674,6 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
     (void)nonBlocking;
     (void)pqcAlg;
     (void)usePqc;
-    (void)altPrivKey;
 
 #ifdef WOLFSSL_TIRTOS
     fdOpenSession(Task_self());
@@ -2337,12 +2320,6 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
             quieter = 1;
             break;
 
-#ifdef WOLFSSL_DUAL_ALG_CERTS
-        case 267:
-            altPrivKey = myoptarg;
-            break;
-#endif
-
         case -1:
             default:
                 Usage();
@@ -2720,14 +2697,6 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
                                          != WOLFSSL_SUCCESS)
             err_sys_ex(catastrophic, "can't load server private key file, "
                        "check file and run from wolfSSL home dir");
-        #ifdef WOLFSSL_DUAL_ALG_CERTS
-        if ((altPrivKey != NULL) &&
-            wolfSSL_CTX_use_AltPrivateKey_file(ctx, altPrivKey,
-                                               WOLFSSL_FILETYPE_PEM)
-                                               != WOLFSSL_SUCCESS)
-            err_sys_ex(catastrophic, "can't load alt private key file, "
-                       "check file and run from wolfSSL home dir");
-        #endif /* WOLFSSL_DUAL_ALG_CERTS */
     #else
         /* loads private key file using buffer API */
         load_buffer(ctx, ourKey, WOLFSSL_KEY);

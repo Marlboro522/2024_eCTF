@@ -44,13 +44,6 @@
 #include <esp_types.h>
 #include <esp_log.h>
 
-#if ESP_IDF_VERSION_MAJOR >= 4
-    #define WOLFSSL_ESPIDF_BLANKLINE_MESSAGE ""
-#else
-    /* Older ESP-IDF such as that for ESP8266 do not support empty strings */
-    #define WOLFSSL_ESPIDF_BLANKLINE_MESSAGE "."
-#endif
-
 /* exit codes to be used in tfm.c, sp_int.c, integer.c, etc.
  *
  * see wolfssl/wolfcrypt/error-crypt.h
@@ -245,11 +238,6 @@ enum {
 **   See NO_HW_MATH_TEST.
 **
 *******************************************************************************
-** WOLFSSL_FULL_WOLFSSH_SUPPORT
-**   TODO - there's a known, unresolved problem with SHA256 in wolfSSH
-**   Until fixed by a release version or this macro being define once resolved,
-**   this macro should remain undefined.
-**
 */
 #ifdef WOLFSSL_ESP32_CRYPT_DEBUG
     #undef LOG_LOCAL_LEVEL
@@ -464,10 +452,7 @@ enum {
 #endif
 
 #ifdef SINGLE_THREADED
-    #ifdef WOLFSSL_DEBUG_MUTEX
-        #undef  ESP_MONITOR_HW_TASK_LOCK
-        #define ESP_MONITOR_HW_TASK_LOCK
-    #endif
+    #undef ESP_MONITOR_HW_TASK_LOCK
 #else
     /* Unless explicitly disabled, monitor task lock when not single thread. */
     #ifndef ESP_DISABLE_HW_TASK_LOCK
@@ -528,8 +513,6 @@ extern "C"
 #ifndef NO_AES
     #if ESP_IDF_VERSION_MAJOR >= 4
         #include "esp32/rom/aes.h"
-    #elif defined(CONFIG_IDF_TARGET_ESP8266)
-        /* no hardware includes for ESP8266*/
     #else
         #include "rom/aes.h"
     #endif
@@ -633,7 +616,7 @@ extern "C"
     {
         /* pointer to object the initialized HW; to track copies */
         void* initializer;
-#if !defined(SINGLE_THREADED) || defined(ESP_MONITOR_HW_TASK_LOCK)
+#ifndef SINGLE_THREADED
         void* task_owner;
 #endif
 
@@ -873,16 +856,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-
-/* Compatibility checks */
-#if defined(DEBUG_WOLFSSH) || defined(ESP_ENABLE_WOLFSSH) || \
-    defined(WOLFSSH_TERM)  || defined(WOLFSSH_TEST_SERVER)
-    #ifndef NO_WOLFSSL_ESP32_CRYPT_HASH_SHA256
-        /* need to add this line to wolfssl component user_settings.h
-         * #define NO_WOLFSSL_ESP32_CRYPT_HASH_SHA256 */
-        #error "ESP32_CRYPT_HASH_SHA256 not supported on wolfSSL at this time"
-    #endif
-#endif /* SSH SHA256 HW check */
 
 #endif /* WOLFSSL_ESPIDF (entire contents excluded when not Espressif ESP-IDF) */
 

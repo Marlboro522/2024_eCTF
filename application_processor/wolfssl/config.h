@@ -4,55 +4,58 @@
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 
+/* User RSA is being defined */
+#define BUILD_USER_RSA /**/
+
 /* Define to 1 to enable debugging code. */
 #define DEBUG 0
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #define HAVE_ARPA_INET_H 1
 
-/* Define to 1 if you have the 'atexit' function. */
+/* Define to 1 if you have the `atexit' function. */
 #define HAVE_ATEXIT 1
 
 /* Define to 1 if __atomic operations work. */
 #define HAVE_C___ATOMIC 1
 
-/* Define to 1 if you have the declaration of 'atexit', and to 0 if you don't.
+/* Define to 1 if you have the declaration of `atexit', and to 0 if you don't.
    */
 #define HAVE_DECL_ATEXIT 1
 
-/* Define to 1 if you have the declaration of 'getaddrinfo', and to 0 if you
+/* Define to 1 if you have the declaration of `getaddrinfo', and to 0 if you
    don't. */
 #define HAVE_DECL_GETADDRINFO 1
 
-/* Define to 1 if you have the declaration of 'gethostbyname', and to 0 if you
+/* Define to 1 if you have the declaration of `gethostbyname', and to 0 if you
    don't. */
 #define HAVE_DECL_GETHOSTBYNAME 1
 
-/* Define to 1 if you have the declaration of 'gettimeofday', and to 0 if you
+/* Define to 1 if you have the declaration of `gettimeofday', and to 0 if you
    don't. */
 #define HAVE_DECL_GETTIMEOFDAY 1
 
-/* Define to 1 if you have the declaration of 'gmtime_r', and to 0 if you
+/* Define to 1 if you have the declaration of `gmtime_r', and to 0 if you
    don't. */
 #define HAVE_DECL_GMTIME_R 1
 
-/* Define to 1 if you have the declaration of 'gmtime_s', and to 0 if you
+/* Define to 1 if you have the declaration of `gmtime_s', and to 0 if you
    don't. */
 #define HAVE_DECL_GMTIME_S 0
 
-/* Define to 1 if you have the declaration of 'inet_ntoa', and to 0 if you
+/* Define to 1 if you have the declaration of `inet_ntoa', and to 0 if you
    don't. */
 #define HAVE_DECL_INET_NTOA 1
 
-/* Define to 1 if you have the declaration of 'memset', and to 0 if you don't.
+/* Define to 1 if you have the declaration of `memset', and to 0 if you don't.
    */
 #define HAVE_DECL_MEMSET 1
 
-/* Define to 1 if you have the declaration of 'socket', and to 0 if you don't.
+/* Define to 1 if you have the declaration of `socket', and to 0 if you don't.
    */
 #define HAVE_DECL_SOCKET 1
 
-/* Define to 1 if you have the declaration of 'strftime', and to 0 if you
+/* Define to 1 if you have the declaration of `strftime', and to 0 if you
    don't. */
 #define HAVE_DECL_STRFTIME 1
 
@@ -65,47 +68,59 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
 
-/* Define to 1 if you have the 'getaddrinfo' function. */
+/* Define to 1 if you have the `getaddrinfo' function. */
 #define HAVE_GETADDRINFO 1
 
-/* Define to 1 if you have the 'gethostbyname' function. */
+/* Define to 1 if you have the `gethostbyname' function. */
 #define HAVE_GETHOSTBYNAME 1
 
-/* Define to 1 if you have the 'gettimeofday' function. */
+/* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
 
-/* Define to 1 if you have the 'gmtime_r' function. */
+/* Define to 1 if you have the `gmtime_r' function. */
 #define HAVE_GMTIME_R 1
 
-/* Define to 1 if you have the 'gmtime_s' function. */
+/* Define to 1 if you have the `gmtime_s' function. */
 /* #undef HAVE_GMTIME_S */
 
-/* Define to 1 if you have the 'inet_ntoa' function. */
+/* Define to 1 if you have the `inet_ntoa' function. */
 #define HAVE_INET_NTOA 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the 'hsm_lib' library (-lhsm_lib). */
+/* Define to 1 if you have the <ippcp.h> header file. */
+/* #undef HAVE_IPPCP_H */
+
+/* Define to 1 if you have the <IPP/include/ippcp.h> header file. */
+/* #undef HAVE_IPP_INCLUDE_IPPCP_H */
+
+/* Define to 1 if you have the <IPP/include/ipp.h> header file. */
+/* #undef HAVE_IPP_INCLUDE_IPP_H */
+
+/* Define to 1 if you have the `hsm_lib' library (-lhsm_lib). */
 /* #undef HAVE_LIBHSM_LIB */
 
-/* Define to 1 if you have the 'network' library (-lnetwork). */
+/* Define to 1 if you have the `network' library (-lnetwork). */
 #define HAVE_LIBNETWORK 1
 
-/* Define to 1 if you have the 'pthread' library (-lpthread). */
+/* Define to 1 if you have the `pthread' library (-lpthread). */
 /* #undef HAVE_LIBPTHREAD */
 
-/* Define to 1 if you have the 'rt' library (-lrt). */
+/* Define to 1 if you have the `rt' library (-lrt). */
 /* #undef HAVE_LIBRT */
 
-/* Define to 1 if you have the 'seco_nvm_manager' library
+/* Define to 1 if you have the `seco_nvm_manager' library
    (-lseco_nvm_manager). */
 /* #undef HAVE_LIBSECO_NVM_MANAGER */
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
 
-/* Define to 1 if you have the 'memset' function. */
+/* Define to 1 if you have the <memory.h> header file. */
+#define HAVE_MEMORY_H 1
+
+/* Define to 1 if you have the `memset' function. */
 #define HAVE_MEMSET 1
 
 /* Define to 1 if you have the <netdb.h> header file. */
@@ -135,7 +150,7 @@
 /* Define to 1 if you have the <Security/SecTrust.h> header file. */
 #define HAVE_SECURITY_SECTRUST_H 1
 
-/* Define to 1 if you have the 'socket' function. */
+/* Define to 1 if you have the `socket' function. */
 #define HAVE_SOCKET 1
 
 /* Define to 1 if you have the <stddef.h> header file. */
@@ -144,13 +159,10 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
 
-/* Define to 1 if you have the <stdio.h> header file. */
-#define HAVE_STDIO_H 1
-
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
 
-/* Define to 1 if you have the 'strftime' function. */
+/* Define to 1 if you have the `strftime' function. */
 #define HAVE_STRFTIME 1
 
 /* Define to 1 if you have the <strings.h> header file. */
@@ -180,7 +192,7 @@
 /* Define to 1 if you have the <time.h> header file. */
 #define HAVE_TIME_H 1
 
-/* Define to 1 if the system has the type 'uintptr_t'. */
+/* Define to 1 if the system has the type `uintptr_t'. */
 #define HAVE_UINTPTR_T 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
@@ -190,7 +202,7 @@
    declarations. */
 #define HAVE_VISIBILITY 1
 
-/* Define to 1 if the system has the type '__uint128_t'. */
+/* Define to 1 if the system has the type `__uint128_t'. */
 #define HAVE___UINT128_T 1
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
@@ -218,28 +230,26 @@
    your system. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
-/* The size of 'long', as computed by sizeof. */
+/* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 8
 
-/* The size of 'long long', as computed by sizeof. */
+/* The size of `long long', as computed by sizeof. */
 #define SIZEOF_LONG_LONG 8
 
-/* The size of 'time_t', as computed by sizeof. */
+/* The size of `time_t', as computed by sizeof. */
 #define SIZEOF_TIME_T 8
 
-/* Define to 1 if all of the C89 standard headers exist (not just the ones
-   required in a freestanding environment). This macro is provided for
-   backward compatibility; new code need not use it. */
+/* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* If the compiler supports a TLS storage class, define it to that here */
 #define TLS _Thread_local
 
 /* Define if the code was built from VCS. */
-#define VCS_CHECKOUT 1
+#define VCS_CHECKOUT 0
 
 /* VCS system */
-#define VCS_SYSTEM "git"
+#define VCS_SYSTEM "none"
 
 /* Use __declspec(dllexport) when building library */
 /* #undef WOLFSSL_DLL */
@@ -261,7 +271,7 @@
    #define below would cause a syntax error. */
 /* #undef _UINT8_T */
 
-/* Define as 'unsigned int' if <stddef.h> doesn't define. */
+/* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
 /* Define to the type of an unsigned integer type of width exactly 8 bits if

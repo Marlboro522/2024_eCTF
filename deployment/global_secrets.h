@@ -1,1 +1,1 @@
-#define PIN 521313
+#define REPLACEMENT TOKEN 0123456789abcdef

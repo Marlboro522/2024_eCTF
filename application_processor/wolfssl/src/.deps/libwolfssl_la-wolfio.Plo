@@ -216,6 +216,12 @@ src/libwolfssl_la-wolfio.lo: src/wolfio.c .build_params config.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arpa/inet.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet/in.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet6/in6.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h \
   wolfssl/wolfcrypt/chacha.h wolfssl/wolfcrypt/asn.h \
   wolfssl/wolfcrypt/wolfmath.h wolfssl/wolfcrypt/sp_int.h \
@@ -227,13 +233,7 @@ src/libwolfssl_la-wolfio.lo: src/wolfio.c .build_params config.h \
   wolfssl/wolfcrypt/rsa.h wolfssl/wolfcrypt/ecc.h \
   wolfssl/wolfcrypt/kdf.h wolfssl/wolfcrypt/chacha20_poly1305.h \
   wolfssl/wolfcrypt/wc_encrypt.h wolfssl/wolfcrypt/hpke.h \
-  wolfssl/error-ssl.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h
+  wolfssl/error-ssl.h
 
 .build_params:
 
@@ -695,6 +695,18 @@ wolfssl/wolfio.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netinet6/in6.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/uio.h:
 
 wolfssl/wolfcrypt/chacha.h:
@@ -732,15 +744,3 @@ wolfssl/wolfcrypt/wc_encrypt.h:
 wolfssl/wolfcrypt/hpke.h:
 
 wolfssl/error-ssl.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/netdb.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioctl.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ttycom.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/ioccom.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/filio.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/sockio.h:
