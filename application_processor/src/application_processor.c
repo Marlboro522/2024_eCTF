@@ -73,6 +73,16 @@
 #define KEY_SIZE 32
 
 #define WOLFSSL_ECC
+#define NUM_COMPONENTS(...) (sizeof((uint32_t[]){__VA_ARGS__}) / sizeof(uint32_t))
+#define EXTRACT_COMPONENTS(buffer, ...) \
+    do { \
+        uint32_t temp_buffer[] = {__VA_ARGS__}; \
+        int i; \
+        for (i = 0; i < NUM_COMPONENTS(__VA_ARGS__); ++i) { \
+            buffer[i] = temp_buffer[i]; \
+        } \
+        return i; \
+    } while (0)
 //TLS commincation reqs
 
 // #define CERTIFICATE_ADDRESS 0x10045FFF
@@ -123,8 +133,8 @@ flash_entry flash_status;
 #define KEY_SIZE_ 16 // 128 bits = 16 bytes
 #define SIGNATURE_SIZE 64 // Assuming a fixed signature size
 
-ecc_key sender_private_key;
-ecc_key receiver_public_key;
+static ecc_key sender_private_key;
+static ecc_key receiver_public_key;
 
 void initialize_keys(){
     wc_ecc_init(&sender_private_key);
@@ -167,12 +177,12 @@ int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign){
  * This function must be implemented by your team to align with the security requirements.
 
 */
-int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_key,ecc_key* public_key) {
+int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
     //Need this funciton to send_packet over some kind of secure channel...... 
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
     uint8_t signat[SIGNATURE_SIZE];
-    if(sign(buffer,len,private_key,public_key,signat)!=0){
+    if(sign(buffer,len,&sender_private_key,&receiver_public_key,signat)!=0){
         return ERROR_RETURN;
     } uint8_t signed_packet[len+SIGNATURE_SIZE];
     memcpy(signed_packet,buffer,len);
@@ -217,6 +227,7 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
 */
 int get_provisioned_ids(uint32_t* buffer) {
     //should have commented more on this... 
+    EXTRACT_COMPONENTS(buffer, COMPONENT_IDS);
     memcpy(buffer, flash_status.component_ids, flash_status.component_cnt * sizeof(uint32_t));
     return flash_status.component_cnt;
 }
@@ -229,7 +240,8 @@ void init() {
 
     // Enable global interrupts    
     __enable_irq();
-
+    //Set up keys
+    initialize_keys();
     // Setup Flash
     flash_simple_init();
 

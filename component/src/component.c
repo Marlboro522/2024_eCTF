@@ -92,8 +92,12 @@ uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
 uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
-#define KEY_SIZE_ 512
+#define KEY_SIZE_ 16
 #define SIGNATURE_SIZE 64
+
+static ecc_key sender_private_key;
+static ecc_key receiver_public_key;
+void initialize
 /**
  * @brief Create Cert
  * 
@@ -154,7 +158,7 @@ int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, ui
 }
 int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
     int ret;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, private_key);
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len,&sender_private_key);
     if(ret!=0){
         print_error("Failure...v");
     }return ret;
@@ -171,7 +175,7 @@ int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
 void secure_send(uint8_t* buffer, uint8_t len) {
 
     uint8_t signat[SIGNATURE_SIZE];
-    if(sign(buffer,len,private_key,public_key,signat)!=0){
+    if(sign(buffer,len,sender_private_key,receiver_public_key,signat)!=0){
         return ERROR_RETURN;
     } uint8_t signed_packet[len+SIGNATURE_SIZE];
     memcpy(signed_packet,buffer,len);
@@ -299,6 +303,8 @@ int main(void) {
     
     // Enable Global Interrupts
     __enable_irq();
+    //initialize keys
+    
     
     // Initialize Component
     i2c_addr_t addr = component_id_to_i2c_addr(COMPONENT_ID);
