@@ -75,6 +75,17 @@
 #define WOLFSSL_ECC
 //TLS commincation reqs
 
+#define NUM_COMPONENTS(...) (sizeof((uint32_t[]){__VA_ARGS__}) / sizeof(uint32_t))
+#define EXTRACT_COMPONENTS(buffer, ...) \
+    do { \
+        uint32_t temp_buffer[] = {__VA_ARGS__}; \
+        int i; \
+        for (i = 0; i < NUM_COMPONENTS(__VA_ARGS__); ++i) { \
+            buffer[i] = temp_buffer[i]; \
+        } \
+        return i; \
+    } while (0)
+
 // #define CERTIFICATE_ADDRESS 0x10045FFF
 // #define PRIVATE_KEY_ADDRESS 0x10060000
 
@@ -120,8 +131,8 @@ flash_entry flash_status;
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 //Need lesser size to be he key here.... unable to emulate TI error.....
-#define KEY_SIZE_ 16 // 128 bits = 16 bytes
-#define SIGNATURE_SIZE 64 // Assuming a fixed signature size
+#define KEY_SIZE_ 16
+#define SIGNATURE_SIZE 64
 
 ecc_key sender_private_key;
 ecc_key receiver_public_key;
@@ -136,23 +147,25 @@ void initialize_keys(){
 
 int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, uint8_t *sign) { 
     int ret;
-
+    WC_RNG rng; // Declare random number generator object
+    wc_InitRng(&rng); // Initialize RNG
     wc_ecc_init(private_key);
-    ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
+    ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key, &rng); // Pass RNG as last argument
     if (ret != 0) {
         print_error("Failure signing");
     }
-
+    wc_FreeRng(&rng); // Free RNG after use
     return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
 }
 
-int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign){
+int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
     int ret;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &receiver_public_key);
+    int result;
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &result, &receiver_public_key);
     if (ret != 0) {
         print_error("Failure verifying");
     }
-    return ret;
+    return result;
 }
 
 
@@ -217,9 +230,11 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
 */
 int get_provisioned_ids(uint32_t* buffer) {
     //should have commented more on this... 
+    EXTRACT_COMPONENTS(buffer, COMPONENT_IDS);
     memcpy(buffer, flash_status.component_ids, flash_status.component_cnt * sizeof(uint32_t));
     return flash_status.component_cnt;
 }
+
 
 /********************************* UTILITIES **********************************/
 

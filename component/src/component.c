@@ -37,9 +37,13 @@
 
 #include <wolfssl/options.h>
 #include <wolfssl/ssl.h>
-#include <wolfssl/wolfcrypt/asn.h>
+// #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include <wolfssl/wolfcrypt/rsa.h>
+#include <wolfssl/wolfcrypt/ecc.h>
+#include <wolfssl/wolfcrypt/aes.h>
+#include <wolfssl/wolfcrypt/hash.h>
+#include <wolfssl/wolfcrypt/sha256.h>
+#include<wolfssl/wolfcrypt/random.h>
 
 /********************************* CONSTANTS **********************************/
 
@@ -92,97 +96,71 @@ uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
 uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
-#define KEY_SIZE_ 512
+#define KEY_SIZE_ 16
 #define SIGNATURE_SIZE 64
-/**
- * @brief Create Cert
- * 
- * Create a cert used for verification of identity
 
-*/
-/*
-void* create_cert(){
-
-    Initialize cert
-    Cert* newCert;
-    wc_InitCert(newCert);
-
-    Initialize cert info
-    strncpy(myCert.subject.country, "US", CTC_NAME_SIZE);
-    strncpy(myCert.subject.state, "CO", CTC_NAME_SIZE);
-    strncpy(myCert.subject.locality, "Colorado Springs", CTC_NAME_SIZE);
-    strncpy(myCert.subject.org, "RGB", CTC_NAME_SIZE); //Change
-    strncpy(myCert.subject.unit, "CTF", CTC_NAME_SIZE); //change
-    strncpy(myCert.subject.commonName, "www.uccs.edu", CTC_NAME_SIZE); //change
-    strncpy(myCert.subject.email, "kzytka@uccs.edu", CTC_NAME_SIZE); //change
-
-    generate key and rng
-    RsaKey key;
-    RNG    rng;
-    int    ret;
-
-    wc_InitRng(&rng);
-    wc_InitRsaKey(&key, 0);
-
-    ret = wc_MakeRsaKey(&key, 1024, 65537, &rng);
-    if (ret != 0)
-        fprintf(stderr, "not able to make key.\n");
-
-    generate self signed cert
-    byte derCert[4096];
-
-    int certSz = wc_MakeSelfCert(&myCert, derCert, sizeof(derCert), &key, &rng);
-    if (certSz < 0){
-        fprintf(stderr, "cannot make cert.\n");
-        exit(EXIT_FAILURE);
-    }//if
-    return derCert;
-
-}
-*/
-int sign(uint8_t *data, uint8_t len,ecc_key* private_key,ecc_key* public_key, uint8_t *sign) { 
-    int ret;
-    int pubKey;
-    wc_ecc_init(private_key);
-    ret =
-        wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key);
-    if(ret!=0){
-        print_error("Failure...s");
+ecc_key sender_private_key;
+ecc_key receiver_public_key;
+void initialize_keys(){
+    wc_ecc_init(&sender_private_key);
+    wc_ecc_init(&receiver_public_key);
+    if (wc_ecc_make_key(NULL, KEY_SIZE_, &sender_private_key) != 0) {
+        print_error("Error making sender key");
     }
-    pubKey = wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
-    return pubKey;
 }
-int sign_veriffy(uint8_t* data, uint8_t len,uint8_t* sign){
+
+int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, uint8_t *sign) { 
     int ret;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, private_key);
-    if(ret!=0){
-        print_error("Failure...v");
-    }return ret;
+    WC_RNG rng;
+    wc_InitRng(&rng);
+    wc_ecc_init(private_key);
+    ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, &private_key, &rng);
+    if (ret != 0) {
+        print_error("Failure signing");
+    }
+    wc_FreeRng(&rng); // Free RNG after use
+    return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
 }
+
+int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign) {
+    int ret;
+    int result;
+    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &result, &receiver_public_key);
+    if (ret != 0) {
+        print_error("Failure verifying");
+    }
+    return result;
+}
+
+
 /**
  * @brief Secure Send 
  * 
+ * @param address: i2c_addr_t, I2C address of recipient
  * @param buffer: uint8_t*, pointer to data to be send
  * @param len: uint8_t, size of data to be sent 
  * 
  * Securely send data over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
-*/
-void secure_send(uint8_t* buffer, uint8_t len) {
 
+*/
+int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_key,ecc_key* public_key) {
+    //Need this funciton to send_packet over some kind of secure channel...... 
+    //Only have to be authentic and Integral, no need of confidentiality...
+    //Let's see........
     uint8_t signat[SIGNATURE_SIZE];
     if(sign(buffer,len,private_key,public_key,signat)!=0){
         return ERROR_RETURN;
     } uint8_t signed_packet[len+SIGNATURE_SIZE];
     memcpy(signed_packet,buffer,len);
-    memcpy(signed_packet + len, signat, SIGNATURE_SIZE);  
-
-    send_packet_and_ack(len+SIGNATURE_SIZE, buffer); 
+    memcpy(signed_packet + len, signat, SIGNATURE_SIZE);
+    return send_packet(address, len+SIGNATURE_SIZE, buffer);
 }
 
 /**
  * @brief Secure Receive
  * 
+ * @param address: i2c_addr_t, I2C address of sender
  * @param buffer: uint8_t*, pointer to buffer to receive data to
  * 
  * @return int: number of bytes received, negative if error
@@ -190,8 +168,8 @@ void secure_send(uint8_t* buffer, uint8_t len) {
  * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
-int secure_receive(uint8_t* buffer) {
-    int r_len=wait_and_receive_packet(buffer);
+int secure_receive(i2c_addr_t address, uint8_t* buffer) {
+    int r_len=poll_and_receive_packet(address, buffer);
     if(r_len<SUCCESS_RETURN){
         return ERROR_RETURN;
     }uint8_t r_sign[SIGNATURE_SIZE];
