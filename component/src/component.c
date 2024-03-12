@@ -122,7 +122,7 @@ int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, 
     return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
 }
 
-int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign) {
+int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
     int ret;
     int result;
     ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &result, &receiver_public_key);
@@ -131,7 +131,6 @@ int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign) {
     }
     return result;
 }
-
 
 /**
  * @brief Secure Send 
@@ -149,7 +148,7 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_k
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
     uint8_t signat[SIGNATURE_SIZE];
-    if(sign(buffer,len,private_key,public_key,signat)!=0){
+    if(sign(buffer,len,sender_private_key,receiver_public_key,signat)!=0){
         return ERROR_RETURN;
     } uint8_t signed_packet[len+SIGNATURE_SIZE];
     memcpy(signed_packet,buffer,len);
@@ -277,6 +276,8 @@ int main(void) {
     
     // Enable Global Interrupts
     __enable_irq();
+    //initialize keys
+    
     
     // Initialize Component
     i2c_addr_t addr = component_id_to_i2c_addr(COMPONENT_ID);

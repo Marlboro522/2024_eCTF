@@ -256,7 +256,6 @@ PROJ_CFLAGS += -DCRYPTO_EXAMPLE=1
 PROJ_CFLAGS += -DHAVE_PK_CALLBACKS                                                               
 PROJ_CFLAGS += -DWOLFSSL_USER_IO                                                                 
 PROJ_CFLAGS += -DNO_WRITEV -DTIME_T_NOT_64BIT
-# PROJ_CFLAGS += -DWOLFSSL_USER_SETTINGS   
 PROJ_CFLAGS += -DMAXIM_SBT_DIR
 PROJ_CFLAGS += -DTFM_TIMING_RESISTANT                                                
 
