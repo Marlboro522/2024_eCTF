@@ -102,6 +102,11 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 ecc_key sender_private_key;
 ecc_key receiver_public_key;
+/**
+ * Initializes the keys for encryption and decryption.
+ * This function generates a sender private key and a receiver public key using elliptic curve cryptography.
+ * The generated keys are stored in the global variables `sender_private_key` and `receiver_public_key`.
+ */
 void initialize_keys(){
     wc_ecc_init(&sender_private_key);
     wc_ecc_init(&receiver_public_key);
@@ -110,6 +115,16 @@ void initialize_keys(){
     }
 }
 
+/**
+ * Signs the given data using the provided private key and generates a signature.
+ *
+ * @param data The data to be signed.
+ * @param len The length of the data.
+ * @param private_key The private key used for signing.
+ * @param public_key The public key associated with the private key.
+ * @param sign The generated signature.
+ * @return The result of the signing operation.
+ */
 int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, uint8_t *sign) { 
     int ret;
     WC_RNG rng;
@@ -123,6 +138,14 @@ int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, 
     return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
 }
 
+/**
+ * Verifies the signature of the given data using the receiver's public key.
+ *
+ * @param data The data to be verified.
+ * @param len The length of the data.
+ * @param sign The signature to be verified.
+ * @return 1 if the signature is valid, 0 otherwise.
+ */
 int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
     int ret;
     int result;
