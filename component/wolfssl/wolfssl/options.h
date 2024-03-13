@@ -180,6 +180,8 @@ extern "C" {
 #undef  HAVE_WC_INTROSPECTION
 #define HAVE_WC_INTROSPECTION
 
+#undef  HAVE___UINT128_T
+
 
 #ifdef __cplusplus
 }

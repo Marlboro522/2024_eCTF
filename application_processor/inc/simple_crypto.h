@@ -4,13 +4,18 @@
 #include<wolfssl/ssl.h>
 // #include<wolfssl/wolfcrypt/aes.h>
 #include<wolfssl/wolfcrypt/random.h>
+#include<wolfssl/options.h>
+#include<wolfssl/wolfcrypt/ecc.h>
+#include <wolfssl/wolfcrypt/asn.h>
+#include <wolfssl/wolfcrypt/types.h>
 
 #define KEY_SIZE 32
 #define BLOCK_SIZE 16
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
 #define SALT_LEN 13
-//Fucntion prototypes
+extern ecc_key receiver_public_key;
+// Fucntion prototypes
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size);
 

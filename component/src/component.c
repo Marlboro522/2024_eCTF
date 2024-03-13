@@ -27,6 +27,7 @@
 // Includes from containerized build
 #include "ectf_params.h"
 #include "global_secrets.h"
+#include "../application_processor/inc/simple_crypto.h"
 
 #ifdef POST_BOOT
 #include "led.h"
@@ -122,7 +123,7 @@ int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, 
     return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
 }
 
-int sign_verify(uint8_t* data, uint8_t len, uint8_t* sign) {
+int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
     int ret;
     int result;
     ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &result, &receiver_public_key);

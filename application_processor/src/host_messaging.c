@@ -20,6 +20,10 @@ void recv_input(const char *msg, char *buf) {
     print_ack();
     fgets(buf,18,stdin);
     puts("");
+    size_t len = strlen(buf);
+    if (len > 0 && buf[len - 1] == '\n') {
+        buf[len - 1] = '\0';
+    }
 }
 
 // Prints a buffer of bytes as a hex string

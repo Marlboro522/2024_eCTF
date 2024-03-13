@@ -597,6 +597,7 @@ int main() {
         } else if (!strcmp(buf, "attest")) {
             attempt_attest();
         } else {
+            // print_error("%s: %d", buf,strlen(buf));
             print_error("Unrecognized command '%s'\n", buf);
         }
     }
