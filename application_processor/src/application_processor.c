@@ -38,6 +38,7 @@
 #include <string.h>
 #endif
 
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/options.h>
 // #include <wolfssl/ssl.h>
 #include <wolfssl/wolfcrypt/asn.h>
@@ -164,7 +165,7 @@ int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, 
     int ret;
     WC_RNG rng; // Declare random number generator object
     wc_InitRng(&rng); // Initialize RNG
-    wc_ecc_init(private_key);
+    // wc_ecc_init(private_key);
     ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key, &rng); // Pass RNG as last argument
     if (ret != 0) {
         print_error("Failure signing");
@@ -203,17 +204,17 @@ int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
  * This function must be implemented by your team to align with the security requirements.
 
 */
-int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_key,ecc_key* public_key) {
-    //Need this funciton to send_packet over some kind of secure channel...... 
-    //Only have to be authentic and Integral, no need of confidentiality...
-    //Let's see........
+//Preserved the function signature here...
+int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
+    print_info("Entered Seecure Send\n");
     uint8_t signat[SIGNATURE_SIZE];
-    if(sign(buffer,len,private_key,public_key,signat)!=0){
+    if(sign(buffer,len,&sender_private_key,&receiver_public_key,signat)!=0){
         return ERROR_RETURN;
     } uint8_t signed_packet[len+SIGNATURE_SIZE];
     memcpy(signed_packet,buffer,len);
     memcpy(signed_packet + len, signat, SIGNATURE_SIZE);
-    return send_packet(address, len+SIGNATURE_SIZE, buffer);
+    // print_info("%s", signed_packet);
+    return send_packet(address, len + SIGNATURE_SIZE, signed_packet);
 }
 
 /**
@@ -228,6 +229,7 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_k
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
+    print_info("Entered Secure Receiver");
     int r_len=poll_and_receive_packet(address, buffer);
     if(r_len<SUCCESS_RETURN){
         return ERROR_RETURN;
@@ -289,18 +291,24 @@ void init() {
     
     // Initialize board link interface
     board_link_init();
+
+    initialize_keys();
 }
 
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
-    int result = send_packet(addr, sizeof(uint8_t), transmit);
+    //Use secure_send here
+    int result = secure_send(addr, sizeof(uint8_t), transmit);
+    printf("%d\n", result);
     if (result == ERROR_RETURN) {
         return ERROR_RETURN;
     }
     
     // Receive message
-    int len = poll_and_receive_packet(addr, receive);
+    //Use Secure_receive here...
+    int len = secure_receive(addr, receive);
+    printf("%d\n", len);
     if (len == ERROR_RETURN) {
         return ERROR_RETURN;
     }

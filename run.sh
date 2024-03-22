@@ -1,5 +1,5 @@
 #!/bin/bash
-
+resize -s 161 31
 commands=(
     "ectf_build_depl -d ."
     "ectf_build_ap -d . -on ap -od build -p 521313 -t 0123456789abcdef -c 2 -ids '0x12344321, 0x43211234' -b 'Ap boot ready'"
