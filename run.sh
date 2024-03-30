@@ -1,5 +1,32 @@
 #!/bin/bash
-resize -s 161 31
+start_time=$(date +%s)
+diskutil unmount /dev/disk2
+diskutil unmount /dev/disk3
+diskutil unmount /dev/disk4
+echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk2
+echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk3
+echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk4
+echo -e "\n"
+printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
+printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
+echo -e "\n"
+c_d() {
+    local secs=$1
+    while [ $secs -ge 0 ]; do
+        echo -ne "Boards ready in $secs seconds \r"
+        sleep 1
+        ((secs--))
+    done
+}
+c_d 23
+echo -e "\n"
+printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
+printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
+echo -e "\n"
+echo -e "Boards ready for the build and boot"
+echo -e "\n"
+printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
+printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
 commands=(
     "ectf_build_depl -d ."
     "ectf_build_ap -d . -on ap -od build -p 521313 -t 0123456789abcdef -c 2 -ids '0x12344321, 0x43211234' -b 'Ap boot ready'"
@@ -8,30 +35,30 @@ commands=(
     "ectf_update --infile build/ap.img --port /dev/tty.usbmodem1413102"
     "ectf_update --infile build/comp1.img --port /dev/tty.usbmodem1413202"
     "ectf_update --infile build/comp2.img --port /dev/tty.usbmodem1413302"
+    # "ectf_boot -a /dev/tty.usbmodem1413102"
     "ectf_list -a /dev/tty.usbmodem1413102"
     "ectf_attestation -a /dev/tty.usbmodem1413102 -p 521313 -c 0x12344321"
     "ectf_attestation -a /dev/tty.usbmodem1413102 -p 5211313 -c 0x43211234"
     "ectf_attestation -a /dev/tty.usbmodem1413102 -p 521313 -c 0x43211234"
-    #"ectf_boot -a /dev/tty.usbmodem1433302"
     #"ectf_replace -a /dev/tty.usbmodem1433302 -t 0123456789abcdefg -i 0x -o"
 )
-width=$(tput cols)
+# width=$(tput cols)
 
 
 for cmd in "${commands[@]}"; do
     cmd_name=$(echo "$cmd" | cut -d ' ' -f 1)
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
-    echo "Executing command: $cmd_name"
+    echo "Executing : $cmd_name"
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
     printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
     echo "Executing command: $cmd"
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
-    say --quality 127 -r 130 -v Whisper "Now, Executing $cmd_name"
+    # say --quality 127 -r 130 -v Whisper "Now, Executing $cmd_name"
     eval "$cmd"
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
-    say --quality 127 -r 130 -v Whisper "Command $cmd_name execution, complete."
+    # say --quality 127 -r 130 -v Whisper "Command $cmd_name execution, complete."
     printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
     echo -e "\n"
     printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
@@ -40,4 +67,7 @@ for cmd in "${commands[@]}"; do
     echo -e "\n"
     sleep 5 
 done
+end_time=$(date +%s)
+total_minutes=$(($((end_time - start_time)) / 60))
+echo "Total time taken: $total_minutes minutes"
 say --quality 127 -r 130 -v Whisper "All execution complete, output ready for evaluation."

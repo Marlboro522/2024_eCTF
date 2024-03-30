@@ -9,8 +9,6 @@ __check_defined = \
 
 all:
 	echo "#define SECRET 1234" > global_secrets.h
-	echo "#define PIN 521313" > global_secrets.h
-	echo "#define REPLACEMENT TOKEN 0123456789abcdef" > global_secrets.h
 
 clean:
 	rm -f global_secrets.h

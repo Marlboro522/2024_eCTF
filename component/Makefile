@@ -170,6 +170,7 @@ export CMSIS_ROOT
 # Where to find source files for this project.
 VPATH += .
 VPATH += src
+# VPATH += ../../application_processor/src/simple_crypto.c
 
 # eCTF Crypto Example
 VPATH += wolfssl/wolfcrypt/src
@@ -182,6 +183,7 @@ IPATH += include
 
 # eCTF Crypto Example
 IPATH += wolfssl
+# IPATH += ../../application_processor/inc
 
 IPATH := $(IPATH)
 
@@ -190,7 +192,7 @@ ifeq ($(AUTOSEARCH), 1)
 # Auto-detect all C source files on VPATH
 SRCS += $(wildcard $(addsuffix /*.c, $(VPATH)))
 endif
-
+# SRCS += ../../application_processor/src/simple_crypto.c
 # Collapse SRCS before passing them on to the next stage
 SRCS := $(SRCS)
 
@@ -260,6 +262,8 @@ PROJ_CFLAGS += -DWOLFSSL_USER_IO
 PROJ_CFLAGS += -DNO_WRITEV
 PROJ_CFLAGS += -DTIME_T_NOT_64BIT                                                    
 PROJ_CFLAGS += -DMXC_ASSERT_ENABLE
+PROJ_CFLAGS += -DMAXIM_SBT_DIR
+PROJ_CFLAGS += -DTFM_TIMING_RESISTANCE -DHAVE_ECC
 
 ifeq ($(POST_BOOT_ENABLED), 1)
 	PROJ_CFLAGS += -DPOST_BOOT=$(POST_BOOT_CODE)

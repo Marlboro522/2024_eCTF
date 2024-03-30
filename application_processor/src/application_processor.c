@@ -30,21 +30,15 @@
 #include "board_link.h"
 #include "simple_flash.h"
 #include "host_messaging.h"
+#include <string.h>
 
 #ifdef POST_BOOT
 #include <stdint.h>
 #include <stdio.h>
 #include "mxc_delay.h"
 #include <string.h>
+// #include "simple_crypto.h"
 #endif
-
-#include <wolfssl/wolfcrypt/settings.h>
-#include <wolfssl/options.h>
-// #include <wolfssl/ssl.h>
-#include <wolfssl/wolfcrypt/asn.h>
-#include <wolfssl/wolfcrypt/types.h>
-#include <wolfssl/wolfcrypt/ecc.h>
-// #include <wolfssl/wolfcrypt/user_settings.h>
 
 // Includes from containerized build
 #include "ectf_params.h"
@@ -74,7 +68,6 @@
 #define KEY_SIZE 32
 
 #define WOLFSSL_ECC
-//TLS commincation reqs
 
 #define NUM_COMPONENTS(...) (sizeof((uint32_t[]){__VA_ARGS__}) / sizeof(uint32_t))
 #define EXTRACT_COMPONENTS(buffer, ...) \
@@ -129,92 +122,63 @@ typedef enum {
 /********************************* GLOBAL VARIABLES **********************************/
 // Variable for information stored in flash memory
 flash_entry flash_status;
-
-/******************************* POST BOOT FUNCTIONALITY *********************************/
-//Need lesser size to be he key here.... unable to emulate TI error.....
-#define KEY_SIZE_ 16
-#define SIGNATURE_SIZE 64
-
-ecc_key sender_private_key;
-ecc_key receiver_public_key;
-
+int status;
+/******************************* POST BOOT FUNCTIONALITY **********************************/
 /**
- * Initializes the keys used for encryption and decryption.
- * This function generates a sender private key and a receiver public key.
- * The sender private key is used for signing messages, while the receiver public key is used for verifying signatures.
- */
-void initialize_keys(){
-    wc_ecc_init(&sender_private_key);
-    wc_ecc_init(&receiver_public_key);
-    if (wc_ecc_make_key(NULL, 16, &sender_private_key) != 0) {
-        print_error("Error making sender key");
-    }
-}
-
-/**
- * Signs the given data using the provided private key and generates a signature.
+ * @brief Secure Send
  *
- * @param data The data to be signed.
- * @param len The length of the data.
- * @param private_key The private key used for signing.
- * @param public_key The public key associated with the private key.
- * @param sign The generated signature.
- * @return The result of the signing operation.
- */
-int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, uint8_t *sign) { 
-    int ret;
-    WC_RNG rng; // Declare random number generator object
-    wc_InitRng(&rng); // Initialize RNG
-    // wc_ecc_init(private_key);
-    ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, private_key, &rng); // Pass RNG as last argument
-    if (ret != 0) {
-        print_error("Failure signing");
-    }
-    wc_FreeRng(&rng); // Free RNG after use
-    return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
-}
-
-/**
- * Verifies the signature of the given data using the receiver's public key.
- *
- * @param data The data to be verified.
- * @param len The length of the data.
- * @param sign The signature to be verified.
- * @return 1 if the signature is valid, 0 otherwise.
- */
-int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
-    int ret;
-    int result;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &result, &receiver_public_key);
-    if (ret != 0) {
-        print_error("Failure verifying");
-    }
-    return result;
-}
-
-
-/**
- * @brief Secure Send 
- * 
  * @param address: i2c_addr_t, I2C address of recipient
  * @param buffer: uint8_t*, pointer to data to be send
- * @param len: uint8_t, size of data to be sent 
- * 
- * Securely send data over I2C. This function is utilized in POST_BOOT functionality.
- * This function must be implemented by your team to align with the security requirements.
+ * @param len: uint8_t, size of data to be sent
+ *
+ * Securely send data over I2C. This function is utilized in POST_BOOT
+ functionality.
+ * This function must be implemented by your team to align with the security
+ requirements.
 
 */
-//Preserved the function signature here...
-int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
-    print_info("Entered Seecure Send\n");
+// Preserved the function signature here...
+int secure_send(uint8_t address, uint8_t *buffer, uint8_t len) {
+    if(status==SUCCESS_RETURN){
+    print_info("Entered Secure Send from application processor\n");
     uint8_t signat[SIGNATURE_SIZE];
-    if(sign(buffer,len,&sender_private_key,&receiver_public_key,signat)!=0){
+    // ecc_key* comm1=&comm_key;
+    // byte buffer1[1024]; // Buffer to hold exported key
+    // word32 bufferSz = sizeof(buffer1);
+    // if(comm_key==NULL){
+    //     print_error("Nothing in comm_key");
+    // }
+    // if(comm1==NULL){
+    //     print_info("Nothing in comm1");
+    // }
+    // if (wc_ecc_export_x963(comm1, buffer1, &bufferSz) != 0) {
+    //     print_info("Error exporting key, error code: %d\n",wc_ecc_export_x963(comm1, buffer1, &bufferSz));
+    // }
+    // for (int i = 0; i < bufferSz; i++) {
+    //     print_info("%02X", buffer1[i]);
+    // }
+    ecc_point* pub_key = &comm_key.pubkey;
+    print_info("At infinity check: %d", wc_ecc_point_is_at_infinity(pub_key));
+    print_info("%d,%02X, %zu",comm_key.type, comm_key.pubkey,sizeof(comm_key.pubkey));
+    int key_ok = wc_ecc_check_key(&comm_key);
+    if(key_ok != MP_OKAY){
+        print_info("Key not OK error code: %d",key_ok);  
         return ERROR_RETURN;
-    } uint8_t signed_packet[len+SIGNATURE_SIZE];
-    memcpy(signed_packet,buffer,len);
+    }
+    if (sign(buffer, sizeof(buffer), signat) != 0) {
+        print_error("\nFailed in the sign function application_processor");
+        return ERROR_RETURN;
+    }
+
+    uint8_t signed_packet[len + SIGNATURE_SIZE]; // Adjust the size of signed_packet
+    memcpy(signed_packet, buffer, len);
     memcpy(signed_packet + len, signat, SIGNATURE_SIZE);
-    // print_info("%s", signed_packet);
-    return send_packet(address, len + SIGNATURE_SIZE, signed_packet);
+    print_info("Packet Signed\n");
+    return send_packet(address, signed_packet, len + SIGNATURE_SIZE);
+    }else{
+        print_error("Key is not initialized");
+        return ERROR_RETURN;
+    }
 }
 
 /**
@@ -225,21 +189,23 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
  * 
  * @return int: number of bytes received, negative if error
  * 
- * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely receive dat a over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-    print_info("Entered Secure Receiver");
-    int r_len=poll_and_receive_packet(address, buffer);
-    if(r_len<SUCCESS_RETURN){
-        return ERROR_RETURN;
-    }uint8_t r_sign[SIGNATURE_SIZE];
-    memcpy(r_sign, buffer+r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
-    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)!=0){
+    print_info("Entered Secure Receive from application processor\n");
+    int len=poll_and_receive_packet(address, buffer);
+    size_t r_len = sizeof(buffer);
+    print_info("\n The total length of buffer is: %d", r_len);
+    print_info("\n This is the value in buffer %s\n", buffer);
+    uint8_t r_sign[SIGNATURE_SIZE];
+    memcpy(r_sign, buffer + r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
+    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)==0){
+        print_error("\nSignature verification failed application_processor");
         return ERROR_RETURN;
     }
-    int len = r_len - SIGNATURE_SIZE;
-    return len;
+    int r_len_a_v = r_len - SIGNATURE_SIZE;
+    return r_len_a_v;
 }
 
 /**
@@ -288,19 +254,15 @@ void init() {
 
         flash_simple_write(FLASH_ADDR, (uint32_t*)&flash_status, sizeof(flash_entry));
     }
-    
-    // Initialize board link interface
     board_link_init();
-
-    initialize_keys();
 }
 
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
     //Use secure_send here
-    int result = secure_send(addr, sizeof(uint8_t), transmit);
-    printf("%d\n", result);
+    int result = secure_send(addr, transmit,sizeof(uint8_t));
+    print_info("%d\n", result);
     if (result == ERROR_RETURN) {
         return ERROR_RETURN;
     }
@@ -308,7 +270,7 @@ int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Receive message
     //Use Secure_receive here...
     int len = secure_receive(addr, receive);
-    printf("%d\n", len);
+    print_info("%d\n", len);
     if (len == ERROR_RETURN) {
         return ERROR_RETURN;
     }
@@ -322,7 +284,18 @@ int scan_components() {
     for (unsigned i = 0; i < flash_status.component_cnt; i++) {
         print_info("P>0x%08x\n", flash_status.component_ids[i]);
     }
-
+    WC_RNG rng;
+    status=wc_InitRng(&rng);
+    if(status!=0){
+        print_error("RNG not initialized, error code: %d\n",status);
+        return ERROR_RETURN;
+    }
+    status = initialize_key();
+    if(status==SUCCESS_RETURN){
+        print_info("Key initialized NOT fucked up\n");
+    }else{
+        print_info("Key initialization fucked up, error_code: %d\n",status);
+    }
     // Buffers for board link communication
     uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
     uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
@@ -461,7 +434,7 @@ void boot() {
         LED_Off(LED2);
         MXC_Delay(500000);
         LED_Off(LED3);
-        MXC_Delay(500000);  //
+        MXC_Delay(500000);
     }
     #endif
 }
@@ -479,15 +452,15 @@ int validate_pin() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter PIN: ",buf);
-    if(strlen(buf)>6){
+    if(strlen(buf)>7){
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
-    }strncpy(new_p, buf,6);
+    }strncpy(new_p, buf,7);
     strncat(new_p, (char *)salt,13);
     if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }memset(new_p, 0, 21);
-    strncpy(new_p, AP_PIN,6);    
+    strncpy(new_p, AP_PIN,7);    
     strncat(new_p,(char *) salt,13);
     if(encrypt_n(new_p, strlen(AP_PIN) + 1, o_CIPHER, key, iv)){
         return ERROR_RETURN;
@@ -608,11 +581,9 @@ void attempt_attest() {
 int main() {
     // Initialize board
     init();
-
     // Print the component IDs to be helpful
     // Your design does not need to do this
     print_info("Application Processor Started\n");
-
     // Handle commands forever
     char buf[100];
     while (1) {

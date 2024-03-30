@@ -5,9 +5,12 @@
 //Macros
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
-// #define FLASH_ADDRESS 0x0800FC00
-
-int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data, int block_size) {
+// variable to store signature
+uint8_t signature[SIGNATURE_SIZE];
+word32 updated_sigSz;
+ecc_key comm_key;
+int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
+              int block_size) {
     int padded_len = block_size * ((data_len + block_size - 1) / block_size); // Calculate the padded length
     int padding_bytes = padded_len - data_len; // Calculate the number of padding bytes to add
     memcpy(padded_data, data, data_len); // Copy the original data
@@ -83,14 +86,60 @@ void gen_salt(char *salt){
     wc_FreeRng(&rng);
 }
 
-
-// void enroll_pin(const char* pin) {
-//     uint8_t hash[SHA256_DIGEST_SIZE];
-//     uint8_t encrypted_hash[AES_BLOCK_SIZE];
-
-//     hash_pin(pin, hash);
-//     encrypt_pin(hash, encrypted_hash);
-
-//     flash_write(encrypted_hash, AES_BLOCK_SIZE, FLASH_ADDRESS);
+// void print_ecc_key(const char *label, ecc_key *key) {
+//     byte buffer[1024]; // Buffer to hold exported key
+//     word32 bufferSz = sizeof(buffer);
+//     if (wc_ecc_export_x963(key, buffer, &bufferSz) != 0) {
+//         printf("Error exporting %s key\n", label);
+//         return;
+//     }
+//     printf("\n%s key: ", label);
+//     for (int i = 0; i < bufferSz; i++) {
+//         printf("%02X", buffer[i]);
+//     }
+//     printf("\n\n");
 // }
-
+int initialize_key() {
+    int make_ret;
+    int rand_ret;
+    wc_ecc_init(&comm_key);
+    WC_RNG rng;
+    rand_ret = wc_InitRng(&rng);
+    if(rand_ret!=0){
+        return rand_ret;
+    }
+    make_ret  = wc_ecc_make_key(&rng, KEY_SIZE_, &comm_key);
+    if (make_ret!= 0) {
+        return make_ret;
+    }
+    return SUCCESS_RETURN;
+    wc_FreeRng(&rng);
+}
+int sign(const uint8_t *data, size_t len, uint8_t *signature) {
+    WC_RNG rng;
+    wc_InitRng(&rng);
+    word32 sigSz = SIGNATURE_SIZE;
+    int key_ok=wc_ecc_check_key(&comm_key);
+    if(key_ok != MP_OKAY){
+        // print_error("Key not OK");
+        return ERROR_RETURN;
+    }
+    int ret = wc_ecc_sign_hash(data, len, signature, &sigSz, &rng, &comm_key);
+    updated_sigSz = sigSz;
+    wc_FreeRng(&rng);
+    if (ret != 0) {
+        // print_error("Signing Failed");
+        return ERROR_RETURN;
+    }
+    return SUCCESS_RETURN;
+}
+int sign_veriffy(const uint8_t *data, size_t len, uint8_t *signature){
+    int result;
+    int key_ok=wc_ecc_check_key(&comm_key);
+    word32 sigSz = updated_sigSz;
+    if (key_ok != MP_OKAY) return ERROR_RETURN;
+    int ret = wc_ecc_verify_hash(signature, sigSz, data, len, &result, &comm_key);
+    if (ret != 0)
+        return ERROR_RETURN;
+    return result;
+}

@@ -24,6 +24,9 @@ extern "C" {
 #undef  HAVE_THREAD_LS
 #define HAVE_THREAD_LS
 
+#undef  DEBUG_WOLFSSL
+#define DEBUG_WOLFSSL
+
 #undef  NO_DO178
 #define NO_DO178
 
@@ -158,6 +161,9 @@ extern "C" {
 
 #undef  WOLFSSL_SYS_CA_CERTS
 #define WOLFSSL_SYS_CA_CERTS
+
+#undef  WOLFSSL_KEY_GEN
+#define WOLFSSL_KEY_GEN
 
 #undef  NO_DES3
 #define NO_DES3

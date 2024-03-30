@@ -27,7 +27,9 @@
 // Includes from containerized build
 #include "ectf_params.h"
 #include "global_secrets.h"
-#include "../application_processor/inc/simple_crypto.h"
+// #include "simple_crypto.h"
+// #include "common.h"
+#include "../../application_processor/inc/simple_crypto.h"
 
 #ifdef POST_BOOT
 #include "led.h"
@@ -36,15 +38,15 @@
 #include <string.h>
 #endif
 
-#include <wolfssl/options.h>
-#include <wolfssl/ssl.h>
-// #include <wolfssl/wolfcrypt/asn.h>
-#include <wolfssl/wolfcrypt/types.h>
-#include <wolfssl/wolfcrypt/ecc.h>
-#include <wolfssl/wolfcrypt/aes.h>
-#include <wolfssl/wolfcrypt/hash.h>
-#include <wolfssl/wolfcrypt/sha256.h>
-#include<wolfssl/wolfcrypt/random.h>
+// #include <wolfssl/options.h>
+// #include <wolfssl/ssl.h>
+// // #include <wolfssl/wolfcrypt/asn.h>
+// #include <wolfssl/wolfcrypt/types.h>
+// #include <wolfssl/wolfcrypt/ecc.h>
+// #include <wolfssl/wolfcrypt/aes.h>
+// #include <wolfssl/wolfcrypt/hash.h>
+// #include <wolfssl/wolfcrypt/sha256.h>
+// #include<wolfssl/wolfcrypt/random.h>
 
 /********************************* CONSTANTS **********************************/
 
@@ -58,6 +60,8 @@
 #define ATTESTATION_CUSTOMER "Fritz"
 */
 
+#define SUCESS_RETURN 0
+#define ERROR_RETURN -1
 /******************************** TYPE DEFINITIONS ********************************/
 // Commands received by Component using 32 bit integer
 typedef enum {
@@ -97,108 +101,60 @@ uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
 uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
-#define KEY_SIZE_ 16
-#define SIGNATURE_SIZE 64
-
-ecc_key sender_private_key;
-ecc_key receiver_public_key;
-/**
- * Initializes the keys for encryption and decryption.
- * This function generates a sender private key and a receiver public key using elliptic curve cryptography.
- * The generated keys are stored in the global variables `sender_private_key` and `receiver_public_key`.
- */
-void initialize_keys(){
-    wc_ecc_init(&sender_private_key);
-    wc_ecc_init(&receiver_public_key);
-    if (wc_ecc_make_key(NULL, KEY_SIZE_, &sender_private_key) != 0) {
-        print_error("Error making sender key");
-    }
-}
-
-/**
- * Signs the given data using the provided private key and generates a signature.
- *
- * @param data The data to be signed.
- * @param len The length of the data.
- * @param private_key The private key used for signing.
- * @param public_key The public key associated with the private key.
- * @param sign The generated signature.
- * @return The result of the signing operation.
- */
-int sign(uint8_t *data, uint8_t len, ecc_key* private_key, ecc_key* public_key, uint8_t *sign) { 
-    int ret;
-    WC_RNG rng;
-    wc_InitRng(&rng);
-    wc_ecc_init(private_key);
-    ret = wc_ecc_sign_hash(data, len, sign, SIGNATURE_SIZE, &private_key, &rng);
-    if (ret != 0) {
-        print_error("Failure signing");
-    }
-    wc_FreeRng(&rng); // Free RNG after use
-    return wc_ecc_export_x963(public_key, sign, KEY_SIZE_);
-}
-
-/**
- * Verifies the signature of the given data using the receiver's public key.
- *
- * @param data The data to be verified.
- * @param len The length of the data.
- * @param sign The signature to be verified.
- * @return 1 if the signature is valid, 0 otherwise.
- */
-int sign_veriffy(uint8_t* data, uint8_t len, uint8_t* sign) {
-    int ret;
-    int result;
-    ret = wc_ecc_verify_hash(sign, SIGNATURE_SIZE, data, len, &result, &receiver_public_key);
-    if (ret != 0) {
-        print_error("Failure verifying");
-    }
-    return result;
-}
-
-
 /**
  * @brief Secure Send 
  * 
- * @param address: i2c_addr_t, I2C address of recipient
- * @param buffer: uint8_t*, pointer to data to be send
- * @param len: uint8_t, size of data to be sent 
+ * @param buffer: uint8_t*, pointer to buffer to be send
+ * @param len: uint8_t, size of buffer to be sent 
  * 
- * Securely send data over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely send buffer over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
-
 */
-int secure_send(uint8_t address, uint8_t* buffer, uint8_t len,ecc_key* private_key,ecc_key* public_key) {
+void secure_send(uint8_t len, uint8_t* buffer) {
     //Need this funciton to send_packet over some kind of secure channel...... 
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
+    // print_info("Entered Secure Send from component\n");
     uint8_t signat[SIGNATURE_SIZE];
-    if(sign(buffer,len,private_key,public_key,signat)!=0){
-        return ERROR_RETURN;
-    } uint8_t signed_packet[len+SIGNATURE_SIZE];
-    memcpy(signed_packet,buffer,len);
-    memcpy(signed_packet + len, signat, SIGNATURE_SIZE);
-    return send_packet(address, len+SIGNATURE_SIZE, buffer);
+    if (sign(buffer, sizeof(buffer), signat) != 0) {
+        // printf("\nFailed in the sign function of component");
+        int sign_status = 1;
+        // return -1;
+    }
+
+    uint8_t signed_packet[sizeof(buffer) + SIGNATURE_SIZE];
+    memcpy(signed_packet, buffer, sizeof(buffer));
+    memcpy(signed_packet + sizeof(buffer), signat, SIGNATURE_SIZE);
+
+    // Print the signed packet as plain text
+    // printf("Signed packet:\n");
+    // for (size_t i = 0; i < sizeof(signed_packet); i++) {
+    //     printf("%c", signed_packet[i]);
+    // }
+    send_packet_and_ack(sizeof(signed_packet), signed_packet);
+
 }
 
 /**
  * @brief Secure Receive
  * 
  * @param address: i2c_addr_t, I2C address of sender
- * @param buffer: uint8_t*, pointer to buffer to receive data to
+ * @param buffer: uint8_t*, pointer to buffer to receive buffer to
  * 
  * @return int: number of bytes received, negative if error
  * 
- * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely receive buffer over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
-int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-    int r_len=poll_and_receive_packet(address, buffer);
+int secure_receive(uint8_t* buffer) {
+    // print_info("Entered Secure Receive from Component\n");
+    int r_len = wait_and_receive_packet(buffer);
     if(r_len<SUCCESS_RETURN){
         return ERROR_RETURN;
     }uint8_t r_sign[SIGNATURE_SIZE];
     memcpy(r_sign, buffer+r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
-    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)!=0){
+    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)==0){
+        // print_error("Signature verification failed component");
         return ERROR_RETURN;
     }
     int len = r_len - SIGNATURE_SIZE;
@@ -268,7 +224,7 @@ void process_boot() {
     // respond with the boot message
     uint8_t len = strlen(COMPONENT_BOOT_MSG) + 1;
     memcpy((void*)transmit_buffer, COMPONENT_BOOT_MSG, len);
-    send_packet_and_ack(len, transmit_buffer);
+    secure_send(len, transmit_buffer);
     // Call the boot function
     boot();
 }
@@ -277,21 +233,21 @@ void process_scan() {
     // The AP requested a scan. Respond with the Component ID
     scan_message* packet = (scan_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    send_packet_and_ack(sizeof(scan_message), transmit_buffer);
+    secure_send(sizeof(scan_message), transmit_buffer);
 }
 
 void process_validate() {
     // The AP requested a validation. Respond with the Component ID
     validate_message* packet = (validate_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    send_packet_and_ack(sizeof(validate_message), transmit_buffer);
+    secure_send(sizeof(validate_message), transmit_buffer);
 }
 
 void process_attest() {
-    // The AP requested attestation. Respond with the attestation data
+    // The AP requested attestation. Respond with the attestation buffer
     uint8_t len = sprintf((char*)transmit_buffer, "LOC>%s\nDATE>%s\nCUST>%s\n",
                 ATTESTATION_LOC, ATTESTATION_DATE, ATTESTATION_CUSTOMER) + 1;
-    send_packet_and_ack(len, transmit_buffer);
+    secure_send(len, transmit_buffer);
 }
 
 /*********************************** MAIN *************************************/
@@ -309,7 +265,7 @@ int main(void) {
     LED_On(LED2);
 
     while (1) {
-        wait_and_receive_packet(receive_buffer);
+        secure_receive(receive_buffer);
 
         component_process_cmd();
     }
