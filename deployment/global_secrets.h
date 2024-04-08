@@ -1,1 +1,1 @@
-#define REPLACEMENT TOKEN 0123456789abcdef
+#define SECRET 1234

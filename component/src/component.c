@@ -115,23 +115,8 @@ void secure_send(uint8_t len, uint8_t* buffer) {
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
     // print_info("Entered Secure Send from component\n");
-    uint8_t signat[SIGNATURE_SIZE];
-    if (sign(buffer, sizeof(buffer), signat) != 0) {
-        // printf("\nFailed in the sign function of component");
-        int sign_status = 1;
-        // return -1;
-    }
-
-    uint8_t signed_packet[sizeof(buffer) + SIGNATURE_SIZE];
-    memcpy(signed_packet, buffer, sizeof(buffer));
-    memcpy(signed_packet + sizeof(buffer), signat, SIGNATURE_SIZE);
-
-    // Print the signed packet as plain text
-    // printf("Signed packet:\n");
-    // for (size_t i = 0; i < sizeof(signed_packet); i++) {
-    //     printf("%c", signed_packet[i]);
-    // }
-    send_packet_and_ack(sizeof(signed_packet), signed_packet);
+    
+    send_packet_and_ack(len, buffer);
 
 }
 
@@ -148,17 +133,7 @@ void secure_send(uint8_t len, uint8_t* buffer) {
 */
 int secure_receive(uint8_t* buffer) {
     // print_info("Entered Secure Receive from Component\n");
-    int r_len = wait_and_receive_packet(buffer);
-    if(r_len<SUCCESS_RETURN){
-        return ERROR_RETURN;
-    }uint8_t r_sign[SIGNATURE_SIZE];
-    memcpy(r_sign, buffer+r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
-    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)==0){
-        // print_error("Signature verification failed component");
-        return ERROR_RETURN;
-    }
-    int len = r_len - SIGNATURE_SIZE;
-    return len;
+    return wait_and_receive_packet(buffer);
 }
 
 /******************************* FUNCTION DEFINITIONS *********************************/

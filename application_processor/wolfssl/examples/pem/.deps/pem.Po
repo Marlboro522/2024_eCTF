@@ -198,8 +198,7 @@ examples/pem/pem.o: examples/pem/pem.c .build_params config.h \
   wolfssl/wolfcrypt/dsa.h wolfssl/wolfcrypt/random.h \
   wolfssl/wolfcrypt/sha256.h wolfssl/wolfcrypt/coding.h \
   wolfssl/wolfcrypt/error-crypt.h wolfssl/wolfcrypt/wc_encrypt.h \
-  wolfssl/wolfcrypt/aes.h wolfssl/wolfcrypt/chacha.h \
-  wolfssl/wolfcrypt/logging.h
+  wolfssl/wolfcrypt/aes.h wolfssl/wolfcrypt/chacha.h
 
 .build_params:
 
@@ -618,5 +617,3 @@ wolfssl/wolfcrypt/wc_encrypt.h:
 wolfssl/wolfcrypt/aes.h:
 
 wolfssl/wolfcrypt/chacha.h:
-
-wolfssl/wolfcrypt/logging.h:

@@ -18,9 +18,9 @@
 #include "mxc_delay.h"
 #include "mxc_device.h"
 #include "nvic_table.h"
+#include "trng.h"
 
 #include "simple_crypto.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -139,46 +139,8 @@ int status;
 */
 // Preserved the function signature here...
 int secure_send(uint8_t address, uint8_t *buffer, uint8_t len) {
-    if(status==SUCCESS_RETURN){
-    print_info("Entered Secure Send from application processor\n");
-    uint8_t signat[SIGNATURE_SIZE];
-    // ecc_key* comm1=&comm_key;
-    // byte buffer1[1024]; // Buffer to hold exported key
-    // word32 bufferSz = sizeof(buffer1);
-    // if(comm_key==NULL){
-    //     print_error("Nothing in comm_key");
-    // }
-    // if(comm1==NULL){
-    //     print_info("Nothing in comm1");
-    // }
-    // if (wc_ecc_export_x963(comm1, buffer1, &bufferSz) != 0) {
-    //     print_info("Error exporting key, error code: %d\n",wc_ecc_export_x963(comm1, buffer1, &bufferSz));
-    // }
-    // for (int i = 0; i < bufferSz; i++) {
-    //     print_info("%02X", buffer1[i]);
-    // }
-    ecc_point* pub_key = &comm_key.pubkey;
-    print_info("At infinity check: %d", wc_ecc_point_is_at_infinity(pub_key));
-    print_info("%d,%02X, %zu",comm_key.type, comm_key.pubkey,sizeof(comm_key.pubkey));
-    int key_ok = wc_ecc_check_key(&comm_key);
-    if(key_ok != MP_OKAY){
-        print_info("Key not OK error code: %d",key_ok);  
-        return ERROR_RETURN;
-    }
-    if (sign(buffer, sizeof(buffer), signat) != 0) {
-        print_error("\nFailed in the sign function application_processor");
-        return ERROR_RETURN;
-    }
-
-    uint8_t signed_packet[len + SIGNATURE_SIZE]; // Adjust the size of signed_packet
-    memcpy(signed_packet, buffer, len);
-    memcpy(signed_packet + len, signat, SIGNATURE_SIZE);
-    print_info("Packet Signed\n");
-    return send_packet(address, signed_packet, len + SIGNATURE_SIZE);
-    }else{
-        print_error("Key is not initialized");
-        return ERROR_RETURN;
-    }
+    
+    return send_packet(address, len, buffer);
 }
 
 /**
@@ -193,19 +155,7 @@ int secure_send(uint8_t address, uint8_t *buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-    print_info("Entered Secure Receive from application processor\n");
-    int len=poll_and_receive_packet(address, buffer);
-    size_t r_len = sizeof(buffer);
-    print_info("\n The total length of buffer is: %d", r_len);
-    print_info("\n This is the value in buffer %s\n", buffer);
-    uint8_t r_sign[SIGNATURE_SIZE];
-    memcpy(r_sign, buffer + r_len - SIGNATURE_SIZE, SIGNATURE_SIZE);
-    if(sign_veriffy(buffer,r_len - SIGNATURE_SIZE,r_sign)==0){
-        print_error("\nSignature verification failed application_processor");
-        return ERROR_RETURN;
-    }
-    int r_len_a_v = r_len - SIGNATURE_SIZE;
-    return r_len_a_v;
+    return poll_and_receive_packet(address, buffer);
 }
 
 /**
@@ -262,7 +212,8 @@ int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
     //Use secure_send here
     int result = secure_send(addr, transmit,sizeof(uint8_t));
-    print_info("%d\n", result);
+    //not sure if print_info should be here, need to check the origin repo
+    // print_info("%d\n", result);
     if (result == ERROR_RETURN) {
         return ERROR_RETURN;
     }
@@ -270,7 +221,7 @@ int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Receive message
     //Use Secure_receive here...
     int len = secure_receive(addr, receive);
-    print_info("%d\n", len);
+    // print_info("%d\n", len);
     if (len == ERROR_RETURN) {
         return ERROR_RETURN;
     }
@@ -284,19 +235,45 @@ int scan_components() {
     for (unsigned i = 0; i < flash_status.component_cnt; i++) {
         print_info("P>0x%08x\n", flash_status.component_ids[i]);
     }
-    WC_RNG rng;
-    status=wc_InitRng(&rng);
-    if(status!=0){
-        print_error("RNG not initialized, error code: %d\n",status);
-        return ERROR_RETURN;
-    }
-    status = initialize_key();
-    if(status==SUCCESS_RETURN){
-        print_info("Key initialized NOT fucked up\n");
-    }else{
-        print_info("Key initialization fucked up, error_code: %d\n",status);
-    }
     // Buffers for board link communication
+    unsigned char shared_key[] = "asdfdf90803q4p5'l;";
+    // Function to sign a message
+    void sign_message(const unsigned char* message, size_t message_len, unsigned char* signature) {
+        // Custom signing algorithm (e.g., simple concatenation with the shared key)
+        memcpy(signature, message, message_len);
+        memcpy(signature + message_len, shared_key, sizeof(shared_key));
+        print_info("Message has been signed with the shared key\n");
+        // In practice, use a more secure signing algorithm such as HMAC or
+        // digital signatures (e.g., RSA)
+    }
+    // Function to verify the signature of a message
+    int verify_signature(const unsigned char* message, size_t message_len, const unsigned char* signature) {
+        unsigned char expected_signature[message_len + sizeof(shared_key)];
+        // Generate the expected signature using the same custom algorithm
+        sign_message(message, message_len, expected_signature);
+        // Compare the received signature with the expected signature
+        return memcmp(signature, expected_signature, sizeof(expected_signature)) == 0;
+    }
+    const unsigned char* message = "Hello, Component!";
+    
+    size_t message_len = strlen(message);
+    // Sign the message
+    unsigned char signature[message_len + sizeof(shared_key)];
+    sign_message(message, message_len, signature);
+    
+    // Simulate transmission of the message and signature to the Component
+    
+    // Simulate the Component receiving the message and signature
+    // Verify the signature
+    int verified = verify_signature(message, message_len, signature);
+    
+    if (verified) {
+        print_info("Signature verified successfully!\n");
+        // Proceed with processing the message
+    } else {
+        print_info("Signature verification failed!\n");
+        // Discard or handle the message accordingly
+    }
     uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
     uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
@@ -447,7 +424,10 @@ int validate_pin() {
     uint8_t iv[KEY_SIZE];
     uint8_t salt[SALT_LEN+1]; // +1 for null terminator
     char new_p[21];
-    generate_key(key);
+    int e_k_status=generate_key(key);
+    // if(e_k_status !=0){
+    //     print_info("Failed here too, Error code: %d",e_k_status);
+    // }
     generate_random_iv(iv);
     gen_salt((char *)salt);
     char buf[50];
@@ -482,7 +462,7 @@ int validate_token() {
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
-    generate_key(key);
+    int ek_status = generate_key(key);
     generate_random_iv(iv);
     char buf[50];
     recv_input("Enter token: ", buf);

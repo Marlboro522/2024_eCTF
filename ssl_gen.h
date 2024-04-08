@@ -1,15 +1,12 @@
-#include <wolfssl/wolfcrypt/settings.h>
 #include<wolfssl/options.h>
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/wolfcrypt/aes.h>
 #include <wolfssl/wolfcrypt/hash.h>
 #include <wolfssl/wolfcrypt/sha256.h>
-#include<wolfssl/wolfcrypt/random.h>
+#include <wolfssl/wolfcrypt/random.h>
 #include<wolfssl/wolfcrypt/ecc.h>
 #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include "mxc_device.h"
-#include "nvic_table.h"
-#include "trng.h"
 // #include "../../msdk/Libraries/PeriphDrivers/Include/MAX78000/trng.h"
 //Defence
 #define KEY_SIZE 32
@@ -20,25 +17,8 @@
 //Comms
 #define KEY_SIZE_ 16
 #define SIGNATURE_SIZE 64
-#define CUSTOM_RAND_GENERATE_BLOCK 
 extern ecc_key comm_key;
-// typedef struct {
-//     unsigned char priv[32];
-//     unsigned char pubb[64];
-// } key_pair;
-
-// volatile int wait;
-// volatile int callback_result;
-//     /***** Globals *****/
-// uint8_t var_rnd_no[8] = { 0 };
 // Fucntion prototypes
-
-void TRNG_IRQHandler(void);
-
-void Test_Callback(void *req, int result);
-
-void Test_TRNG(int asynchronous);
-
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size);
 

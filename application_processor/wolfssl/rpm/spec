@@ -37,7 +37,7 @@ you will need to install %{name}-devel.
 %setup -q
 
 %build
-%configure  '--enable-harden' '--enable-ecc' '--enable-keygen' '--enable-debug' 'EXTRA_CFLAGS=-UHAVE___UINT128_T'
+%configure  '--enable-ecc' '--enable-harden' 'EXTRA_CFLAGS=-UHAVE___UINT128_T'
 %{__make} %{?_smp_mflags}
 if [ "no" = "yes" ]
 then

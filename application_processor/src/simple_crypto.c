@@ -1,3 +1,6 @@
+#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/options.h>
+#include <wolfssl/wolfcrypt/hmac.h>
 #include "simple_crypto.h"
 #include "ectf_params.h"
 #include <stdint.h>
@@ -5,6 +8,8 @@
 //Macros
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
+#define NO_DEV_RANDOM
+#define HMAC_DIGEST_SIZE SHA256_DIGEST_SIZE
 // variable to store signature
 uint8_t signature[SIGNATURE_SIZE];
 word32 updated_sigSz;
@@ -20,7 +25,8 @@ int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
 // Function to generate a random key
 int generate_key(uint8_t *key) {
     WC_RNG rng;
-    if (wc_InitRng(&rng) != 0) {
+    int fuck = wc_InitRng(&rng);
+    if (fuck!= 0) {
         return ERROR_RETURN; // Failed to initialize random number generator
     }
     if (wc_RNG_GenerateBlock(&rng, key, KEY_SIZE) != 0) {
@@ -99,40 +105,83 @@ void gen_salt(char *salt){
 //     }
 //     printf("\n\n");
 // }
-int initialize_key() {
-    int make_ret;
-    int rand_ret;
-    wc_ecc_init(&comm_key);
-    WC_RNG rng;
-    rand_ret = wc_InitRng(&rng);
-    if(rand_ret!=0){
-        return rand_ret;
-    }
-    make_ret  = wc_ecc_make_key(&rng, KEY_SIZE_, &comm_key);
-    if (make_ret!= 0) {
-        return make_ret;
-    }
-    return SUCCESS_RETURN;
-    wc_FreeRng(&rng);
-}
-int sign(const uint8_t *data, size_t len, uint8_t *signature) {
-    WC_RNG rng;
-    wc_InitRng(&rng);
-    word32 sigSz = SIGNATURE_SIZE;
-    int key_ok=wc_ecc_check_key(&comm_key);
-    if(key_ok != MP_OKAY){
-        // print_error("Key not OK");
-        return ERROR_RETURN;
-    }
-    int ret = wc_ecc_sign_hash(data, len, signature, &sigSz, &rng, &comm_key);
-    updated_sigSz = sigSz;
-    wc_FreeRng(&rng);
-    if (ret != 0) {
-        // print_error("Signing Failed");
-        return ERROR_RETURN;
-    }
-    return SUCCESS_RETURN;
-}
+// unsigned char shared_key[] = "shared_secret_key";
+
+// unsigned char* generate_hmac(const unsigned char* message, size_t message_len) {
+//     unsigned char* hmac_result = (unsigned char*)malloc(HMAC_DIGEST_SIZE);
+//     wc_HmacSha256(message, message_len, shared_key, sizeof(shared_key) - 1, hmac_result);
+//     return hmac_result;
+// }
+
+// // Function to verify HMAC for incoming messages
+// int verify_hmac(const unsigned char* message, size_t message_len, const unsigned char* hmac) {
+//     unsigned char computed_hmac[HMAC_DIGEST_SIZE];
+//     wc_HmacSha256(message, message_len, shared_key, sizeof(shared_key) - 1, computed_hmac);
+//     return memcmp(computed_hmac, hmac, HMAC_DIGEST_SIZE) == 0;
+// }
+
+// void TRNG_IRQHandler(void){
+//         MXC_TRNG_Handler();
+// }
+
+// void Test_Callback(void *req, int result){
+//     callback_result = result;
+//     wait = 0;
+// }
+
+// void Test_TRNG(int asynchronous) {
+
+//         print_info(asynchronous ? "\nTest TRNG Async\n" : "\nTest TRNG Sync\n");
+//         int num_bytes = 8;
+//         memset(var_rnd_no, 0, sizeof(var_rnd_no));
+//         MXC_TRNG_Init();
+//         if (asynchronous) {
+//             wait = 1;
+//             NVIC_EnableIRQ(TRNG_IRQn);
+//             MXC_TRNG_RandomAsync(var_rnd_no, num_bytes, &Test_Callback);
+//             while (wait) {}
+//         }else {
+//             MXC_TRNG_Random(var_rnd_no, num_bytes);
+//         }
+//         // print((char *)var_rnd_no);
+//         MXC_TRNG_Shutdown();
+//         print_info("TRNG Test function Complete\n");
+//     }
+// int initialize_key(WC_RNG rng) {
+//     int make_ret;
+//     int rand_ret;
+//     wc_ecc_init(&comm_key);
+//     // WC_RNG rng;
+//     // wc_FreeRng(&rng);
+//     // rand_ret = wc_InitRng(&rng);
+//     // if(rand_ret!=0){
+//     //     return rand_ret;
+//     // }
+//     make_ret  = wc_ecc_make_key(&rng, KEY_SIZE_, &comm_key);
+//     if (make_ret!= 0) {
+//         return make_ret;
+//     }
+//     wc_FreeRng(&rng);
+//     return SUCCESS_RETURN; 
+// }
+// int sign(const uint8_t *data, const unsigned char *priv_key, unsigned char *signature) {
+//     Test_TRNG(0);
+//     // WC_RNG rng;
+//     // wc_FreeRng(&rng);
+//     // wc_InitRng(&rng);
+//     // word32 sigSz = SIGNATURE_SIZE;
+//     // int key_ok=wc_ecc_check_key(&comm_key);
+//     // if(key_ok != MP_OKAY){
+//     //     // print_error("Key not OK");
+//     //     return ERROR_RETURN;
+//     // }
+//     // int ret = wc_ecc_sign_hash(data, len, signature, &sigSz, &rng,
+//     // &comm_key); updated_sigSz = sigSz; wc_FreeRng(&rng); if (ret != 0) {
+//     //     // print_error("Signing Failed");
+//     //     return ERROR_RETURN;
+//     // }
+//     // return SUCCESS_RETURN;
+// }
 int sign_veriffy(const uint8_t *data, size_t len, uint8_t *signature){
     int result;
     int key_ok=wc_ecc_check_key(&comm_key);
@@ -143,3 +192,4 @@ int sign_veriffy(const uint8_t *data, size_t len, uint8_t *signature){
         return ERROR_RETURN;
     return result;
 }
+
