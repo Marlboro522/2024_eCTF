@@ -118,7 +118,6 @@ void secure_send(uint8_t* buffer, uint8_t len) {
     //Let's see........
     unsigned char signature[SIGNATURE_SIZE] = {0};
     if(sign_message(buffer,len,signature)!=0){
-        printf("Failed in the sign_message of the component\n");
         MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }

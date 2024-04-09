@@ -180,7 +180,7 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
     }
     print_info("Did we stall ?");
     int stall = poll_and_receive_packet(address, buffer);
-    if (stall==ERROR_RETURN) {
+    if (stall<SUCCESS_RETURN) {
         print_info("Failed in the poll_and_receive_packet of application_processor, the return is: %d\n",stall);
         return ERROR_RETURN;
     }
@@ -243,7 +243,7 @@ void Test_TRNG(int asynchronous)
         MXC_TRNG_Random(var_rnd_no, num_bytes);
     }
 
-    print((char *)var_rnd_no);
+    // print((char *)var_rnd_no);
 
     MXC_TRNG_Shutdown();
 }
@@ -281,7 +281,7 @@ int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     Test_TRNG(0);
     memcpy(shared_secret, var_rnd_no, sizeof(var_rnd_no));
     // print_info("If the shared secret doesn't print on the next line, it failled\n");
-    print_info("shared_secret: %s\n",shared_secret);
+    // print_info("shared_secret: %s\n",shared_secret);
     shared_secret[SECRET_SIZE] = '\0';
     int result = secure_send(addr, transmit,sizeof(uint8_t));
     if (result == ERROR_RETURN) {
