@@ -12,6 +12,7 @@
 //Macros
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
+#define MAX_LEN 64
 // variable to store signature
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size) {
@@ -22,32 +23,23 @@ int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
     return padded_len; // Return the padded length
 }
 // Function to generate a random key
-int generate_key(uint8_t *key) {
+void generate_key(uint8_t *key) {
     WC_RNG rng;
-    int fuck = wc_InitRng(&rng);
-    if (fuck!= 0) {
-        return ERROR_RETURN; // Failed to initialize random number generator
-    }
-    if (wc_RNG_GenerateBlock(&rng, key, KEY_SIZE) != 0) {
-        wc_FreeRng(&rng);
-        return ERROR_RETURN; // Failed to generate random key
-    }
+    wc_InitRng(&rng);
+    wc_RNG_GenerateBlock(&rng, key, KEY_SIZE);
     wc_FreeRng(&rng);
-    return SUCCESS_RETURN;
+    // Failed to generate random key
+    wc_FreeRng(&rng);
 }
 
 // Function to generate a random initialization vector (IV)
-int generate_random_iv(uint8_t *iv) {
+void generate_random_iv(uint8_t *iv) {
     WC_RNG rng;
-    if (wc_InitRng(&rng) != 0) {
-        return ERROR_RETURN; // Failed to initialize random number generator
-    }
-    if (wc_RNG_GenerateBlock(&rng, iv, KEY_SIZE) != 0) { 
-        wc_FreeRng(&rng);
-        return ERROR_RETURN; // Failed to generate random IV
-    }
+    wc_InitRng(&rng);
+    // Failed to initialize random number generator
+
+    wc_RNG_GenerateBlock(&rng, iv, KEY_SIZE);
     wc_FreeRng(&rng);
-    return SUCCESS_RETURN;
 }
 
 // Function to encrypt data using AES-256 in CBC mode
@@ -95,7 +87,7 @@ void gen_salt(char *salt){
 
 //Function to generate the secret for comms
 void generate_shared_seecret(unsigned char *key,size_t key_len){
-    srand( time(NULL) );
+    srand(rand());
     const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}[]|;:<>,.?/";
     const size_t charset_len = sizeof(charset) - 1;
     for(size_t i = 0; i < key_len; i++){
@@ -105,7 +97,11 @@ void generate_shared_seecret(unsigned char *key,size_t key_len){
 // Function to sign a message
 int sign_message(uint8_t* message, size_t message_len, unsigned char* signature){
     if (message == NULL || signature == NULL || shared_secret[0] == '\0') {
-        return 2;
+        return ERROR_RETURN;
+    }
+    size_t max_signature_len = message_len + sizeof(shared_secret);
+    if (max_signature_len > MAX_LEN) {
+        return ERROR_RETURN; // Error code for exceeding maximum length
     }
     memcpy(signature, message, message_len);
     memcpy(signature + message_len, shared_secret, sizeof(shared_secret));
@@ -116,13 +112,13 @@ int verify_signature(uint8_t* message, size_t message_len, unsigned char* signat
     if(message == NULL || signature == NULL || shared_secret[0 ]== '\0'){
         return 1;
     }
-    unsigned char expected_signature[message_len + sizeof(shared_secret)];
-    // Generate the expected signature using the same custom algorithm
-    if(sign_message(message, message_len, expected_signature)){
+    unsigned char expected_signature[SIGNATURE_SIZE];
+    if(sign_message(message, message_len, expected_signature) !=0 ){
         return 2;
     }
-    if(memcmp(signature, expected_signature, sizeof(expected_signature)) != 0){
-        return 3;
+    int m = memcmp(signature, expected_signature, sizeof(expected_signature));
+    if (m!= 0) {
+        return m;
     }
     return SUCCESS_RETURN;
 }

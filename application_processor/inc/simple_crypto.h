@@ -21,9 +21,9 @@
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size);
 
-int generate_key(uint8_t *key);
+void generate_key(uint8_t *key);
 
-int generate_random_iv(uint8_t *iv);
+void generate_random_iv(uint8_t *iv);
 
 int encrypt_n(const char *pin, int pin_len, uint8_t *encrypted_pin,
              const uint8_t *key, uint8_t *iv);

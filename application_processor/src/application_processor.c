@@ -165,7 +165,7 @@ int secure_send(i2c_addr_t address, uint8_t *buffer, uint8_t len) {
  * 
  * @return int: number of bytes received, negative if error
  * 
- * Securely receive dat a over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
@@ -175,8 +175,16 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
         print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
+    }if(ret == SUCCESS_RETURN){
+        print_info("Successfully verified the signature\n");
     }
-    return poll_and_receive_packet(address, buffer);
+    print_info("Did we stall ?");
+    int stall = poll_and_receive_packet(address, buffer);
+    if (stall==ERROR_RETURN) {
+        print_info("Failed in the poll_and_receive_packet of application_processor, the return is: %d\n",stall);
+        return ERROR_RETURN;
+    }
+    return stall;
 }
 
 /**
@@ -231,20 +239,20 @@ void init() {
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
-    generate_shared_seecret(shared_secret,SECRET_SIZE);
+    // shared_secret[0] = '\0';
+    generate_shared_seecret(shared_secret, SECRET_SIZE);
     // print_info("If the shared secret doesn't print on the next line, it failled\n");
     print_info("shared_secret: %s\n",shared_secret);
     shared_secret[SECRET_SIZE] = '\0';
     int result = secure_send(addr, transmit,sizeof(uint8_t));
     if (result == ERROR_RETURN) {
-        // print_info("Failed in secure_send\n");
         return ERROR_RETURN;
     }
     
     // Receive message
     //Use Secure_receive here...
     int len = secure_receive(addr, receive);
-    print_info("%d\n", len);
+    // print_info("%d\n", len);
     if (len == ERROR_RETURN) {
         // print_info("Failed in secure_receive\n");
         return ERROR_RETURN;
@@ -257,7 +265,7 @@ int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
 int scan_components() {
     // Print out provisioned component IDs
     for (unsigned i = 0; i < flash_status.component_cnt; i++) {
-        // print_info("P>0x%08x\n", flash_status.component_ids[i]);
+        print_info("P>0x%08x\n", flash_status.component_ids[i]);
     }
     // Buffers for board link communication
     uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
@@ -280,8 +288,8 @@ int scan_components() {
 
         // Success, device is present
         if (len > 0) {
-            scan_message* scan = (scan_message*) receive_buffer;
-            // print_info("F>0x%08x\n", scan->component_id);
+            scan_message* scan = (scan_message*) receive_buffer;    
+            print_info("F>0x%08x\n", scan->component_id);
         }
     }
     print_success("List\n");
@@ -341,7 +349,7 @@ int boot_components() {
         }
 
         // Print boot message from component
-        // print_info("0x%x>%s\n", flash_status.component_ids[i], receive_buffer);
+        print_info("0x%x>%s\n", flash_status.component_ids[i], receive_buffer);
     }
     return SUCCESS_RETURN;
 }
@@ -367,8 +375,7 @@ int attest_component(uint32_t component_id) {
 
     // Print out attestation data 
     print_info("C>0x%08x\n", component_id);
-    //Not sure if this should be here, cross check with the original ectf repo. 
-    // print_info("%s", receive_buffer);
+    print_info("%s", receive_buffer);
     return SUCCESS_RETURN;
 }
 
@@ -378,7 +385,7 @@ int attest_component(uint32_t component_id) {
 // YOUR DESIGN MUST NOT CHANGE THIS FUNCTION
 // Boot message is customized through the AP_BOOT_MSG macro
 void boot() {
-    // print_info("AP>%s\n", AP_BOOT_MSG);
+    print_info("AP>%s\n", AP_BOOT_MSG);
     // POST BOOT FUNCTIONALITY
     // DO NOT REMOVE IN YOUR DESIGN
     #ifdef POST_BOOT
@@ -410,9 +417,9 @@ int validate_pin() {
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
     uint8_t salt[SALT_LEN+1];
-    char hex_str[BLOCK_SIZE * 2 + 1];
-    char new_p[21];
-    int e_k_status=generate_key(key);
+    // char hex_str[BLOCK_SIZE * 2 + 1];
+    char new_p[23];
+    generate_key(key);
     generate_random_iv(iv);
     gen_salt((char *)salt);
     char buf[50];
@@ -427,7 +434,7 @@ int validate_pin() {
     if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
-    memset(new_p, 0, 21);
+    memset(new_p, 0, 23);
     strncpy(new_p, AP_PIN,7);    
     strncat(new_p,(char *) salt,13);
     if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)){
@@ -458,9 +465,9 @@ int validate_token() {
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
     uint8_t salt[SALT_LEN+1];
-    char hex_str[BLOCK_SIZE * 2 + 1];
-    char new_t[31];
-    int ek_status = generate_key(key);
+    // char hex_str[BLOCK_SIZE * 2 + 1];
+    char new_t[33];
+    generate_key(key);
     generate_random_iv(iv);
     gen_salt((char *)salt);
     char buf[50];
@@ -475,7 +482,7 @@ int validate_token() {
     if(encrypt_n(buf,strlen(buf) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
-    memset(new_t, 0, 31);
+    memset(new_t, 0, 33);
     strncpy(new_t, AP_TOKEN,17);    
     strncat(new_t,(char *) salt,13);
     if(encrypt_n(new_t, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)){

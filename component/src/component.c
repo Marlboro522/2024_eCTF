@@ -116,14 +116,15 @@ void secure_send(uint8_t* buffer, uint8_t len) {
     //Need this funciton to send_packet over some kind of secure channel...... 
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
-    // print_info("Entered Secure Send from component\n");
-    if(sign_message(buffer,len,signedmessage.signature)!=0){
-        // print_info("Failed in the sign_message of the component\n");
+    unsigned char signature[SIGNATURE_SIZE] = {0};
+    if(sign_message(buffer,len,signature)!=0){
+        printf("Failed in the sign_message of the component\n");
         MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
     signedmessage.message_len = len;
     signedmessage.message = buffer;
+    signedmessage.signature = signature;
     send_packet_and_ack(len, buffer);
 }
 
@@ -139,11 +140,14 @@ void secure_send(uint8_t* buffer, uint8_t len) {
 */
 int secure_receive(uint8_t* buffer) {
     // print_info("Entered Secure Receive from Component\n");
-    if(verify_signature(signedmessage.message,signedmessage.message_len,signedmessage.signature) != 0){
+    int re = verify_signature(signedmessage.message, signedmessage.message_len,
+                              signedmessage.signature);
+    if (re != 0) {
         // print_info("Failed in the veriy_signature of the component\n");
-        MXC_Delay((MXC_DELAY_SEC(5)));
+        // MXC_Delay((MXC_DELAY_SEC(5)));
         return ERROR_RETURN;
     }
+    // print_info("waiting for the component to recievee ssommethinng.");
     return wait_and_receive_packet(buffer);
 }
 
@@ -251,13 +255,7 @@ int main(void) {
     LED_On(LED2);
 
     while (1) {
-        if(secure_receive(receive_buffer)==ERROR_RETURN){
-            // print_info("Failed in the while loop of the command process in the component\n");
-            // MXC_Delay(MXC_DELAY_SEC(5));
-            // continue;
-            break;
-        }
+        secure_receive(receive_buffer);
         component_process_cmd();
-        return SUCESS_RETURN;
     }
 }

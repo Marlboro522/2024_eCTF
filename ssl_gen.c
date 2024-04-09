@@ -434,16 +434,24 @@
 // Shared secret key between Application Processor and Component
 unsigned char shared_key[] = "asdfdf90803q4p5'l;";
 
+typedef struct{
+    unsigned char* message;
+    size_t message_len;
+    unsigned char* signature;
+} Signed_Message;
+Signed_Message SignedMessage;
 // Function to sign a message
-void sign_message(const unsigned char* message, size_t message_len, unsigned char* signature) {
+void sign_message(u_int8_t* message, size_t message_len, unsigned char* signature) {
     // Custom signing algorithm (e.g., simple concatenation with the shared key)
     memcpy(signature, message, message_len);
     memcpy(signature + message_len, shared_key, sizeof(shared_key));
+    SignedMessage.message = message;
+    SignedMessage.message_len = message_len;
     // In practice, use a more secure signing algorithm such as HMAC or digital signatures (e.g., RSA)
 }
 
 // Function to verify the signature of a message
-int verify_signature(const unsigned char* message, size_t message_len, const unsigned char* signature) {
+int verify_signature(u_int8_t* message, size_t message_len, unsigned char* signature) {
     unsigned char expected_signature[message_len + sizeof(shared_key)];
     // Generate the expected signature using the same custom algorithm
     sign_message(message, message_len, expected_signature);
@@ -453,7 +461,7 @@ int verify_signature(const unsigned char* message, size_t message_len, const uns
 
 int main() {
     // Example usage
-    const unsigned char* message = "Hello, Component!";
+    u_int8_t* message = {0x41, 0x42, 0x43, 0x44};
     size_t message_len = strlen(message);
     
     // Sign the message

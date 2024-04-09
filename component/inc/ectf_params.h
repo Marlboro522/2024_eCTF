@@ -4,5 +4,5 @@
 #define COMPONENT_BOOT_MSG "Component 2 Boot"
 #define ATTESTATION_LOC "co"
 #define ATTESTATION_DATE "03/02/2024"
-#define ATTESTATION_CUSTOMER "raja"
+#define ATTESTATION_CUSTOMER "UCCS"
 #endif
