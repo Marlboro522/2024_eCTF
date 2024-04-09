@@ -207,7 +207,46 @@ int get_provisioned_ids(uint32_t* buffer) {
 
 
 /********************************* UTILITIES **********************************/
+volatile int wait;
+volatile int callback_result;
 
+/***** Globals *****/
+uint8_t var_rnd_no[16] = { 0 };
+
+void TRNG_IRQHandler(void)
+{
+    MXC_TRNG_Handler();
+}
+
+void Test_Callback(void *req, int result)
+{
+    wait = 0;
+    callback_result = result;
+}
+
+void Test_TRNG(int asynchronous)
+{
+
+    int num_bytes = 16;
+
+    memset(var_rnd_no, 0, sizeof(var_rnd_no));
+
+    MXC_TRNG_Init();
+
+    if (asynchronous) {
+        wait = 1;
+        NVIC_EnableIRQ(TRNG_IRQn);
+        MXC_TRNG_RandomAsync(var_rnd_no, num_bytes, &Test_Callback);
+
+        while (wait) {}
+    } else {
+        MXC_TRNG_Random(var_rnd_no, num_bytes);
+    }
+
+    print((char *)var_rnd_no);
+
+    MXC_TRNG_Shutdown();
+}
 // Initialize the device
 // This must be called on startup to initialize the flash and i2c interfaces
 void init() {
@@ -239,8 +278,8 @@ void init() {
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
-    // shared_secret[0] = '\0';
-    generate_shared_seecret(shared_secret, SECRET_SIZE);
+    Test_TRNG(0);
+    memcpy(shared_secret, var_rnd_no, sizeof(var_rnd_no));
     // print_info("If the shared secret doesn't print on the next line, it failled\n");
     print_info("shared_secret: %s\n",shared_secret);
     shared_secret[SECRET_SIZE] = '\0';
