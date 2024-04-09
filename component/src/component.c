@@ -27,8 +27,6 @@
 // Includes from containerized build
 #include "ectf_params.h"
 #include "global_secrets.h"
-// #include "simple_crypto.h"
-// #include "common.h"
 #include "../../application_processor/inc/simple_crypto.h"
 
 #ifdef POST_BOOT
@@ -100,6 +98,10 @@ void process_attest(void);
 uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
 uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
+unsigned char shared_secret[SECRET_SIZE+1];
+Signed_Message signedmessage;
+
+
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
  * @brief Secure Send 
@@ -110,20 +112,24 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
  * Securely send buffer over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
-void secure_send(uint8_t len, uint8_t* buffer) {
+void secure_send(uint8_t* buffer, uint8_t len) {
     //Need this funciton to send_packet over some kind of secure channel...... 
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
     // print_info("Entered Secure Send from component\n");
-    
+    if(sign_message(buffer,len,signedmessage.signature)!=0){
+        // print_info("Failed in the sign_message of the component\n");
+        MXC_Delay(MXC_DELAY_SEC(5));
+        return;
+    }
+    signedmessage.message_len = len;
+    signedmessage.message = buffer;
     send_packet_and_ack(len, buffer);
-
 }
 
 /**
  * @brief Secure Receive
  * 
- * @param address: i2c_addr_t, I2C address of sender
  * @param buffer: uint8_t*, pointer to buffer to receive buffer to
  * 
  * @return int: number of bytes received, negative if error
@@ -133,6 +139,11 @@ void secure_send(uint8_t len, uint8_t* buffer) {
 */
 int secure_receive(uint8_t* buffer) {
     // print_info("Entered Secure Receive from Component\n");
+    if(verify_signature(signedmessage.message,signedmessage.message_len,signedmessage.signature) != 0){
+        // print_info("Failed in the veriy_signature of the component\n");
+        MXC_Delay((MXC_DELAY_SEC(5)));
+        return ERROR_RETURN;
+    }
     return wait_and_receive_packet(buffer);
 }
 
@@ -199,7 +210,7 @@ void process_boot() {
     // respond with the boot message
     uint8_t len = strlen(COMPONENT_BOOT_MSG) + 1;
     memcpy((void*)transmit_buffer, COMPONENT_BOOT_MSG, len);
-    secure_send(len, transmit_buffer);
+    secure_send(transmit_buffer,len);
     // Call the boot function
     boot();
 }
@@ -208,21 +219,21 @@ void process_scan() {
     // The AP requested a scan. Respond with the Component ID
     scan_message* packet = (scan_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    secure_send(sizeof(scan_message), transmit_buffer);
+    secure_send(transmit_buffer,sizeof(scan_message));
 }
 
 void process_validate() {
     // The AP requested a validation. Respond with the Component ID
     validate_message* packet = (validate_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    secure_send(sizeof(validate_message), transmit_buffer);
+    secure_send(transmit_buffer,sizeof(validate_message));
 }
 
 void process_attest() {
     // The AP requested attestation. Respond with the attestation buffer
     uint8_t len = sprintf((char*)transmit_buffer, "LOC>%s\nDATE>%s\nCUST>%s\n",
                 ATTESTATION_LOC, ATTESTATION_DATE, ATTESTATION_CUSTOMER) + 1;
-    secure_send(len, transmit_buffer);
+    secure_send(transmit_buffer,len);
 }
 
 /*********************************** MAIN *************************************/
@@ -240,8 +251,13 @@ int main(void) {
     LED_On(LED2);
 
     while (1) {
-        secure_receive(receive_buffer);
-
+        if(secure_receive(receive_buffer)==ERROR_RETURN){
+            // print_info("Failed in the while loop of the command process in the component\n");
+            // MXC_Delay(MXC_DELAY_SEC(5));
+            // continue;
+            break;
+        }
         component_process_cmd();
+        return SUCESS_RETURN;
     }
 }

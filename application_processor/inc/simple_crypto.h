@@ -7,37 +7,16 @@
 #include<wolfssl/wolfcrypt/ecc.h>
 #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include "mxc_device.h"
-#include "nvic_table.h"
-#include "trng.h"
-// #include "../../msdk/Libraries/PeriphDrivers/Include/MAX78000/trng.h"
-//Defence
+
+//Definitions
+#define SIGNATURE_SIZE 16
 #define KEY_SIZE 32
-#define BLOCK_SIZE 16
+#define BLOCK_SIZE 32
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
 #define SALT_LEN 13
-//Comms
-#define KEY_SIZE_ 16
-#define SIGNATURE_SIZE 64
-#define CUSTOM_RAND_GENERATE_BLOCK 
-extern ecc_key comm_key;
-// typedef struct {
-//     unsigned char priv[32];
-//     unsigned char pubb[64];
-// } key_pair;
 
-// volatile int wait;
-// volatile int callback_result;
-//     /***** Globals *****/
-// uint8_t var_rnd_no[8] = { 0 };
 // Fucntion prototypes
-
-void TRNG_IRQHandler(void);
-
-void Test_Callback(void *req, int result);
-
-void Test_TRNG(int asynchronous);
 
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size);
@@ -55,12 +34,9 @@ void gen_salt(char *salt);
 
 void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str);
 
-int initialize_key();
+void generate_shared_seecret(unsigned char *key, size_t key_len);
 
-int sign(const uint8_t *data, size_t len, uint8_t *signature);
+int sign_message(uint8_t* message, size_t message_len, unsigned char* signature);
 
-int sign_veriffy(const uint8_t *data, size_t len, uint8_t *signature);
-
-// void hash_pin(const char* pin, uint8_t* hash);
-
-// void enroll_pin(const char *pin);
+int verify_signature(uint8_t* message, size_t message_len,
+                     unsigned char *signature);

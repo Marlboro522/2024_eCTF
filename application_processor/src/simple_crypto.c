@@ -4,16 +4,15 @@
 #include "simple_crypto.h"
 #include "ectf_params.h"
 #include <stdint.h>
+#include <global_secrets.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 //Macros
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
-#define NO_DEV_RANDOM
-#define HMAC_DIGEST_SIZE SHA256_DIGEST_SIZE
 // variable to store signature
-uint8_t signature[SIGNATURE_SIZE];
-word32 updated_sigSz;
-ecc_key comm_key;
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size) {
     int padded_len = block_size * ((data_len + block_size - 1) / block_size); // Calculate the padded length
@@ -92,104 +91,38 @@ void gen_salt(char *salt){
     wc_FreeRng(&rng);
 }
 
-// void print_ecc_key(const char *label, ecc_key *key) {
-//     byte buffer[1024]; // Buffer to hold exported key
-//     word32 bufferSz = sizeof(buffer);
-//     if (wc_ecc_export_x963(key, buffer, &bufferSz) != 0) {
-//         printf("Error exporting %s key\n", label);
-//         return;
-//     }
-//     printf("\n%s key: ", label);
-//     for (int i = 0; i < bufferSz; i++) {
-//         printf("%02X", buffer[i]);
-//     }
-//     printf("\n\n");
-// }
-// unsigned char shared_key[] = "shared_secret_key";
+//for commss
 
-// unsigned char* generate_hmac(const unsigned char* message, size_t message_len) {
-//     unsigned char* hmac_result = (unsigned char*)malloc(HMAC_DIGEST_SIZE);
-//     wc_HmacSha256(message, message_len, shared_key, sizeof(shared_key) - 1, hmac_result);
-//     return hmac_result;
-// }
-
-// // Function to verify HMAC for incoming messages
-// int verify_hmac(const unsigned char* message, size_t message_len, const unsigned char* hmac) {
-//     unsigned char computed_hmac[HMAC_DIGEST_SIZE];
-//     wc_HmacSha256(message, message_len, shared_key, sizeof(shared_key) - 1, computed_hmac);
-//     return memcmp(computed_hmac, hmac, HMAC_DIGEST_SIZE) == 0;
-// }
-
-// void TRNG_IRQHandler(void){
-//         MXC_TRNG_Handler();
-// }
-
-// void Test_Callback(void *req, int result){
-//     callback_result = result;
-//     wait = 0;
-// }
-
-// void Test_TRNG(int asynchronous) {
-
-//         print_info(asynchronous ? "\nTest TRNG Async\n" : "\nTest TRNG Sync\n");
-//         int num_bytes = 8;
-//         memset(var_rnd_no, 0, sizeof(var_rnd_no));
-//         MXC_TRNG_Init();
-//         if (asynchronous) {
-//             wait = 1;
-//             NVIC_EnableIRQ(TRNG_IRQn);
-//             MXC_TRNG_RandomAsync(var_rnd_no, num_bytes, &Test_Callback);
-//             while (wait) {}
-//         }else {
-//             MXC_TRNG_Random(var_rnd_no, num_bytes);
-//         }
-//         // print((char *)var_rnd_no);
-//         MXC_TRNG_Shutdown();
-//         print_info("TRNG Test function Complete\n");
-//     }
-// int initialize_key(WC_RNG rng) {
-//     int make_ret;
-//     int rand_ret;
-//     wc_ecc_init(&comm_key);
-//     // WC_RNG rng;
-//     // wc_FreeRng(&rng);
-//     // rand_ret = wc_InitRng(&rng);
-//     // if(rand_ret!=0){
-//     //     return rand_ret;
-//     // }
-//     make_ret  = wc_ecc_make_key(&rng, KEY_SIZE_, &comm_key);
-//     if (make_ret!= 0) {
-//         return make_ret;
-//     }
-//     wc_FreeRng(&rng);
-//     return SUCCESS_RETURN; 
-// }
-// int sign(const uint8_t *data, const unsigned char *priv_key, unsigned char *signature) {
-//     Test_TRNG(0);
-//     // WC_RNG rng;
-//     // wc_FreeRng(&rng);
-//     // wc_InitRng(&rng);
-//     // word32 sigSz = SIGNATURE_SIZE;
-//     // int key_ok=wc_ecc_check_key(&comm_key);
-//     // if(key_ok != MP_OKAY){
-//     //     // print_error("Key not OK");
-//     //     return ERROR_RETURN;
-//     // }
-//     // int ret = wc_ecc_sign_hash(data, len, signature, &sigSz, &rng,
-//     // &comm_key); updated_sigSz = sigSz; wc_FreeRng(&rng); if (ret != 0) {
-//     //     // print_error("Signing Failed");
-//     //     return ERROR_RETURN;
-//     // }
-//     // return SUCCESS_RETURN;
-// }
-int sign_veriffy(const uint8_t *data, size_t len, uint8_t *signature){
-    int result;
-    int key_ok=wc_ecc_check_key(&comm_key);
-    word32 sigSz = updated_sigSz;
-    if (key_ok != MP_OKAY) return ERROR_RETURN;
-    int ret = wc_ecc_verify_hash(signature, sigSz, data, len, &result, &comm_key);
-    if (ret != 0)
-        return ERROR_RETURN;
-    return result;
+//Function to generate the secret for comms
+void generate_shared_seecret(unsigned char *key,size_t key_len){
+    srand( time(NULL) );
+    const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}[]|;:<>,.?/";
+    const size_t charset_len = sizeof(charset) - 1;
+    for(size_t i = 0; i < key_len; i++){
+        key[i] = charset[rand() % charset_len];
+    }
 }
-
+// Function to sign a message
+int sign_message(uint8_t* message, size_t message_len, unsigned char* signature){
+    if (message == NULL || signature == NULL || shared_secret[0] == '\0') {
+        return 2;
+    }
+    memcpy(signature, message, message_len);
+    memcpy(signature + message_len, shared_secret, sizeof(shared_secret));
+    return SUCCESS_RETURN;
+}
+    // Function to verify the signature of a message
+int verify_signature(uint8_t* message, size_t message_len, unsigned char* signature) {
+    if(message == NULL || signature == NULL || shared_secret[0 ]== '\0'){
+        return 1;
+    }
+    unsigned char expected_signature[message_len + sizeof(shared_secret)];
+    // Generate the expected signature using the same custom algorithm
+    if(sign_message(message, message_len, expected_signature)){
+        return 2;
+    }
+    if(memcmp(signature, expected_signature, sizeof(expected_signature)) != 0){
+        return 3;
+    }
+    return SUCCESS_RETURN;
+}

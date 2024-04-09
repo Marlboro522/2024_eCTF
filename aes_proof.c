@@ -521,6 +521,7 @@ void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str) {
 #define AP_PIN "76ea8r"
 
 int main() {
+
     uint8_t key[KEY_SIZE];
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
@@ -533,46 +534,49 @@ int main() {
     generate_random_iv(iv);
     bytes_to_hex(key, KEY_SIZE, hex_str);
     gen_salt((char *)salt);
-    printf("AP_PIN: %s", AP_PIN);
+    printf("AP_PIN: %s\n", AP_PIN);
     strcpy(new_p, AP_PIN);    
     strcat(new_p,(char *) salt);
     printf("\n");
-    printf("AP_PIN with salt: %s", new_p);
+    printf("AP_PIN with salt: %s\n", new_p);
     printf("\n");
+    printf("Length of AP_PIN with salt: %zu\n", strlen(new_p));
     // Encrypt original PIN
-    encrypt_n(new_p, strlen(AP_PIN), o_CIPHER, key, iv);
+    encrypt_n(new_p, strlen(new_p), o_CIPHER, key, iv);
     // Print original PIN cipher text
     printf("Original PIN (o_CIPHER): ");
     bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
     printf("%s\n\n", hex_str);
-
+    printf("LENGTH OF o_CIPHER: %zu\n", strlen(hex_str));
     // Get user PIN
     memset(new_p, 0, 21);
     char user_PIN[50];
-    printf("Enter PIN: ");
+    printf("\nEnter PIN: ");
     scanf("%s", user_PIN);
     printf("\n");
     strcpy(new_p, user_PIN);
     strcat(new_p, (char *)salt);
+    printf("Length of encrypt data: %zu\n", strlen(new_p));
     // printf("%s\n", typeof(salt));
     printf("\n");
-    printf("userpin with salt: %s\n", new_p);
+    printf("Userpin with salt: %s\n\n", new_p);
     // Encrypt user PIN
-    if (encrypt_n(new_p, strlen(user_PIN), u_CIPHER, key, iv) != 0) {
+    if (encrypt_n(new_p, strlen(new_p), u_CIPHER, key, iv) != 0) {
         return ERROR_RETURN;
     }
-    printf("%s\n", AP_PIN);
+    printf("%s\n\n", AP_PIN);
     // Print user PIN cipher text
     printf("Encrypted User PIN (u_CIPHER): ");
     bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
-    printf("%s\n", hex_str);
+    printf("%s\n\n", hex_str);
+    printf("Length of u_CIPHER: %zu\n\n", strlen(hex_str));
 
     // Compare
     if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
-        printf("PIN ACCEPTED!\n");
+        printf("PIN ACCEPTED!\n\n");
         return SUCCESS_RETURN;
     } else {
-        printf("Invalid PIN!!!\n");
+        printf("Invalid PIN!!!\n\n");
         return ERROR_RETURN;
     }
 }

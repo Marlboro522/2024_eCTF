@@ -25,6 +25,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+// #include <stdlib.h>
+// #include <time.h>
 #include <unistd.h>
 
 #include "board_link.h"
@@ -123,6 +126,9 @@ typedef enum {
 // Variable for information stored in flash memory
 flash_entry flash_status;
 int status;
+//keys to send to the global_secret.h file
+unsigned char shared_secret[SECRET_SIZE+1];
+Signed_Message signedmessage;
 /******************************* POST BOOT FUNCTIONALITY **********************************/
 /**
  * @brief Secure Send
@@ -138,9 +144,17 @@ int status;
 
 */
 // Preserved the function signature here...
-int secure_send(uint8_t address, uint8_t *buffer, uint8_t len) {
-    
-    return send_packet(address, len, buffer);
+int secure_send(i2c_addr_t address, uint8_t *buffer, uint8_t len) {
+    unsigned char signature[SIGNATURE_SIZE] = {0};
+    int ret = sign_message(buffer, len, signature);
+    if (ret != 0) {
+        print_info("Failed in the sign_message of application_processor, error code: %d\n",ret);
+        MXC_Delay(MXC_DELAY_SEC(5));
+        return ERROR_RETURN;
+    }
+    signedmessage.message_len = len;
+    signedmessage.signature = signature;
+    signedmessage.message = buffer; return send_packet(address, len, buffer);
 }
 
 /**
@@ -155,6 +169,13 @@ int secure_send(uint8_t address, uint8_t *buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
+    int ret = verify_signature(signedmessage.message, signedmessage.message_len,
+                               signedmessage.signature);
+    if (ret != 0) {
+        print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
+        MXC_Delay(MXC_DELAY_SEC(5));
+        return ERROR_RETURN;
+    }
     return poll_and_receive_packet(address, buffer);
 }
 
@@ -210,19 +231,22 @@ void init() {
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
-    //Use secure_send here
+    generate_shared_seecret(shared_secret,SECRET_SIZE);
+    // print_info("If the shared secret doesn't print on the next line, it failled\n");
+    print_info("shared_secret: %s\n",shared_secret);
+    shared_secret[SECRET_SIZE] = '\0';
     int result = secure_send(addr, transmit,sizeof(uint8_t));
-    //not sure if print_info should be here, need to check the origin repo
-    // print_info("%d\n", result);
     if (result == ERROR_RETURN) {
+        // print_info("Failed in secure_send\n");
         return ERROR_RETURN;
     }
     
     // Receive message
     //Use Secure_receive here...
     int len = secure_receive(addr, receive);
-    // print_info("%d\n", len);
+    print_info("%d\n", len);
     if (len == ERROR_RETURN) {
+        // print_info("Failed in secure_receive\n");
         return ERROR_RETURN;
     }
     return len;
@@ -233,47 +257,9 @@ int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
 int scan_components() {
     // Print out provisioned component IDs
     for (unsigned i = 0; i < flash_status.component_cnt; i++) {
-        print_info("P>0x%08x\n", flash_status.component_ids[i]);
+        // print_info("P>0x%08x\n", flash_status.component_ids[i]);
     }
     // Buffers for board link communication
-    unsigned char shared_key[] = "asdfdf90803q4p5'l;";
-    // Function to sign a message
-    void sign_message(const unsigned char* message, size_t message_len, unsigned char* signature) {
-        // Custom signing algorithm (e.g., simple concatenation with the shared key)
-        memcpy(signature, message, message_len);
-        memcpy(signature + message_len, shared_key, sizeof(shared_key));
-        print_info("Message has been signed with the shared key\n");
-        // In practice, use a more secure signing algorithm such as HMAC or
-        // digital signatures (e.g., RSA)
-    }
-    // Function to verify the signature of a message
-    int verify_signature(const unsigned char* message, size_t message_len, const unsigned char* signature) {
-        unsigned char expected_signature[message_len + sizeof(shared_key)];
-        // Generate the expected signature using the same custom algorithm
-        sign_message(message, message_len, expected_signature);
-        // Compare the received signature with the expected signature
-        return memcmp(signature, expected_signature, sizeof(expected_signature)) == 0;
-    }
-    const unsigned char* message = "Hello, Component!";
-    
-    size_t message_len = strlen(message);
-    // Sign the message
-    unsigned char signature[message_len + sizeof(shared_key)];
-    sign_message(message, message_len, signature);
-    
-    // Simulate transmission of the message and signature to the Component
-    
-    // Simulate the Component receiving the message and signature
-    // Verify the signature
-    int verified = verify_signature(message, message_len, signature);
-    
-    if (verified) {
-        print_info("Signature verified successfully!\n");
-        // Proceed with processing the message
-    } else {
-        print_info("Signature verification failed!\n");
-        // Discard or handle the message accordingly
-    }
     uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
     uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
@@ -295,7 +281,7 @@ int scan_components() {
         // Success, device is present
         if (len > 0) {
             scan_message* scan = (scan_message*) receive_buffer;
-            print_info("F>0x%08x\n", scan->component_id);
+            // print_info("F>0x%08x\n", scan->component_id);
         }
     }
     print_success("List\n");
@@ -355,7 +341,7 @@ int boot_components() {
         }
 
         // Print boot message from component
-        print_info("0x%x>%s\n", flash_status.component_ids[i], receive_buffer);
+        // print_info("0x%x>%s\n", flash_status.component_ids[i], receive_buffer);
     }
     return SUCCESS_RETURN;
 }
@@ -381,7 +367,8 @@ int attest_component(uint32_t component_id) {
 
     // Print out attestation data 
     print_info("C>0x%08x\n", component_id);
-    print_info("%s", receive_buffer);
+    //Not sure if this should be here, cross check with the original ectf repo. 
+    // print_info("%s", receive_buffer);
     return SUCCESS_RETURN;
 }
 
@@ -391,7 +378,7 @@ int attest_component(uint32_t component_id) {
 // YOUR DESIGN MUST NOT CHANGE THIS FUNCTION
 // Boot message is customized through the AP_BOOT_MSG macro
 void boot() {
-    print_info("AP>%s\n", AP_BOOT_MSG);
+    // print_info("AP>%s\n", AP_BOOT_MSG);
     // POST BOOT FUNCTIONALITY
     // DO NOT REMOVE IN YOUR DESIGN
     #ifdef POST_BOOT
@@ -422,12 +409,10 @@ int validate_pin() {
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
-    uint8_t salt[SALT_LEN+1]; // +1 for null terminator
+    uint8_t salt[SALT_LEN+1];
+    char hex_str[BLOCK_SIZE * 2 + 1];
     char new_p[21];
     int e_k_status=generate_key(key);
-    // if(e_k_status !=0){
-    //     print_info("Failed here too, Error code: %d",e_k_status);
-    // }
     generate_random_iv(iv);
     gen_salt((char *)salt);
     char buf[50];
@@ -435,24 +420,34 @@ int validate_pin() {
     if(strlen(buf)>7){
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
-    }strncpy(new_p, buf,7);
+    }
+    strncpy(new_p, buf,7);
     strncat(new_p, (char *)salt,13);
+    // print_info("user_pin Length: %zu", strlen(new_p));
     if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
-    }memset(new_p, 0, 21);
+    }
+    memset(new_p, 0, 21);
     strncpy(new_p, AP_PIN,7);    
     strncat(new_p,(char *) salt,13);
-    if(encrypt_n(new_p, strlen(AP_PIN) + 1, o_CIPHER, key, iv)){
+    if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)){
         return ERROR_RETURN;
-        }
+    }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
-        // print_info("Entered the commpare pins");
+        // print_info("Entered the commpare pins\n");
+        // bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
+        // print_info("o_CIPHER: %s\n\n", hex_str);
+        // print_info("Length of o_CIPHER: %zu\n", strlen(hex_str));
+        // bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
+        // print_info("u_CIPHER: %s\n\n", hex_str);
+        // print_info("Length of u_CIPHER: %zu\n", strlen(hex_str));
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
     // HAL_Delay(5000);
     // print_info("Delaying...");
     MXC_Delay(MXC_DELAY_SEC(5));
+    print_error("Invalid Pin!\n");
     return ERROR_RETURN;
 }
 
@@ -462,42 +457,58 @@ int validate_token() {
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
+    uint8_t salt[SALT_LEN+1];
+    char hex_str[BLOCK_SIZE * 2 + 1];
+    char new_t[31];
     int ek_status = generate_key(key);
     generate_random_iv(iv);
+    gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    if(strlen(buf)>16){
+    if(strlen(buf)>17){
         // print_info("Delaying...");
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
     }
+    strncpy(new_t, buf,17);
+    strncat(new_t, (char *)salt,13);
     if(encrypt_n(buf,strlen(buf) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
-    if(encrypt_n(AP_TOKEN, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)){
+    memset(new_t, 0, 31);
+    strncpy(new_t, AP_TOKEN,17);    
+    strncat(new_t,(char *) salt,13);
+    if(encrypt_n(new_t, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)){
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
+        // print_info("Entered the commpare tokens\n");
+        // bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
+        // print_info("%s\n\n", hex_str);
+        // bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
+        // print_info("%s\n\n", hex_str);
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
-    print_error("Invalid Token!\n");
     MXC_Delay(MXC_DELAY_SEC(5));
+    print_error("Invalid Token!\n");
     return ERROR_RETURN;
 }
 
 // Boot the components and board if the components validate
 void attempt_boot() {
     if (validate_components()) {
+        MXC_Delay(MXC_DELAY_SEC(5));
         print_error("Components could not be validated\n");
         return;
     }
     print_debug("All Components validated\n");
     if (boot_components()) {
+        MXC_Delay(MXC_DELAY_SEC(5));
         print_error("Failed to boot all components\n");
         return;
     }
-    print_info("AP>%s\n", AP_BOOT_MSG);
+    // print_info("AP>%s\n", AP_BOOT_MSG);
     print_success("Boot\n");
     // Boot
     boot();
@@ -508,6 +519,7 @@ void attempt_replace() {
     char buf[50];
 
     if (validate_token()) {
+        MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
 
@@ -545,7 +557,7 @@ void attempt_attest() {
     char buf[50];
 
     if (validate_pin()) {
-        print_error("Not validated");
+        MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
     uint32_t component_id;
@@ -563,7 +575,7 @@ int main() {
     init();
     // Print the component IDs to be helpful
     // Your design does not need to do this
-    print_info("Application Processor Started\n");
+    // print_info("Application Processor Started\n");
     // Handle commands forever
     char buf[100];
     while (1) {
