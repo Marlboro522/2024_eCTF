@@ -110,11 +110,11 @@ int sign_message(uint8_t* message, size_t message_len, unsigned char* signature)
     // Function to verify the signature of a message
 int verify_signature(uint8_t* message, size_t message_len, unsigned char* signature) {
     if(message == NULL || signature == NULL || shared_secret[0 ]== '\0'){
-        return 1;
+        return 2;
     }
     unsigned char expected_signature[SIGNATURE_SIZE];
     if(sign_message(message, message_len, expected_signature) !=0 ){
-        return 2;
+        return 5;
     }
     int m = memcmp(signature, expected_signature, sizeof(expected_signature));
     if (m!= 0) {

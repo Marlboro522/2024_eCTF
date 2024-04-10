@@ -129,7 +129,10 @@ int status;
 //keys to send to the global_secret.h file
 unsigned char shared_secret[SECRET_SIZE+1];
 Signed_Message signedmessage;
-/******************************* POST BOOT FUNCTIONALITY **********************************/
+int comp_send_status;
+int comp_receive_status;
+/******************************* POST BOOT FUNCTIONALITY
+ * **********************************/
 /**
  * @brief Secure Send
  *
@@ -152,9 +155,13 @@ int secure_send(i2c_addr_t address, uint8_t *buffer, uint8_t len) {
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
     }
+    int send_status=send_packet(address, len, buffer);
+    // print_info("This is the return of send_packet: %d\n",send_status);
     signedmessage.message_len = len;
     signedmessage.signature = signature;
-    signedmessage.message = buffer; return send_packet(address, len, buffer);
+    signedmessage.message = buffer;
+    print_info("Comp_receive_status from secure_receive: %d\n",comp_receive_status);
+    return send_status;
 }
 
 /**
@@ -171,6 +178,12 @@ int secure_send(i2c_addr_t address, uint8_t *buffer, uint8_t len) {
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
     int ret = verify_signature(signedmessage.message, signedmessage.message_len,
                                signedmessage.signature);
+    // print_info("shared_secret: %s\n",shared_secret);
+    print_info("Comp_send_status: %d\n",comp_send_status);
+    // print_info("Comp_receive_status: %d\n",comp_receive_status);
+    // print_info("signature: %s\n",signedmessage.signature);
+    // print_info("message: %s\n",signedmessage.message);
+    // print_info("message_len: %d\n",signedmessage.message_len);
     if (ret != 0) {
         print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
         MXC_Delay(MXC_DELAY_SEC(5));
@@ -179,6 +192,7 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
         print_info("Successfully verified the signature\n");
     }
     print_info("Did we stall ?");
+    print_info("Comp_send_status: %d\n",comp_send_status);
     int stall = poll_and_receive_packet(address, buffer);
     if (stall<SUCCESS_RETURN) {
         print_info("Failed in the poll_and_receive_packet of application_processor, the return is: %d\n",stall);

@@ -81,7 +81,7 @@ int poll_and_receive_packet(i2c_addr_t address, uint8_t* packet) {
     while (true) {
         result = i2c_simple_read_transmit_done(address);
         if (result < SUCCESS_RETURN) {
-            return 2;
+            return ERROR_RETURN;
         }
         else if (result == SUCCESS_RETURN) {
             break;
@@ -91,15 +91,15 @@ int poll_and_receive_packet(i2c_addr_t address, uint8_t* packet) {
 
     int len = i2c_simple_read_transmit_len(address);
     if (len < SUCCESS_RETURN) {
-        return 3;
+        return ERROR_RETURN ;
     }
     result = i2c_simple_read_data_generic(address, TRANSMIT, (uint8_t)len, packet);
     if (result < SUCCESS_RETURN) {
-        return 4;
+        return ERROR_RETURN;
     }
     result = i2c_simple_write_transmit_done(address, true);
     if (result < SUCCESS_RETURN) {
-        return 5;
+        return ERROR_RETURN;
     }
 
     return len;
