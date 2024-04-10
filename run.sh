@@ -1,17 +1,5 @@
 #!/bin/bash
 start_time=$(date +%s)
-diskutil unmount /dev/disk2
-sleep 2
-diskutil unmount /dev/disk3
-sleep 2
-diskutil unmount /dev/disk4
-sleep 2
-echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk2
-sleep 2
-echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk3
-sleep 2
-echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk4
-sleep 2
 echo -e "\n"
 printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
 printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
@@ -24,12 +12,10 @@ c_d() {
         ((secs--))
     done
 }
-c_d 23
 echo -e "\n"
 printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
 printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
 echo -e "\n"
-echo -e "Boards ready for the build and boot"
 echo -e "\n"
 printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
 printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
@@ -38,15 +24,22 @@ commands=(
     "ectf_build_ap -d . -on ap -od build -p 521313 -t 0123456789abcdef -c 2 -ids '0x12344321, 0x43211234' -b 'Ap boot ready'"
     "ectf_build_comp -d . -on comp1 -od build -id 0x12344321 -b 'Component 1 Boot' -al co -ad 03/02/2024 -ac UCCS"
     "ectf_build_comp -d . -on comp2 -od build -id 0x43211234 -b 'Component 2 Boot' -al co -ad 03/02/2024 -ac UCCS"
-    "ectf_update --infile build/ap.img --port /dev/tty.usbmodem141202"
-    "ectf_update --infile build/comp1.img --port /dev/tty.usbmodem141302"
-    "ectf_update --infile build/comp2.img --port /dev/tty.usbmodem141402"
-    # "ectf_boot -a /dev/tty.usbmodem1413102"
-    "ectf_list -a /dev/tty.usbmodem141202"
-    "ectf_attestation -a /dev/tty.usbmodem141202 -p 521313 -c 0x12344321"
-    "ectf_attestation -a /dev/tty.usbmodem141202 -p 5211313 -c 0x43211234"
-    "ectf_attestation -a /dev/tty.usbmodem141202 -p 521313 -c 0x43211234"
-    #"ectf_replace -a /dev/tty.usbmodem1433302 -t 0123456789abcdefg -i 0x -o"
+    "diskutil unmount /dev/disk2"
+    "diskutil unmount /dev/disk3"
+    "diskutil unmount /dev/disk4"
+    "echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk2"
+    "echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk3"
+    "echo "Quangeek22@"|sudo -S cp /Users/ilu/Downloads/insecure\ \(1\).bin /dev/disk4"
+    # "c_d"
+    # "ectf_update --infile build/ap.img --port /dev/tty.usbmodem141202"
+    # "ectf_update --infile build/comp1.img --port /dev/tty.usbmodem141302"
+    # "ectf_update --infile build/comp2.img --port /dev/tty.usbmodem141402"
+    # "ectf_list -a /dev/tty.usbmodem141202"
+    # "ectf_attestation -a /dev/tty.usbmodem141202 -p 521313 -c 0x12344321"
+    # "ectf_attestation -a /dev/tty.usbmodem141202 -p 5211313 -c 0x43211234"
+    # "ectf_attestation -a /dev/tty.usbmodem141202 -p 521313 -c 0x43211234"
+    # "ectf_boot -a /dev/tty.usbmodem141202"
+    #"ectf_replace -a /dev/tty.usbmodem141202 -t 0123456789abcdefg -i 0x -o"
 )
 # width=$(tput cols)
 
@@ -61,6 +54,10 @@ for cmd in "${commands[@]}"; do
     echo "Executing command: $cmd"
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
     # say --quality 127 -r 130 -v Whisper "Now, Executing $cmd_name"
+    if [[ "$cmd" == *"c_d"* ]]; then
+        c_d 23
+        echo -e "Boards ready for Opeartion"
+    fi
     eval "$cmd"
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'
     printf '\e[93;1m.................................................................................................................................................................\e[0m\n'

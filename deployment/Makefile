@@ -17,5 +17,7 @@ all:
 	@echo "   unsigned char* signature;" >> global_secrets.h
 	@echo "} Signed_Message;" >> global_secrets.h
 	@echo "extern Signed_Message signedmessage;" >> global_secrets.h
+	@echo "extern int comp_send_status;" >>global_secrets.h
+	@echo "extern int comp_receive_status;" >>global_secrets.h
 clean:
 	rm -f global_secrets.h

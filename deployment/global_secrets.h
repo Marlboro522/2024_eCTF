@@ -7,3 +7,5 @@ typedef struct {
    unsigned char* signature;
 } Signed_Message;
 extern Signed_Message signedmessage;
+extern int comp_send_status;
+extern int comp_receive_status;

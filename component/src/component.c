@@ -100,7 +100,8 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
 unsigned char shared_secret[SECRET_SIZE+1];
 Signed_Message signedmessage;
-
+int comp_send_status=0;
+int comp_receive_status = 0;
 
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
@@ -116,15 +117,16 @@ void secure_send(uint8_t* buffer, uint8_t len) {
     //Need this funciton to send_packet over some kind of secure channel...... 
     //Only have to be authentic and Integral, no need of confidentiality...
     //Let's see........
+    comp_send_status++;
     unsigned char signature[SIGNATURE_SIZE] = {0};
     if(sign_message(buffer,len,signature)!=0){
         MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
+    send_packet_and_ack(len, buffer);
     signedmessage.message_len = len;
     signedmessage.message = buffer;
     signedmessage.signature = signature;
-    send_packet_and_ack(len, buffer);
 }
 
 /**
@@ -138,15 +140,12 @@ void secure_send(uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(uint8_t* buffer) {
-    // print_info("Entered Secure Receive from Component\n");
     int re = verify_signature(signedmessage.message, signedmessage.message_len,
                               signedmessage.signature);
     if (re != 0) {
-        // print_info("Failed in the veriy_signature of the component\n");
-        // MXC_Delay((MXC_DELAY_SEC(5)));
         return ERROR_RETURN;
     }
-    // print_info("waiting for the component to recievee ssommethinng.");
+    comp_receive_status++;
     return wait_and_receive_packet(buffer);
 }
 
