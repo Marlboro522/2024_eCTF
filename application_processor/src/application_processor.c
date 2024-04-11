@@ -509,6 +509,9 @@ int validate_token() {
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
         // print_info("Token of correct length\n");
+        print_info("Token Acepted should returun Sucess return and it is: %d "
+                   "and Token Accepted ",
+                   SUCCESS_RETURN);
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
