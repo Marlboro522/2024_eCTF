@@ -1,7 +1,7 @@
 #ifndef __ECTF_PARAMS__
 #define __ECTF_PARAMS__
-#define COMPONENT_ID 1126240820
-#define COMPONENT_BOOT_MSG "Component 2 Boot"
+#define COMPONENT_ID 305414945
+#define COMPONENT_BOOT_MSG "Component 1 Boot"
 #define ATTESTATION_LOC "co"
 #define ATTESTATION_DATE "03/02/2024"
 #define ATTESTATION_CUSTOMER "UCCS"

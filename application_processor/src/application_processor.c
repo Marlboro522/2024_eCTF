@@ -498,13 +498,13 @@ int validate_token() {
     }
     strncpy(new_t, buf,17);
     strncat(new_t, (char *)salt,13);
-    if(encrypt_n(buf,strlen(AP_TOKEN) +1 ,u_CIPHER,key,iv)!=0){
+    if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
     memset(new_t, 0, 33);
     strncpy(new_t, AP_TOKEN,17);  
     strncat(new_t,(char *) salt,13);
-    if(encrypt_n(new_t, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)!=0){
+    if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
