@@ -7,6 +7,7 @@
 #include<wolfssl/wolfcrypt/ecc.h>
 #include <wolfssl/wolfcrypt/asn.h>
 #include <wolfssl/wolfcrypt/types.h>
+#include "global_secrets.h"
 
 //Definitions
 #define SIGNATURE_SIZE 16
@@ -16,7 +17,6 @@
 #define ERROR_RETURN -1
 #define SALT_LEN 13
 
-// Fucntion prototypes
 
 int pad_pkcs7(const char *data, int data_len, uint8_t *padded_data,
               int block_size);
@@ -36,7 +36,7 @@ void bytes_to_hex(const uint8_t *bytes, int len, char *hex_str);
 
 void generate_shared_seecret(unsigned char *key, size_t key_len);
 
-int sign_message(uint8_t* message, size_t message_len, unsigned char* signature);
+int sign_message(size_t message_len, unsigned char* signature);
 
-int verify_signature(uint8_t* message, size_t message_len,
+int verify_signature(size_t message_len,
                      unsigned char *signature);

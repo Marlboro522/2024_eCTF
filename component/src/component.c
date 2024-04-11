@@ -10,7 +10,6 @@
  *
  * @copyright Copyright (c) 2024 The MITRE Corporation
  */
-
 #include "board.h"
 #include "i2c.h"
 #include "led.h"
@@ -36,16 +35,6 @@
 #include <string.h>
 #endif
 
-// #include <wolfssl/options.h>
-// #include <wolfssl/ssl.h>
-// // #include <wolfssl/wolfcrypt/asn.h>
-// #include <wolfssl/wolfcrypt/types.h>
-// #include <wolfssl/wolfcrypt/ecc.h>
-// #include <wolfssl/wolfcrypt/aes.h>
-// #include <wolfssl/wolfcrypt/hash.h>
-// #include <wolfssl/wolfcrypt/sha256.h>
-// #include<wolfssl/wolfcrypt/random.h>
-
 /********************************* CONSTANTS **********************************/
 
 // Passed in through ectf-params.h
@@ -58,8 +47,6 @@
 #define ATTESTATION_CUSTOMER "Fritz"
 */
 
-#define SUCESS_RETURN 0
-#define ERROR_RETURN -1
 /******************************** TYPE DEFINITIONS ********************************/
 // Commands received by Component using 32 bit integer
 typedef enum {
@@ -85,6 +72,8 @@ typedef struct {
     uint32_t component_id;
 } scan_message;
 
+unsigned char shared_secret[SECRET_SIZE+1];
+Signed_Message signedmessage;
 /********************************* FUNCTION DECLARATIONS **********************************/
 // Core function definitions
 void component_process_cmd(void);
@@ -98,54 +87,43 @@ void process_attest(void);
 uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
 uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
 
-unsigned char shared_secret[SECRET_SIZE+1];
-Signed_Message signedmessage;
-int comp_send_status=0;
-int comp_receive_status = 0;
-
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
  * @brief Secure Send 
  * 
- * @param buffer: uint8_t*, pointer to buffer to be send
- * @param len: uint8_t, size of buffer to be sent 
+ * @param buffer: uint8_t*, pointer to data to be send
+ * @param len: uint8_t, size of data to be sent 
  * 
- * Securely send buffer over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely send data over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
 void secure_send(uint8_t* buffer, uint8_t len) {
-    //Need this funciton to send_packet over some kind of secure channel...... 
-    //Only have to be authentic and Integral, no need of confidentiality...
-    //Let's see........
-    comp_send_status++;
-    unsigned char signature[SIGNATURE_SIZE] = {0};
-    if(sign_message(buffer,len,signature)!=0){
+    unsigned char signature[SIGNATURE_SIZE+1] = {0};
+    if(sign_message(len,signature)!=0){
         MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
-    send_packet_and_ack(len, buffer);
     signedmessage.message_len = len;
-    signedmessage.message = buffer;
     signedmessage.signature = signature;
+    send_packet_and_ack(len, buffer); 
 }
 
 /**
  * @brief Secure Receive
  * 
- * @param buffer: uint8_t*, pointer to buffer to receive buffer to
+ * @param buffer: uint8_t*, pointer to buffer to receive data to
  * 
  * @return int: number of bytes received, negative if error
  * 
- * Securely receive buffer over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(uint8_t* buffer) {
-    int re = verify_signature(signedmessage.message, signedmessage.message_len,
+    int re = verify_signature(signedmessage.message_len,
                               signedmessage.signature);
     if (re != 0) {
         return ERROR_RETURN;
     }
-    comp_receive_status++;
     return wait_and_receive_packet(buffer);
 }
 
@@ -212,7 +190,7 @@ void process_boot() {
     // respond with the boot message
     uint8_t len = strlen(COMPONENT_BOOT_MSG) + 1;
     memcpy((void*)transmit_buffer, COMPONENT_BOOT_MSG, len);
-    secure_send(transmit_buffer,len);
+    send_packet_and_ack(len,transmit_buffer);
     // Call the boot function
     boot();
 }
@@ -221,21 +199,21 @@ void process_scan() {
     // The AP requested a scan. Respond with the Component ID
     scan_message* packet = (scan_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    secure_send(transmit_buffer,sizeof(scan_message));
+    send_packet_and_ack(sizeof(scan_message),transmit_buffer);
 }
 
 void process_validate() {
     // The AP requested a validation. Respond with the Component ID
     validate_message* packet = (validate_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    secure_send(transmit_buffer,sizeof(validate_message));
+    send_packet_and_ack(sizeof(validate_message),transmit_buffer);
 }
 
 void process_attest() {
-    // The AP requested attestation. Respond with the attestation buffer
+    // The AP requested attestation. Respond with the attestation data
     uint8_t len = sprintf((char*)transmit_buffer, "LOC>%s\nDATE>%s\nCUST>%s\n",
                 ATTESTATION_LOC, ATTESTATION_DATE, ATTESTATION_CUSTOMER) + 1;
-    secure_send(transmit_buffer,len);
+    send_packet_and_ack(len,transmit_buffer);
 }
 
 /*********************************** MAIN *************************************/
@@ -253,7 +231,8 @@ int main(void) {
     LED_On(LED2);
 
     while (1) {
-        secure_receive(receive_buffer);
+        wait_and_receive_packet(receive_buffer);
+
         component_process_cmd();
     }
 }

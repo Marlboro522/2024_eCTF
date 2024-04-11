@@ -18,29 +18,24 @@
 #include "mxc_delay.h"
 #include "mxc_device.h"
 #include "nvic_table.h"
-#include "trng.h"
+#include <trng.h>
 
-#include "simple_crypto.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <pthread.h>
-// #include <stdlib.h>
-// #include <time.h>
-#include <unistd.h>
 
 #include "board_link.h"
 #include "simple_flash.h"
 #include "host_messaging.h"
-#include <string.h>
+
+#include "simple_crypto.h"
 
 #ifdef POST_BOOT
+#include "mxc_delay.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "mxc_delay.h"
 #include <string.h>
-// #include "simple_crypto.h"
 #endif
 
 // Includes from containerized build
@@ -70,8 +65,7 @@
 //Key size for encryption in bytes
 #define KEY_SIZE 32
 
-#define WOLFSSL_ECC
-
+//for components
 #define NUM_COMPONENTS(...) (sizeof((uint32_t[]){__VA_ARGS__}) / sizeof(uint32_t))
 #define EXTRACT_COMPONENTS(buffer, ...) \
     do { \
@@ -82,10 +76,6 @@
         } \
         return i; \
     } while (0)
-
-// #define CERTIFICATE_ADDRESS 0x10045FFF
-// #define PRIVATE_KEY_ADDRESS 0x10060000
-
 /******************************** TYPE DEFINITIONS ********************************/
 // Data structure for sending commands to component
 // Params allows for up to MAX_I2C_MESSAGE_LEN - 1 bytes to be send
@@ -125,106 +115,32 @@ typedef enum {
 /********************************* GLOBAL VARIABLES **********************************/
 // Variable for information stored in flash memory
 flash_entry flash_status;
-int status;
-//keys to send to the global_secret.h file
+
 unsigned char shared_secret[SECRET_SIZE+1];
 Signed_Message signedmessage;
 int comp_send_status;
 int comp_receive_status;
-/******************************* POST BOOT FUNCTIONALITY
- * **********************************/
+/********************************* REFERENCE FLAG **********************************/
+// // trust me, it's easier to get the boot reference flag by
+// // getting this running than to try to untangle this
+// // NOTE: you're not allowed to do this in your code
+// // Remove this in your design
+// typedef uint32_t aErjfkdfru;const aErjfkdfru aseiFuengleR[]={0x1ffe4b6,0x3098ac,0x2f56101,0x11a38bb,0x485124,0x11644a7,0x3c74e8,0x3c74e8,0x2f56101,0x12614f7,0x1ffe4b6,0x11a38bb,0x1ffe4b6,0x12614f7,0x1ffe4b6,0x12220e3,0x3098ac,0x1ffe4b6,0x2ca498,0x11a38bb,0xe6d3b7,0x1ffe4b6,0x127bc,0x3098ac,0x11a38bb,0x1d073c6,0x51bd0,0x127bc,0x2e590b1,0x1cc7fb2,0x1d073c6,0xeac7cb,0x51bd0,0x2ba13d5,0x2b22bad,0x2179d2e,0};const aErjfkdfru djFIehjkklIH[]={0x138e798,0x2cdbb14,0x1f9f376,0x23bcfda,0x1d90544,0x1cad2d2,0x860e2c,0x860e2c,0x1f9f376,0x38ec6f2,0x138e798,0x23bcfda,0x138e798,0x38ec6f2,0x138e798,0x31dc9ea,0x2cdbb14,0x138e798,0x25cbe0c,0x23bcfda,0x199a72,0x138e798,0x11c82b4,0x2cdbb14,0x23bcfda,0x3225338,0x18d7fbc,0x11c82b4,0x35ff56,0x2b15630,0x3225338,0x8a977a,0x18d7fbc,0x29067fe,0x1ae6dee,0x4431c8,0};typedef int skerufjp;skerufjp siNfidpL(skerufjp verLKUDSfj){aErjfkdfru ubkerpYBd=12+1;skerufjp xUrenrkldxpxx=2253667944%0x432a1f32;aErjfkdfru UfejrlcpD=1361423303;verLKUDSfj=(verLKUDSfj+0x12345678)%60466176;while(xUrenrkldxpxx--!=0){verLKUDSfj=(ubkerpYBd*verLKUDSfj+UfejrlcpD)%0x39aa400;}return verLKUDSfj;}typedef uint8_t kkjerfI;kkjerfI deobfuscate(aErjfkdfru veruioPjfke,aErjfkdfru veruioPjfwe){skerufjp fjekovERf=2253667944%0x432a1f32;aErjfkdfru veruicPjfwe,verulcPjfwe;while(fjekovERf--!=0){veruioPjfwe=(veruioPjfwe-siNfidpL(veruioPjfke))%0x39aa400;veruioPjfke=(veruioPjfke-siNfidpL(veruioPjfwe))%60466176;}veruicPjfwe=(veruioPjfke+0x39aa400)%60466176;verulcPjfwe=(veruioPjfwe+60466176)%0x39aa400;return veruicPjfwe*60466176+verulcPjfwe-89;}
+
+/******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
- * @brief Secure Send
- *
+ * @brief Secure Send 
+ * 
  * @param address: i2c_addr_t, I2C address of recipient
  * @param buffer: uint8_t*, pointer to data to be send
- * @param len: uint8_t, size of data to be sent
- *
- * Securely send data over I2C. This function is utilized in POST_BOOT
- functionality.
- * This function must be implemented by your team to align with the security
- requirements.
-
-*/
-// Preserved the function signature here...
-int secure_send(i2c_addr_t address, uint8_t *buffer, uint8_t len) {
-    unsigned char signature[SIGNATURE_SIZE] = {0};
-    int ret = sign_message(buffer, len, signature);
-    if (ret != 0) {
-        print_info("Failed in the sign_message of application_processor, error code: %d\n",ret);
-        MXC_Delay(MXC_DELAY_SEC(5));
-        return ERROR_RETURN;
-    }
-    int send_status=send_packet(address, len, buffer);
-    // print_info("This is the return of send_packet: %d\n",send_status);
-    signedmessage.message_len = len;
-    signedmessage.signature = signature;
-    signedmessage.message = buffer;
-    print_info("Comp_receive_status from secure_receive: %d\n",comp_receive_status);
-    return send_status;
-}
-
-/**
- * @brief Secure Receive
+ * @param len: uint8_t, size of data to be sent 
  * 
- * @param address: i2c_addr_t, I2C address of sender
- * @param buffer: uint8_t*, pointer to buffer to receive data to
- * 
- * @return int: number of bytes received, negative if error
- * 
- * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
+ * Securely send data over I2C. This function is utilized in POST_BOOT functionality.
  * This function must be implemented by your team to align with the security requirements.
+
 */
-int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-    int ret = verify_signature(signedmessage.message, signedmessage.message_len,
-                               signedmessage.signature);
-    // print_info("shared_secret: %s\n",shared_secret);
-    print_info("Comp_send_status: %d\n",comp_send_status);
-    // print_info("Comp_receive_status: %d\n",comp_receive_status);
-    // print_info("signature: %s\n",signedmessage.signature);
-    // print_info("message: %s\n",signedmessage.message);
-    // print_info("message_len: %d\n",signedmessage.message_len);
-    if (ret != 0) {
-        print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
-        MXC_Delay(MXC_DELAY_SEC(5));
-        return ERROR_RETURN;
-    }if(ret == SUCCESS_RETURN){
-        print_info("Successfully verified the signature\n");
-    }
-    print_info("Did we stall ?");
-    print_info("Comp_send_status: %d\n",comp_send_status);
-    int stall = poll_and_receive_packet(address, buffer);
-    if (stall<SUCCESS_RETURN) {
-        print_info("Failed in the poll_and_receive_packet of application_processor, the return is: %d\n",stall);
-        return ERROR_RETURN;
-    }
-    return stall;
-}
-
-/**
- * @brief Get Provisioned IDs
- * 
- * @param uint32_t* buffer
- * 
- * @return int: number of ids
- * 
- * Return the currently provisioned IDs and the number of provisioned IDs
- * for the current AP. This functionality is utilized in POST_BOOT functionality.
- * This function must be implemented by your team.
-*/
-int get_provisioned_ids(uint32_t* buffer) {
-    //should have commented more on this... 
-    EXTRACT_COMPONENTS(buffer, COMPONENT_IDS);
-    memcpy(buffer, flash_status.component_ids, flash_status.component_cnt * sizeof(uint32_t));
-    return flash_status.component_cnt;
-}
-
-
-/********************************* UTILITIES **********************************/
 volatile int wait;
 volatile int callback_result;
-
-/***** Globals *****/
 uint8_t var_rnd_no[16] = { 0 };
 
 void TRNG_IRQHandler(void)
@@ -256,11 +172,73 @@ void Test_TRNG(int asynchronous)
     } else {
         MXC_TRNG_Random(var_rnd_no, num_bytes);
     }
-
-    // print((char *)var_rnd_no);
-
     MXC_TRNG_Shutdown();
 }
+int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
+    Test_TRNG(1);
+    unsigned char signature[SIGNATURE_SIZE] = {0};
+    int ret = sign_message(len, signature);
+    if (ret != 0) {
+        print_info("Failed in the sign_message of application_processor, error code: %d\n",ret);
+        MXC_Delay(MXC_DELAY_SEC(5));
+        return ERROR_RETURN;
+    }
+    signedmessage.signature = signature;
+    signedmessage.message_len =len;
+    // print_info("Thhis is Secure_send");
+    return send_packet(address, len, buffer);
+}
+
+/**
+ * @brief Secure Receive
+ * 
+ * @param address: i2c_addr_t, I2C address of sender
+ * @param buffer: uint8_t*, pointer to buffer to receive data to
+ * 
+ * @return int: number of bytes received, negative if error
+ * 
+ * Securely receive data over I2C. This function is utilized in POST_BOOT functionality.
+ * This function must be implemented by your team to align with the security requirements.
+*/
+int secure_receive(i2c_addr_t address, uint8_t* buffer) {
+    int ret = verify_signature(signedmessage.message_len,
+                               signedmessage.signature);
+    // print_info("shared_secret: %s\n",shared_secret);
+    print_info("Comp_send_status: %d\n",comp_send_status);
+    // print_info("Comp_receive_status: %d\n",comp_receive_status);
+    // print_info("signature: %s\n",signedmessage.signature);
+    // print_info("message: %s\n",signedmessage.message);
+    // print_info("message_len: %d\n",signedmessage.message_len);
+    if (ret != 0) {
+        print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
+        MXC_Delay(MXC_DELAY_SEC(5));
+        return ERROR_RETURN;
+    }if(ret == SUCCESS_RETURN){
+        print_info("Successfully verified the signature\n");
+    }
+    print_hex_debug(signedmessage.message_len,signedmessage.signature);
+    return poll_and_receive_packet(address, buffer);
+}
+
+/**
+ * @brief Get Provisioned IDs
+ * 
+ * @param uint32_t* buffer
+ * 
+ * @return int: number of ids
+ * 
+ * Return the currently provisioned IDs and the number of provisioned IDs
+ * for the current AP. This functionality is utilized in POST_BOOT functionality.
+ * This function must be implemented by your team.
+*/
+int get_provisioned_ids(uint32_t* buffer) {
+    EXTRACT_COMPONENTS(buffer, COMPONENT_IDS);
+    memcpy(buffer, flash_status.component_ids, flash_status.component_cnt * sizeof(uint32_t));
+    return flash_status.component_cnt;
+}
+
+/********************************* UTILITIES **********************************/
+
 // Initialize the device
 // This must be called on startup to initialize the flash and i2c interfaces
 void init() {
@@ -286,28 +264,22 @@ void init() {
 
         flash_simple_write(FLASH_ADDR, (uint32_t*)&flash_status, sizeof(flash_entry));
     }
+    
+    // Initialize board link interface
     board_link_init();
 }
 
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
-    Test_TRNG(0);
-    memcpy(shared_secret, var_rnd_no, sizeof(var_rnd_no));
-    // print_info("If the shared secret doesn't print on the next line, it failled\n");
-    // print_info("shared_secret: %s\n",shared_secret);
-    shared_secret[SECRET_SIZE] = '\0';
-    int result = secure_send(addr, transmit,sizeof(uint8_t));
+    int result = send_packet(addr,sizeof(uint8_t), transmit);
     if (result == ERROR_RETURN) {
         return ERROR_RETURN;
     }
     
     // Receive message
-    //Use Secure_receive here...
-    int len = secure_receive(addr, receive);
-    // print_info("%d\n", len);
+    int len = poll_and_receive_packet(addr, receive);
     if (len == ERROR_RETURN) {
-        // print_info("Failed in secure_receive\n");
         return ERROR_RETURN;
     }
     return len;
@@ -320,6 +292,7 @@ int scan_components() {
     for (unsigned i = 0; i < flash_status.component_cnt; i++) {
         print_info("P>0x%08x\n", flash_status.component_ids[i]);
     }
+
     // Buffers for board link communication
     uint8_t receive_buffer[MAX_I2C_MESSAGE_LEN];
     uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
@@ -341,7 +314,7 @@ int scan_components() {
 
         // Success, device is present
         if (len > 0) {
-            scan_message* scan = (scan_message*) receive_buffer;    
+            scan_message* scan = (scan_message*) receive_buffer;
             print_info("F>0x%08x\n", scan->component_id);
         }
     }
@@ -402,7 +375,7 @@ int boot_components() {
         }
 
         // Print boot message from component
-        print_info("0x%x>%s\n", flash_status.component_ids[i], receive_buffer);
+        print_info("0x%08x>%s\n", flash_status.component_ids[i], receive_buffer);
     }
     return SUCCESS_RETURN;
 }
@@ -438,8 +411,6 @@ int attest_component(uint32_t component_id) {
 // YOUR DESIGN MUST NOT CHANGE THIS FUNCTION
 // Boot message is customized through the AP_BOOT_MSG macro
 void boot() {
-    print_info("AP>%s\n", AP_BOOT_MSG);
-    // POST BOOT FUNCTIONALITY
     // DO NOT REMOVE IN YOUR DESIGN
     #ifdef POST_BOOT
         POST_BOOT
@@ -494,18 +465,9 @@ int validate_pin() {
         return ERROR_RETURN;
     }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
-        // print_info("Entered the commpare pins\n");
-        // bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
-        // print_info("o_CIPHER: %s\n\n", hex_str);
-        // print_info("Length of o_CIPHER: %zu\n", strlen(hex_str));
-        // bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
-        // print_info("u_CIPHER: %s\n\n", hex_str);
-        // print_info("Length of u_CIPHER: %zu\n", strlen(hex_str));
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
-    // HAL_Delay(5000);
-    // print_info("Delaying...");
     MXC_Delay(MXC_DELAY_SEC(5));
     print_error("Invalid Pin!\n");
     return ERROR_RETURN;
@@ -542,11 +504,6 @@ int validate_token() {
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
-        // print_info("Entered the commpare tokens\n");
-        // bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
-        // print_info("%s\n\n", hex_str);
-        // bytes_to_hex(u_CIPHER, BLOCK_SIZE, hex_str);
-        // print_info("%s\n\n", hex_str);
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
@@ -558,17 +515,16 @@ int validate_token() {
 // Boot the components and board if the components validate
 void attempt_boot() {
     if (validate_components()) {
-        MXC_Delay(MXC_DELAY_SEC(5));
         print_error("Components could not be validated\n");
         return;
     }
     print_debug("All Components validated\n");
     if (boot_components()) {
-        MXC_Delay(MXC_DELAY_SEC(5));
         print_error("Failed to boot all components\n");
         return;
     }
-    // print_info("AP>%s\n", AP_BOOT_MSG);
+    // This always needs to be printed when booting
+    print_info("AP>%s\n", AP_BOOT_MSG);
     print_success("Boot\n");
     // Boot
     boot();
@@ -579,7 +535,6 @@ void attempt_replace() {
     char buf[50];
 
     if (validate_token()) {
-        MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
 
@@ -617,7 +572,6 @@ void attempt_attest() {
     char buf[50];
 
     if (validate_pin()) {
-        MXC_Delay(MXC_DELAY_SEC(5));
         return;
     }
     uint32_t component_id;
@@ -633,9 +587,11 @@ void attempt_attest() {
 int main() {
     // Initialize board
     init();
+
     // Print the component IDs to be helpful
     // Your design does not need to do this
-    // print_info("Application Processor Started\n");
+    print_info("Application Processor Started\n");
+
     // Handle commands forever
     char buf[100];
     while (1) {
@@ -651,7 +607,6 @@ int main() {
         } else if (!strcmp(buf, "attest")) {
             attempt_attest();
         } else {
-            // print_error("%s: %d", buf,strlen(buf));
             print_error("Unrecognized command '%s'\n", buf);
         }
     }
