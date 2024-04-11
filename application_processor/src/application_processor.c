@@ -488,7 +488,7 @@ int validate_token() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    print_info("Length: %d\n", strlen(buf));
+    // print_info("Length: %d\n", strlen(buf));
     if(strlen(buf)>32){
         // print_info("Delaying...");
         print_info("The length is: %zu\n", strlen(buf));
@@ -508,7 +508,7 @@ int validate_token() {
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
-        print_info("Token of correct length\n");
+        // print_info("Token of correct length\n");
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
