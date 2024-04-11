@@ -509,14 +509,14 @@ int validate_token() {
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
-        print_info("Token of correct length\n");
-        print_info("Token Accepted should return Sucess return and it is: %d "
-                   "and Token Accepted ",
-                   SUCCESS_RETURN);
+        // print_info("Token of correct length\n");
+        // print_info("Token Accepted should return Sucess return and it is: %d "
+                   // "and Token Accepted ",
+                   // SUCCESS_RETURN);
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
-    print_info("Never reaching here.");
+    // print_info("Never reaching here.");
     // MXC_Delay(MXC_DELAY_SEC(5));
     print_error("Invalid Token!\n");
     return ERROR_RETURN;
