@@ -488,8 +488,10 @@ int validate_token() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    if(strlen(buf)>16){
+    print_info("Length: %d\n", strlen(buf));
+    if(strlen(buf)>32){
         // print_info("Delaying...");
+        print_info("The length is: %zu\n", strlen(buf));
         print_error("Invalid Token!\n");
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
@@ -500,12 +502,13 @@ int validate_token() {
         return ERROR_RETURN;
     }
     memset(new_t, 0, 33);
-    strncpy(new_t, AP_TOKEN,17);    
+    strncpy(new_t, AP_TOKEN,17);  
     strncat(new_t,(char *) salt,13);
     if(encrypt_n(new_t, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)!=0){
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
+        print_info("Token of correct length\n");
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
