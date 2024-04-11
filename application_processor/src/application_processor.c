@@ -488,7 +488,7 @@ int validate_token() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    // print_info("Length: %d\n", strlen(buf));
+    print_info("Length: %zu\n", strlen(buf));
     if(strlen(buf)>32){
         // print_info("Delaying...");
         print_info("The length is: %zu\n", strlen(buf));
@@ -498,7 +498,7 @@ int validate_token() {
     }
     strncpy(new_t, buf,17);
     strncat(new_t, (char *)salt,13);
-    if(encrypt_n(buf,strlen(buf) +1 ,u_CIPHER,key,iv)!=0){
+    if(encrypt_n(buf,strlen(AP_TOKEN) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
     memset(new_t, 0, 33);
