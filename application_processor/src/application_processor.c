@@ -461,14 +461,14 @@ int validate_pin() {
     memset(new_p, 0, 23);
     strncpy(new_p, AP_PIN,7);    
     strncat(new_p,(char *) salt,13);
-    if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)){
+    if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)!=0){
         return ERROR_RETURN;
     }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
         print_debug("PIN ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
-    MXC_Delay(MXC_DELAY_SEC(5));
+    // MXC_Delay(MXC_DELAY_SEC(5));
     print_error("Invalid Pin!\n");
     return ERROR_RETURN;
 }
@@ -500,14 +500,14 @@ int validate_token() {
     memset(new_t, 0, 33);
     strncpy(new_t, AP_TOKEN,17);    
     strncat(new_t,(char *) salt,13);
-    if(encrypt_n(new_t, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)){
+    if(encrypt_n(new_t, strlen(AP_TOKEN) + 1, o_CIPHER, key, iv)!=0){
         return ERROR_RETURN;
     }
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
-    MXC_Delay(MXC_DELAY_SEC(5));
+    // MXC_Delay(MXC_DELAY_SEC(5));
     print_error("Invalid Token!\n");
     return ERROR_RETURN;
 }

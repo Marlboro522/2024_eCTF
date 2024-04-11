@@ -21,7 +21,7 @@ printf '\e[93;1m................................................................
 printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
 commands=(
     "ectf_build_depl -d ."
-    "ectf_build_ap -d . -on ap -od build -p 'T7hU&3' -t G978bw47Jcc5mdef -c 2 -ids '0x12344321, 0x43211234' -b 'Ap boot ready'"
+    "ectf_build_ap -d . -on ap -od build -p 'T7hU&3' -t G978bw47Jcc5f -c 2 -ids '0x12344321, 0x43211234' -b 'Ap boot ready'"
     "ectf_build_comp -d . -on comp1 -od build -id 0x12344321 -b 'Component 1 Boot' -al co -ad 03/02/2024 -ac UCCS"
     "ectf_build_comp -d . -on comp2 -od build -id 0x43211234 -b 'Component 2 Boot' -al co -ad 03/02/2024 -ac UCCS"
     "diskutil unmount /dev/disk2"
