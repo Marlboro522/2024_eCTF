@@ -35,11 +35,11 @@ commands=(
     "ectf_update --infile build/comp1.img --port /dev/tty.usbmodem141302"
     "ectf_update --infile build/comp2.img --port /dev/tty.usbmodem141402"
     "ectf_list -a /dev/tty.usbmodem141202"
-    "ectf_attestation -a /dev/tty.usbmodem141202 -p T7hU&3 -c 0x12344321"
+    "ectf_attestation -a /dev/tty.usbmodem141202 -p 'T7hU&3' -c 0x12344321"
     "ectf_attestation -a /dev/tty.usbmodem141202 -p 5211313 -c 0x43211234"
-    "ectf_attestation -a /dev/tty.usbmodem141202 -p T7hU&3 -c 0x43211234"
-    "ectf_replace -a /dev/tty.usbmodem141202 -t G978bw47Jcc5mdef -i 0x -o"
-    "ectf_boot -a /dev/tty.usbmodem141202"
+    "ectf_attestation -a /dev/tty.usbmodem141202 -p 'T7hU&3' -c 0x43211234"
+    "ectf_replace -a /dev/tty.usbmodem141202 -t G978bw47Jcc5f -i 0x33445522 -o 12344321"
+    # "ectf_boot -a /dev/tty.usbmodem141202"
 )
 # width=$(tput cols)
 
