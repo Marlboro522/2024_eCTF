@@ -448,7 +448,7 @@ int validate_pin() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter PIN: ",buf);
-    if(strlen(buf)>7){
+    if(strlen(buf)>6){
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
     }
@@ -487,7 +487,7 @@ int validate_token() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    if(strlen(buf)>17){
+    if(strlen(buf)>16){
         // print_info("Delaying...");
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
