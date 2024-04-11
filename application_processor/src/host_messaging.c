@@ -19,7 +19,7 @@ void recv_input(const char *msg, char *buf) {
     print_debug(msg);
     fflush(0);
     print_ack();
-    fgets(buf,18,stdin);
+    fgets(buf,32,stdin);
     puts("");
     size_t len = strlen(buf);
     if (len > 0 && buf[len - 1] == '\n') {

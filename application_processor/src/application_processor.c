@@ -481,38 +481,40 @@ int validate_token() {
     uint8_t u_CIPHER[BLOCK_SIZE];
     uint8_t iv[KEY_SIZE];
     uint8_t salt[SALT_LEN+1];
-    // char hex_str[BLOCK_SIZE * 2 + 1];
+    char hex_str[BLOCK_SIZE * 2 + 1];
     char new_t[33];
     generate_key(key);
     generate_random_iv(iv);
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    // print_info("Length: %zu\n", strlen(buf));
-    if(strlen(buf)>32){
-        // print_info("Delaying...");
-        // print_info("The length is: %zu\n", strlen(buf));
+    print_info("Length: %zu\n", strlen(buf));
+    if(strnlen(buf,32)>32){
+        print_info("Delaying...");
+        print_info("The length is: %zu\n", strlen(buf));
         print_error("Invalid Token!\n");
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
+    }else {
+        print_info("The check is not performed wtf. ");
     }
     // print_info("Check failed\n");
     strncpy(new_t, buf, 17);
     strncat(new_t, (char *)salt,13);
     if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
-    }
+    }bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
     memset(new_t, 0, 33);
-    strncpy(new_t, AP_TOKEN,17);  
+    strncpy(new_t, AP_TOKEN,17);
     strncat(new_t,(char *) salt,13);
     if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
         return ERROR_RETURN;
-    }
+    }bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
     if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
         // print_info("Token of correct length\n");
-        // print_info("Token Accepted should return Sucess return and it is: %d "
-                   // "and Token Accepted ",
-                   // SUCCESS_RETURN);
+        // print_info("Token Acepted should returun Sucess return and it is: %d "
+                //    "and Token Accepted ",
+                //    SUCCESS_RETURN);
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }

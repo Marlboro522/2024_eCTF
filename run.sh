@@ -47,8 +47,7 @@ commands=(
     "ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@%^^#23;78bw47Jcc5f' -i 0x12344321 -o 33445522"
     "ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@%^^#23;78bw47Jcc5f' -i 0x12344321 -o 33445522"
     "ectf_replace -a /dev/tty.usbmodem141202 -t G978bw47Jcc5f -i 0x12344321 -o 0x33445522"
-    ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@$!%^^#23;78bw47Jcsadjkghsdfghkjsasfgdafgfsdfawergsdafhgsefdsafddhgc5f' -i 0x12344321 -o 33445522
-    # "ectf_boot -a /dev/tty.usbmodem141202"
+    "ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@%^^#23;78bw47Jcsadjkghsdfghkjsasfgdafgfsdfawergsdafhgsefdsafddhgc5f' -i 0x12344321 -o 33445522"
 )
 # width=$(tput cols)
 
