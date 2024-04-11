@@ -216,7 +216,7 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
     }if(ret == SUCCESS_RETURN){
         print_info("Successfully verified the signature\n");
     }
-    print_hex_debug(signedmessage.message_len,signedmessage.signature);
+    // print_hex_debug(signedmessage.message_len,signedmessage.signature);
     return poll_and_receive_packet(address, buffer);
 }
 
@@ -448,8 +448,9 @@ int validate_pin() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter PIN: ",buf);
-    if(strlen(buf)>6){
+    if(strlen(buf)>=7){
         MXC_Delay(MXC_DELAY_SEC(5));
+        print_error("Invalid PIN!\n");
         return ERROR_RETURN;
     }
     strncpy(new_p, buf,7);
@@ -487,8 +488,9 @@ int validate_token() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    if(strlen(buf)>17){
+    if(strlen(buf)>16){
         // print_info("Delaying...");
+        print_error("Invalid Token!\n");
         MXC_Delay(MXC_DELAY_SEC(5));
         return ERROR_RETURN;
     }
