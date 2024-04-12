@@ -489,28 +489,34 @@ int validate_token() {
     char buf[50];
     recv_input("Enter token: ", buf);
     print_info("Length: %zu\n", strlen(buf));
-    if(strnlen(buf,32)>32){
-        print_info("Delaying...");
-        print_info("The length is: %zu\n", strlen(buf));
-        print_error("Invalid Token!\n");
+    if(strlen(buf)>=17){
+        // print_info("Delaying...");
+        // print_info("The length is: %zu\n", strlen(buf));
         MXC_Delay(MXC_DELAY_SEC(5));
+        print_error("Invalid Token!\n");
         return ERROR_RETURN;
-    }else {
-        print_info("The check is not performed wtf. ");
     }
+    // else {
+        // print_info("The check is not performed wtf. ");
+    // }
     // print_info("Check failed\n");
     strncpy(new_t, buf, 17);
     strncat(new_t, (char *)salt,13);
     if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
-    }bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
+        // print_info("I failed.\n");
+    }
+    // print_hex(u_CIPHER,BLOCK_SIZE);
     memset(new_t, 0, 33);
     strncpy(new_t, AP_TOKEN,17);
     strncat(new_t,(char *) salt,13);
     if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
+        // print_info("I failed to encrypt AP PIN");
         return ERROR_RETURN;
-    }bytes_to_hex(o_CIPHER, BLOCK_SIZE, hex_str);
-    if (compare_pins(o_CIPHER, u_CIPHER)==SUCCESS_RETURN) {
+    }
+    // print_hex(o_CIPHER,BLOCK_SIZE);
+    // print_info("o CIpHER: ", o_CIPHER);
+    if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
         // print_info("Token of correct length\n");
         // print_info("Token Acepted should returun Sucess return and it is: %d "
                 //    "and Token Accepted ",
@@ -518,8 +524,8 @@ int validate_token() {
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
-    // print_info("Never reaching here.");
-    // MXC_Delay(MXC_DELAY_SEC(5));
+    // print_info("Jumpedd here....len<=16");
+    MXC_Delay(MXC_DELAY_SEC(5));
     print_error("Invalid Token!\n");
     return ERROR_RETURN;
 }

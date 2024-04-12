@@ -39,6 +39,7 @@ commands=(
     "ectf_attestation -a /dev/tty.usbmodem141202 -p 5211313 -c 0x43211234"
     "ectf_attestation -a /dev/tty.usbmodem141202 -p 'T7hU&3' -c 0x43211234"
     "ectf_replace -a /dev/tty.usbmodem141202 -t G978bw47Jcc5f -i 0x33445522 -o 0x12344321"
+    "ectf_replace -a /dev/tty.usbmodem141202 -t G978bw47Jcc5fggg -i 0x33445522 -o 0x12344321"
     "ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@%^^#23;78bw47Jcc5f' -i 0x12344321 -o 33445522"
     "ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@%^^#23;78bw47Jcc5f' -i 0x12344321 -o 33445522"
     "ectf_replace -a /dev/tty.usbmodem141202 -t 'G9@%^^#23;78bw47Jcc5f' -i 0x12344321 -o 33445522"
@@ -76,7 +77,7 @@ for cmd in "${commands[@]}"; do
     echo -e "\n"
     printf '\033[93;1m█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████\033[0m'
     echo -e "\n"
-    sleep 5 
+    sleep 2
 done
 end_time=$(date +%s)
 total_minutes=$(($((end_time - start_time)) / 60))
