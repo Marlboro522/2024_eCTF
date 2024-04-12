@@ -1,1 +1,0 @@
-EXTRA_CFLAGS='-UHAVE___UINT128_T' ./configure --host=arm-none-eabi CC=arm-none-eabi-gcc AR=arm-none-eabi-ar STRIP=arm-none-eabi-strip RANLIB=arm-none-eabi-ranlib --enable-opensslall --enable-opensslextra CFLAGS="-mcpu=cortex-m4 --specs=nosys.specs -DHAVE_PK_CALLBACKS -DWOLFSSL_USER_IO -DNO_WRITEV" --disable-filesystem --enable-fastmath --disable-shared --enable-harden 
