@@ -522,22 +522,22 @@ int validate_token() {
     // if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
     //     print_info("I failed to encrypt AP PIN");
     //     return ERROR_RETURN;
-    }
+    // }
     // print_hex(o_CIPHER,BLOCK_SIZE);
     // print_info("o CIpHER: ", o_CIPHER);
-    if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
-        // print_info("Token of correct length\n");
-        // print_info("Token Acepted should returun Sucess return and it is: %d "
-                //    "and Token Accepted ",
-                //    SUCCESS_RETURN);
-        // print_info("Returning sucess return");
-        print_debug("Token Accepted!\n");
-        return SUCCESS_RETURN;
-    }
-    // print_info("Jumpedd here....len<=16");
-    MXC_Delay(MXC_DELAY_SEC(5));
-    print_error("Invalid Token!\n");
-    return ERROR_RETURN;
+    // if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
+    //     // print_info("Token of correct length\n");
+    //     // print_info("Token Acepted should returun Sucess return and it is: %d "
+    //             //    "and Token Accepted ",
+    //             //    SUCCESS_RETURN);
+    //     // print_info("Returning sucess return");
+    //     print_debug("Token Accepted!\n");
+    //     return SUCCESS_RETURN;
+    // }
+    // // print_info("Jumpedd here....len<=16");
+    // MXC_Delay(MXC_DELAY_SEC(5));
+    // print_error("Invalid Token!\n");
+    // return ERROR_RETURN;
 }
 
 // Boot the components and board if the components validate
