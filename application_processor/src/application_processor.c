@@ -488,7 +488,7 @@ int validate_token() {
     gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    print_info("Length: %zu\n", strlen(buf));
+    // print_info("Length: %zu\n", strlen(buf));
     if(strlen(buf)>=17){
         // print_info("Delaying...");
         // print_info("The length is: %zu\n", strlen(buf));
@@ -521,7 +521,7 @@ int validate_token() {
         // print_info("Token Acepted should returun Sucess return and it is: %d "
                 //    "and Token Accepted ",
                 //    SUCCESS_RETURN);
-        print_info("Returning sucess return");
+        // print_info("Returning sucess return");
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
