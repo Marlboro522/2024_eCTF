@@ -503,6 +503,7 @@ int validate_token() {
     strncpy(new_t, buf, 17);
     strncat(new_t, (char *)salt,13);
     if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
+        print_info("Failed to encrypt the input pin");
         return ERROR_RETURN;
         // print_info("I failed.\n");
     }
