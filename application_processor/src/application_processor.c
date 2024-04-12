@@ -18,7 +18,6 @@
 #include "mxc_delay.h"
 #include "mxc_device.h"
 #include "nvic_table.h"
-#include <trng.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -28,7 +27,6 @@
 #include "board_link.h"
 #include "simple_flash.h"
 #include "host_messaging.h"
-
 #include "simple_crypto.h"
 
 #ifdef POST_BOOT
@@ -62,20 +60,6 @@
 #define SUCCESS_RETURN 0
 #define ERROR_RETURN -1
 
-//Key size for encryption in bytes
-#define KEY_SIZE 32
-
-//for components
-#define NUM_COMPONENTS(...) (sizeof((uint32_t[]){__VA_ARGS__}) / sizeof(uint32_t))
-#define EXTRACT_COMPONENTS(buffer, ...) \
-    do { \
-        uint32_t temp_buffer[] = {__VA_ARGS__}; \
-        int i; \
-        for (i = 0; i < NUM_COMPONENTS(__VA_ARGS__); ++i) { \
-            buffer[i] = temp_buffer[i]; \
-        } \
-        return i; \
-    } while (0)
 /******************************** TYPE DEFINITIONS ********************************/
 // Data structure for sending commands to component
 // Params allows for up to MAX_I2C_MESSAGE_LEN - 1 bytes to be send
@@ -116,17 +100,6 @@ typedef enum {
 // Variable for information stored in flash memory
 flash_entry flash_status;
 
-unsigned char shared_secret[SECRET_SIZE+1];
-Signed_Message signedmessage;
-int comp_send_status;
-int comp_receive_status;
-/********************************* REFERENCE FLAG **********************************/
-// // trust me, it's easier to get the boot reference flag by
-// // getting this running than to try to untangle this
-// // NOTE: you're not allowed to do this in your code
-// // Remove this in your design
-// typedef uint32_t aErjfkdfru;const aErjfkdfru aseiFuengleR[]={0x1ffe4b6,0x3098ac,0x2f56101,0x11a38bb,0x485124,0x11644a7,0x3c74e8,0x3c74e8,0x2f56101,0x12614f7,0x1ffe4b6,0x11a38bb,0x1ffe4b6,0x12614f7,0x1ffe4b6,0x12220e3,0x3098ac,0x1ffe4b6,0x2ca498,0x11a38bb,0xe6d3b7,0x1ffe4b6,0x127bc,0x3098ac,0x11a38bb,0x1d073c6,0x51bd0,0x127bc,0x2e590b1,0x1cc7fb2,0x1d073c6,0xeac7cb,0x51bd0,0x2ba13d5,0x2b22bad,0x2179d2e,0};const aErjfkdfru djFIehjkklIH[]={0x138e798,0x2cdbb14,0x1f9f376,0x23bcfda,0x1d90544,0x1cad2d2,0x860e2c,0x860e2c,0x1f9f376,0x38ec6f2,0x138e798,0x23bcfda,0x138e798,0x38ec6f2,0x138e798,0x31dc9ea,0x2cdbb14,0x138e798,0x25cbe0c,0x23bcfda,0x199a72,0x138e798,0x11c82b4,0x2cdbb14,0x23bcfda,0x3225338,0x18d7fbc,0x11c82b4,0x35ff56,0x2b15630,0x3225338,0x8a977a,0x18d7fbc,0x29067fe,0x1ae6dee,0x4431c8,0};typedef int skerufjp;skerufjp siNfidpL(skerufjp verLKUDSfj){aErjfkdfru ubkerpYBd=12+1;skerufjp xUrenrkldxpxx=2253667944%0x432a1f32;aErjfkdfru UfejrlcpD=1361423303;verLKUDSfj=(verLKUDSfj+0x12345678)%60466176;while(xUrenrkldxpxx--!=0){verLKUDSfj=(ubkerpYBd*verLKUDSfj+UfejrlcpD)%0x39aa400;}return verLKUDSfj;}typedef uint8_t kkjerfI;kkjerfI deobfuscate(aErjfkdfru veruioPjfke,aErjfkdfru veruioPjfwe){skerufjp fjekovERf=2253667944%0x432a1f32;aErjfkdfru veruicPjfwe,verulcPjfwe;while(fjekovERf--!=0){veruioPjfwe=(veruioPjfwe-siNfidpL(veruioPjfke))%0x39aa400;veruioPjfke=(veruioPjfke-siNfidpL(veruioPjfwe))%60466176;}veruicPjfwe=(veruioPjfke+0x39aa400)%60466176;verulcPjfwe=(veruioPjfwe+60466176)%0x39aa400;return veruicPjfwe*60466176+verulcPjfwe-89;}
-
 /******************************* POST BOOT FUNCTIONALITY *********************************/
 /**
  * @brief Secure Send 
@@ -139,53 +112,7 @@ int comp_receive_status;
  * This function must be implemented by your team to align with the security requirements.
 
 */
-volatile int wait;
-volatile int callback_result;
-uint8_t var_rnd_no[16] = { 0 };
-
-void TRNG_IRQHandler(void)
-{
-    MXC_TRNG_Handler();
-}
-
-void Test_Callback(void *req, int result)
-{
-    wait = 0;
-    callback_result = result;
-}
-
-void Test_TRNG(int asynchronous)
-{
-
-    int num_bytes = 16;
-
-    memset(var_rnd_no, 0, sizeof(var_rnd_no));
-
-    MXC_TRNG_Init();
-
-    if (asynchronous) {
-        wait = 1;
-        NVIC_EnableIRQ(TRNG_IRQn);
-        MXC_TRNG_RandomAsync(var_rnd_no, num_bytes, &Test_Callback);
-
-        while (wait) {}
-    } else {
-        MXC_TRNG_Random(var_rnd_no, num_bytes);
-    }
-    MXC_TRNG_Shutdown();
-}
 int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
-    // Test_TRNG(1);
-    // unsigned char signature[SIGNATURE_SIZE] = {0};
-    // int ret = sign_message(len, signature);
-    // if (ret != 0) {
-    //     print_info("Failed in the sign_message of application_processor, error code: %d\n",ret);
-    //     MXC_Delay(MXC_DELAY_SEC(5));
-    //     return ERROR_RETURN;
-    // }
-    // signedmessage.signature = signature;
-    // signedmessage.message_len =len;
-    // // print_info("Thhis is Secure_send");
     return send_packet(address, len, buffer);
 }
 
@@ -201,22 +128,6 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-    // int ret = verify_signature(signedmessage.message_len,
-    //                            signedmessage.signature);
-    // // print_info("shared_secret: %s\n",shared_secret);
-    // print_info("Comp_send_status: %d\n",comp_send_status);
-    // // print_info("Comp_receive_status: %d\n",comp_receive_status);
-    // // print_info("signature: %s\n",signedmessage.signature);
-    // // print_info("message: %s\n",signedmessage.message);
-    // // print_info("message_len: %d\n",signedmessage.message_len);
-    // if (ret != 0) {
-    //     print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
-    //     MXC_Delay(MXC_DELAY_SEC(5));
-    //     return ERROR_RETURN;
-    // }if(ret == SUCCESS_RETURN){
-    //     print_info("Successfully verified the signature\n");
-    // }
-    // print_hex_debug(signedmessage.message_len,signedmessage.signature);
     return poll_and_receive_packet(address, buffer);
 }
 
@@ -232,7 +143,6 @@ int secure_receive(i2c_addr_t address, uint8_t* buffer) {
  * This function must be implemented by your team.
 */
 int get_provisioned_ids(uint32_t* buffer) {
-    EXTRACT_COMPONENTS(buffer, COMPONENT_IDS);
     memcpy(buffer, flash_status.component_ids, flash_status.component_cnt * sizeof(uint32_t));
     return flash_status.component_cnt;
 }
@@ -272,7 +182,7 @@ void init() {
 // Send a command to a component and receive the result
 int issue_cmd(i2c_addr_t addr, uint8_t* transmit, uint8_t* receive) {
     // Send message
-    int result = send_packet(addr,sizeof(uint8_t), transmit);
+    int result = send_packet(addr, sizeof(uint8_t), transmit);
     if (result == ERROR_RETURN) {
         return ERROR_RETURN;
     }
@@ -411,6 +321,37 @@ int attest_component(uint32_t component_id) {
 // YOUR DESIGN MUST NOT CHANGE THIS FUNCTION
 // Boot message is customized through the AP_BOOT_MSG macro
 void boot() {
+    // Example of how to utilize included simple_crypto.h
+    #ifdef CRYPTO_EXAMPLE
+    // This string is 16 bytes long including null terminator
+    // This is the block size of included symmetric encryption
+    char* data = "Crypto Example!";
+    uint8_t ciphertext[BLOCK_SIZE];
+    uint8_t key[KEY_SIZE];
+    
+    // Zero out the key
+    bzero(key, BLOCK_SIZE);
+
+    // Encrypt example data and print out
+    encrypt_sym((uint8_t*)data, BLOCK_SIZE, key, ciphertext); 
+    print_debug("Encrypted data: ");
+    print_hex_debug(ciphertext, BLOCK_SIZE);
+
+    // Hash example encryption results 
+    uint8_t hash_out[HASH_SIZE];
+    hash(ciphertext, BLOCK_SIZE, hash_out);
+
+    // Output hash result
+    print_debug("Hash result: ");
+    print_hex_debug(hash_out, HASH_SIZE);
+    
+    // Decrypt the encrypted message and print out
+    uint8_t decrypted[BLOCK_SIZE];
+    decrypt_sym(ciphertext, BLOCK_SIZE, key, decrypted);
+    print_debug("Decrypted message: %s\r\n", decrypted);
+    #endif
+
+    // POST BOOT FUNCTIONALITY
     // DO NOT REMOVE IN YOUR DESIGN
     #ifdef POST_BOOT
         POST_BOOT
@@ -436,14 +377,6 @@ void boot() {
 
 // Compare the entered PIN to the correct PIN
 int validate_pin() {
-    // char buf[50];
-    // recv_input("Enter pin: ", buf);
-    // if (!strcmp(buf, AP_PIN)) {
-    //     print_debug("Pin Accepted!\n");
-    //     return SUCCESS_RETURN;
-    // }
-    // print_error("Invalid PIN!\n");
-    // return ERROR_RETURN;
     uint8_t key[KEY_SIZE];
     uint8_t o_CIPHER[BLOCK_SIZE];
     uint8_t u_CIPHER[BLOCK_SIZE];
@@ -490,58 +423,8 @@ int validate_token() {
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
-    // print_error("Invalid Token!\n");
-    // return ERROR_RETURN;
-    // uint8_t key[KEY_SIZE];
-    // uint8_t o_CIPHER[BLOCK_SIZE];
-    // uint8_t u_CIPHER[BLOCK_SIZE];
-    // uint8_t iv[KEY_SIZE];
-    // uint8_t salt[SALT_LEN+1];
-    // char hex_str[BLOCK_SIZE * 2 + 1];
-    // char new_t[32];
-    // generate_key(key);
-    // generate_random_iv(iv);
-    // gen_salt((char *)salt);
-    // char buf[50];
-    // recv_input("Enter token: ", buf);
-    // // print_info("Length: %zu\n", strlen(buf));
-    // if(strlen(buf)>=17){
-    //     // print_info("Delaying...");
-    //     // print_info("The length is: %zu\n", strlen(buf));
-    //     MXC_Delay(MXC_DELAY_SEC(5));
-    //     print_error("Invalid Token!\n");
-    //     return ERROR_RETURN;
-    // }
-    // // else {
-    //     // print_info("The check is not performed wtf. ");
-    // // }
-    // // print_info("Check failed\n");
-    // strncpy(new_t, buf, 17);
-    // strncat(new_t, (char *)salt,13);
-    // if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
-    //     return ERROR_RETURN;
-    // }
-    // // print_hex(u_CIPHER,BLOCK_SIZE);
-    // memset(new_t, 0, 33);
-    // strncpy(new_t, AP_TOKEN,17);
-    // strncat(new_t,(char *) salt,13);
-    // if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
-    //     print_info("I failed to encrypt AP PIN");
-    //     return ERROR_RETURN;
-    // }
-    // if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
-    //     // print_info("Token of correct length\n");
-    //     // print_info("Token Acepted should returun Sucess return and it is: %d "
-    //             //    "and Token Accepted ",
-    //             //    SUCCESS_RETURN);
-    //     // print_info("Returning sucess return");
-    //     print_debug("Token Accepted!\n");
-    //     return SUCCESS_RETURN;
-    // }
-    // // print_info("Jumpedd here....len<=16");
-    // MXC_Delay(MXC_DELAY_SEC(5));
-    // print_error("Invalid Token!\n");
-    // return ERROR_RETURN;
+    print_error("Invalid Token!\n");
+    return ERROR_RETURN;
 }
 
 // Boot the components and board if the components validate
@@ -555,6 +438,7 @@ void attempt_boot() {
         print_error("Failed to boot all components\n");
         return;
     }
+    // Print boot message
     // This always needs to be printed when booting
     print_info("AP>%s\n", AP_BOOT_MSG);
     print_success("Boot\n");
