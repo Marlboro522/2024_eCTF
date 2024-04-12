@@ -175,17 +175,17 @@ void Test_TRNG(int asynchronous)
     MXC_TRNG_Shutdown();
 }
 int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
-    Test_TRNG(1);
-    unsigned char signature[SIGNATURE_SIZE] = {0};
-    int ret = sign_message(len, signature);
-    if (ret != 0) {
-        print_info("Failed in the sign_message of application_processor, error code: %d\n",ret);
-        MXC_Delay(MXC_DELAY_SEC(5));
-        return ERROR_RETURN;
-    }
-    signedmessage.signature = signature;
-    signedmessage.message_len =len;
-    // print_info("Thhis is Secure_send");
+    // Test_TRNG(1);
+    // unsigned char signature[SIGNATURE_SIZE] = {0};
+    // int ret = sign_message(len, signature);
+    // if (ret != 0) {
+    //     print_info("Failed in the sign_message of application_processor, error code: %d\n",ret);
+    //     MXC_Delay(MXC_DELAY_SEC(5));
+    //     return ERROR_RETURN;
+    // }
+    // signedmessage.signature = signature;
+    // signedmessage.message_len =len;
+    // // print_info("Thhis is Secure_send");
     return send_packet(address, len, buffer);
 }
 
@@ -201,21 +201,21 @@ int secure_send(uint8_t address, uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(i2c_addr_t address, uint8_t* buffer) {
-    int ret = verify_signature(signedmessage.message_len,
-                               signedmessage.signature);
-    // print_info("shared_secret: %s\n",shared_secret);
-    print_info("Comp_send_status: %d\n",comp_send_status);
-    // print_info("Comp_receive_status: %d\n",comp_receive_status);
-    // print_info("signature: %s\n",signedmessage.signature);
-    // print_info("message: %s\n",signedmessage.message);
-    // print_info("message_len: %d\n",signedmessage.message_len);
-    if (ret != 0) {
-        print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
-        MXC_Delay(MXC_DELAY_SEC(5));
-        return ERROR_RETURN;
-    }if(ret == SUCCESS_RETURN){
-        print_info("Successfully verified the signature\n");
-    }
+    // int ret = verify_signature(signedmessage.message_len,
+    //                            signedmessage.signature);
+    // // print_info("shared_secret: %s\n",shared_secret);
+    // print_info("Comp_send_status: %d\n",comp_send_status);
+    // // print_info("Comp_receive_status: %d\n",comp_receive_status);
+    // // print_info("signature: %s\n",signedmessage.signature);
+    // // print_info("message: %s\n",signedmessage.message);
+    // // print_info("message_len: %d\n",signedmessage.message_len);
+    // if (ret != 0) {
+    //     print_info("Failed in the verify signature of application_processor, error code : %d\n",ret);
+    //     MXC_Delay(MXC_DELAY_SEC(5));
+    //     return ERROR_RETURN;
+    // }if(ret == SUCCESS_RETURN){
+    //     print_info("Successfully verified the signature\n");
+    // }
     // print_hex_debug(signedmessage.message_len,signedmessage.signature);
     return poll_and_receive_packet(address, buffer);
 }

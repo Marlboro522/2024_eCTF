@@ -98,13 +98,13 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
  * This function must be implemented by your team to align with the security requirements.
 */
 void secure_send(uint8_t* buffer, uint8_t len) {
-    unsigned char signature[SIGNATURE_SIZE+1] = {0};
-    if(sign_message(len,signature)!=0){
-        MXC_Delay(MXC_DELAY_SEC(5));
-        return;
-    }
-    signedmessage.message_len = len;
-    signedmessage.signature = signature;
+    // unsigned char signature[SIGNATURE_SIZE+1] = {0};
+    // if(sign_message(len,signature)!=0){
+    //     MXC_Delay(MXC_DELAY_SEC(5));
+    //     return;
+    // }
+    // signedmessage.message_len = len;
+    // signedmessage.signature = signature;
     send_packet_and_ack(len, buffer); 
 }
 
@@ -119,11 +119,11 @@ void secure_send(uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(uint8_t* buffer) {
-    int re = verify_signature(signedmessage.message_len,
-                              signedmessage.signature);
-    if (re != 0) {
-        return ERROR_RETURN;
-    }
+    // int re = verify_signature(signedmessage.message_len,
+    //                           signedmessage.signature);
+    // if (re != 0) {
+    //     return ERROR_RETURN;
+    // }
     return wait_and_receive_packet(buffer);
 }
 
