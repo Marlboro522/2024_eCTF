@@ -511,7 +511,7 @@ int validate_token() {
     strncpy(new_t, AP_TOKEN,17);
     strncat(new_t,(char *) salt,13);
     if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
-        // print_info("I failed to encrypt AP PIN");
+        print_info("I failed to encrypt AP PIN");
         return ERROR_RETURN;
     }
     // print_hex(o_CIPHER,BLOCK_SIZE);
