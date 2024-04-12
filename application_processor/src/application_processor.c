@@ -476,10 +476,10 @@ int validate_pin() {
     // if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
     //     print_debug("PIN ACCEPTED!\n");
     //     return SUCCESS_RETURN;
-    }
+    // }
     // MXC_Delay(MXC_DELAY_SEC(5));
-    print_error("Invalid Pin!\n");
-    return ERROR_RETURN;
+    // print_error("Invalid Pin!\n");
+    // return ERROR_RETURN;
 }
 
 // Function to validate the replacement token
