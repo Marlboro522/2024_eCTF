@@ -414,30 +414,23 @@ int validate_token() {
         print_error("Invalid PIN!\n");
         return ERROR_RETURN;
     }
-    strncpy(new_p, buf,7);
+    strncpy(new_p, buf,16);
     strncat(new_p, (char *)salt,13);
     // print_info("user_pin Length: %zu", strlen(new_p));
     if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
         return ERROR_RETURN;
     }
-    memset(new_p, 0, 23);
-    strncpy(new_p, AP_PIN,7);    
+    memset(new_p, 0, 32);
+    strncpy(new_p, AP_TOKEN,16);    
     strncat(new_p,(char *) salt,13);
     if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)!=0){
         return ERROR_RETURN;
     }
     if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
-        print_debug("PIN ACCEPTED!\n");
+        print_debug("Token ACCEPTED!\n");
         return SUCCESS_RETURN;
     }
     // MXC_Delay(MXC_DELAY_SEC(5));
-    print_error("Invalid Pin!\n");
-    char buf[50];
-    recv_input("Enter token: ", buf);
-    if (!strcmp(buf, AP_TOKEN)) {
-        print_debug("Token Accepted!\n");
-        return SUCCESS_RETURN;
-    }
     print_error("Invalid Token!\n");
     return ERROR_RETURN;
 }
