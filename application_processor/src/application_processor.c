@@ -476,68 +476,50 @@ int validate_pin() {
 
 // Function to validate the replacement token
 int validate_token() {
-    char buf[50];
-    recv_input("Enter token: ", buf);
-    if (!strcmp(buf, AP_TOKEN)) {
-        print_debug("Token Accepted!\n");
-        return SUCCESS_RETURN;
-    }
-    print_error("Invalid Token!\n");
-    return ERROR_RETURN;
-    // uint8_t key[KEY_SIZE];
-    // uint8_t o_CIPHER[BLOCK_SIZE];
-    // uint8_t u_CIPHER[BLOCK_SIZE];
-    // uint8_t iv[KEY_SIZE];
-    // uint8_t salt[SALT_LEN+1];
-    // char hex_str[BLOCK_SIZE * 2 + 1];
-    // char new_t[33];
-    // generate_key(key);
-    // generate_random_iv(iv);
-    // gen_salt((char *)salt);
     // char buf[50];
     // recv_input("Enter token: ", buf);
-    // // print_info("Length: %zu\n", strlen(buf));
-    // if(strlen(buf)>=17){
-    //     // print_info("Delaying...");
-    //     // print_info("The length is: %zu\n", strlen(buf));
-    //     MXC_Delay(MXC_DELAY_SEC(5));
-    //     print_error("Invalid Token!\n");
-    //     return ERROR_RETURN;
-    // }
-    // // else {
-    //     // print_info("The check is not performed wtf. ");
-    // // }
-    // // print_info("Check failed\n");
-    // strncpy(new_t, buf, 17);
-    // strncat(new_t, (char *)salt,13);
-    // if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
-    //     print_info("Failed to encrypt the input pin");
-    //     return ERROR_RETURN;
-    //     // print_info("I failed.\n");
-    // }
-    // // print_hex(u_CIPHER,BLOCK_SIZE);
-    // memset(new_t, 0, 33);
-    // strncpy(new_t, AP_TOKEN,17);
-    // strncat(new_t,(char *) salt,13);
-    // if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
-    //     print_info("I failed to encrypt AP PIN");
-    //     return ERROR_RETURN;
-    // }
-    // print_hex(o_CIPHER,BLOCK_SIZE);
-    // print_info("o CIpHER: ", o_CIPHER);
-    // if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
-    //     // print_info("Token of correct length\n");
-    //     // print_info("Token Acepted should returun Sucess return and it is: %d "
-    //             //    "and Token Accepted ",
-    //             //    SUCCESS_RETURN);
-    //     // print_info("Returning sucess return");
+    // if (!strcmp(buf, AP_TOKEN)) {
     //     print_debug("Token Accepted!\n");
     //     return SUCCESS_RETURN;
     // }
-    // // print_info("Jumpedd here....len<=16");
-    // MXC_Delay(MXC_DELAY_SEC(5));
     // print_error("Invalid Token!\n");
     // return ERROR_RETURN;
+    uint8_t key[KEY_SIZE];
+    uint8_t o_CIPHER[BLOCK_SIZE];
+    uint8_t u_CIPHER[BLOCK_SIZE];
+    uint8_t iv[KEY_SIZE];
+    uint8_t salt[SALT_LEN+1];
+    // char hex_str[BLOCK_SIZE * 2 + 1];
+    char new_p[32];
+    generate_key(key);
+    generate_random_iv(iv);
+    gen_salt((char *)salt);
+    char buf[50];
+    recv_input("Enter PIN: ",buf);
+    if(strlen(buf)>=16){
+        MXC_Delay(MXC_DELAY_SEC(5));
+        print_error("Invalid PIN!\n");
+        return ERROR_RETURN;
+    }
+    strncpy(new_p, buf,7);
+    strncat(new_p, (char *)salt,13);
+    // print_info("user_pin Length: %zu", strlen(new_p));
+    if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
+        return ERROR_RETURN;
+    }
+    memset(new_p, 0, 23);
+    strncpy(new_p, AP_PIN,7);    
+    strncat(new_p,(char *) salt,13);
+    if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)!=0){
+        return ERROR_RETURN;
+    }
+    if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
+        print_debug("PIN ACCEPTED!\n");
+        return SUCCESS_RETURN;
+    }
+    // MXC_Delay(MXC_DELAY_SEC(5));
+    print_error("Invalid Pin!\n");
+    return ERROR_RETURN;
 }
 
 // Boot the components and board if the components validate
