@@ -552,39 +552,49 @@ void attempt_boot() {
 
 // Replace a component if the PIN is correct
 void attempt_replace() {
+    int validate_token() {
     char buf[50];
-
-    if (validate_token()) {
-        return;
+    recv_input("Enter token: ", buf);
+    if (!strcmp(buf, AP_TOKEN)) {
+        print_debug("Token Accepted!\n");
+        return SUCCESS_RETURN;
     }
+    print_error("Invalid Token!\n");
+    return ERROR_RETURN;
+}
+    // char buf[50];
 
-    uint32_t component_id_in = 0;
-    uint32_t component_id_out = 0;
+    // if (validate_token()) {
+    //     return;
+    // }
 
-    recv_input("Component ID In: ", buf);
-    sscanf(buf, "%x", &component_id_in);
-    recv_input("Component ID Out: ", buf);
-    sscanf(buf, "%x", &component_id_out);
+    // uint32_t component_id_in = 0;
+    // uint32_t component_id_out = 0;
 
-    // Find the component to swap out
-    for (unsigned i = 0; i < flash_status.component_cnt; i++) {
-        if (flash_status.component_ids[i] == component_id_out) {
-            flash_status.component_ids[i] = component_id_in;
+    // recv_input("Component ID In: ", buf);
+    // sscanf(buf, "%x", &component_id_in);
+    // recv_input("Component ID Out: ", buf);
+    // sscanf(buf, "%x", &component_id_out);
 
-            // write updated component_ids to flash
-            flash_simple_erase_page(FLASH_ADDR);
-            flash_simple_write(FLASH_ADDR, (uint32_t*)&flash_status, sizeof(flash_entry));
+    // // Find the component to swap out
+    // for (unsigned i = 0; i < flash_status.component_cnt; i++) {
+    //     if (flash_status.component_ids[i] == component_id_out) {
+    //         flash_status.component_ids[i] = component_id_in;
 
-            print_debug("Replaced 0x%08x with 0x%08x\n", component_id_out,
-                    component_id_in);
-            print_success("Replace\n");
-            return;
-        }
-    }
+    //         // write updated component_ids to flash
+    //         flash_simple_erase_page(FLASH_ADDR);
+    //         flash_simple_write(FLASH_ADDR, (uint32_t*)&flash_status, sizeof(flash_entry));
 
-    // Component Out was not found
-    print_error("Component 0x%08x is not provisioned for the system\r\n",
-            component_id_out);
+    //         print_debug("Replaced 0x%08x with 0x%08x\n", component_id_out,
+    //                 component_id_in);
+    //         print_success("Replace\n");
+    //         return;
+    //     }
+    // }
+
+    // // Component Out was not found
+    // print_error("Component 0x%08x is not provisioned for the system\r\n",
+    //         component_id_out);
 }
 
 // Attest a component if the PIN is correct
