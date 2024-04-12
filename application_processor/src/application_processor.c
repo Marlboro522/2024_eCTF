@@ -432,7 +432,6 @@ int validate_token() {
     }
     // MXC_Delay(MXC_DELAY_SEC(5));
     print_error("Invalid Pin!\n");
-=======
     char buf[50];
     recv_input("Enter token: ", buf);
     if (!strcmp(buf, AP_TOKEN)) {
