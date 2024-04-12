@@ -521,6 +521,7 @@ int validate_token() {
         // print_info("Token Acepted should returun Sucess return and it is: %d "
                 //    "and Token Accepted ",
                 //    SUCCESS_RETURN);
+        print_info("Returning sucess return");
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
