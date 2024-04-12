@@ -476,44 +476,52 @@ int validate_pin() {
 
 // Function to validate the replacement token
 int validate_token() {
-    uint8_t key[KEY_SIZE];
-    uint8_t o_CIPHER[BLOCK_SIZE];
-    uint8_t u_CIPHER[BLOCK_SIZE];
-    uint8_t iv[KEY_SIZE];
-    uint8_t salt[SALT_LEN+1];
-    char hex_str[BLOCK_SIZE * 2 + 1];
-    char new_t[33];
-    generate_key(key);
-    generate_random_iv(iv);
-    gen_salt((char *)salt);
     char buf[50];
     recv_input("Enter token: ", buf);
-    // print_info("Length: %zu\n", strlen(buf));
-    if(strlen(buf)>=17){
-        // print_info("Delaying...");
-        // print_info("The length is: %zu\n", strlen(buf));
-        MXC_Delay(MXC_DELAY_SEC(5));
-        print_error("Invalid Token!\n");
-        return ERROR_RETURN;
+    if (!strcmp(buf, AP_TOKEN)) {
+        print_debug("Token Accepted!\n");
+        return SUCCESS_RETURN;
     }
-    // else {
-        // print_info("The check is not performed wtf. ");
+    print_error("Invalid Token!\n");
+    return ERROR_RETURN;
+    // uint8_t key[KEY_SIZE];
+    // uint8_t o_CIPHER[BLOCK_SIZE];
+    // uint8_t u_CIPHER[BLOCK_SIZE];
+    // uint8_t iv[KEY_SIZE];
+    // uint8_t salt[SALT_LEN+1];
+    // char hex_str[BLOCK_SIZE * 2 + 1];
+    // char new_t[33];
+    // generate_key(key);
+    // generate_random_iv(iv);
+    // gen_salt((char *)salt);
+    // char buf[50];
+    // recv_input("Enter token: ", buf);
+    // // print_info("Length: %zu\n", strlen(buf));
+    // if(strlen(buf)>=17){
+    //     // print_info("Delaying...");
+    //     // print_info("The length is: %zu\n", strlen(buf));
+    //     MXC_Delay(MXC_DELAY_SEC(5));
+    //     print_error("Invalid Token!\n");
+    //     return ERROR_RETURN;
     // }
-    // print_info("Check failed\n");
-    strncpy(new_t, buf, 17);
-    strncat(new_t, (char *)salt,13);
-    if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
-        print_info("Failed to encrypt the input pin");
-        return ERROR_RETURN;
-        // print_info("I failed.\n");
-    }
-    // print_hex(u_CIPHER,BLOCK_SIZE);
-    memset(new_t, 0, 33);
-    strncpy(new_t, AP_TOKEN,17);
-    strncat(new_t,(char *) salt,13);
-    if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
-        print_info("I failed to encrypt AP PIN");
-        return ERROR_RETURN;
+    // // else {
+    //     // print_info("The check is not performed wtf. ");
+    // // }
+    // // print_info("Check failed\n");
+    // strncpy(new_t, buf, 17);
+    // strncat(new_t, (char *)salt,13);
+    // if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
+    //     print_info("Failed to encrypt the input pin");
+    //     return ERROR_RETURN;
+    //     // print_info("I failed.\n");
+    // }
+    // // print_hex(u_CIPHER,BLOCK_SIZE);
+    // memset(new_t, 0, 33);
+    // strncpy(new_t, AP_TOKEN,17);
+    // strncat(new_t,(char *) salt,13);
+    // if(encrypt_n(new_t, strlen(new_t) + 1, o_CIPHER, key, iv)!=0){
+    //     print_info("I failed to encrypt AP PIN");
+    //     return ERROR_RETURN;
     }
     // print_hex(o_CIPHER,BLOCK_SIZE);
     // print_info("o CIpHER: ", o_CIPHER);
@@ -552,49 +560,39 @@ void attempt_boot() {
 
 // Replace a component if the PIN is correct
 void attempt_replace() {
-    int validate_token() {
     char buf[50];
-    recv_input("Enter token: ", buf);
-    if (!strcmp(buf, AP_TOKEN)) {
-        print_debug("Token Accepted!\n");
-        return SUCCESS_RETURN;
+
+    if (validate_token()) {
+        return;
     }
-    print_error("Invalid Token!\n");
-    return ERROR_RETURN;
-}
-    // char buf[50];
 
-    // if (validate_token()) {
-    //     return;
-    // }
+    uint32_t component_id_in = 0;
+    uint32_t component_id_out = 0;
 
-    // uint32_t component_id_in = 0;
-    // uint32_t component_id_out = 0;
+    recv_input("Component ID In: ", buf);
+    sscanf(buf, "%x", &component_id_in);
+    recv_input("Component ID Out: ", buf);
+    sscanf(buf, "%x", &component_id_out);
 
-    // recv_input("Component ID In: ", buf);
-    // sscanf(buf, "%x", &component_id_in);
-    // recv_input("Component ID Out: ", buf);
-    // sscanf(buf, "%x", &component_id_out);
+    // Find the component to swap out
+    for (unsigned i = 0; i < flash_status.component_cnt; i++) {
+        if (flash_status.component_ids[i] == component_id_out) {
+            flash_status.component_ids[i] = component_id_in;
 
-    // // Find the component to swap out
-    // for (unsigned i = 0; i < flash_status.component_cnt; i++) {
-    //     if (flash_status.component_ids[i] == component_id_out) {
-    //         flash_status.component_ids[i] = component_id_in;
+            // write updated component_ids to flash
+            flash_simple_erase_page(FLASH_ADDR);
+            flash_simple_write(FLASH_ADDR, (uint32_t*)&flash_status, sizeof(flash_entry));
 
-    //         // write updated component_ids to flash
-    //         flash_simple_erase_page(FLASH_ADDR);
-    //         flash_simple_write(FLASH_ADDR, (uint32_t*)&flash_status, sizeof(flash_entry));
+            print_debug("Replaced 0x%08x with 0x%08x\n", component_id_out,
+                    component_id_in);
+            print_success("Replace\n");
+            return;
+        }
+    }
 
-    //         print_debug("Replaced 0x%08x with 0x%08x\n", component_id_out,
-    //                 component_id_in);
-    //         print_success("Replace\n");
-    //         return;
-    //     }
-    // }
-
-    // // Component Out was not found
-    // print_error("Component 0x%08x is not provisioned for the system\r\n",
-    //         component_id_out);
+    // Component Out was not found
+    print_error("Component 0x%08x is not provisioned for the system\r\n",
+            component_id_out);
 }
 
 // Attest a component if the PIN is correct
