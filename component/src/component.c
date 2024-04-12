@@ -10,6 +10,7 @@
  *
  * @copyright Copyright (c) 2024 The MITRE Corporation
  */
+
 #include "board.h"
 #include "i2c.h"
 #include "led.h"
@@ -26,7 +27,6 @@
 // Includes from containerized build
 #include "ectf_params.h"
 #include "global_secrets.h"
-#include "../../application_processor/inc/simple_crypto.h"
 
 #ifdef POST_BOOT
 #include "led.h"
@@ -72,8 +72,6 @@ typedef struct {
     uint32_t component_id;
 } scan_message;
 
-unsigned char shared_secret[SECRET_SIZE+1];
-Signed_Message signedmessage;
 /********************************* FUNCTION DECLARATIONS **********************************/
 // Core function definitions
 void component_process_cmd(void);
@@ -98,13 +96,6 @@ uint8_t transmit_buffer[MAX_I2C_MESSAGE_LEN];
  * This function must be implemented by your team to align with the security requirements.
 */
 void secure_send(uint8_t* buffer, uint8_t len) {
-    // unsigned char signature[SIGNATURE_SIZE+1] = {0};
-    // if(sign_message(len,signature)!=0){
-    //     MXC_Delay(MXC_DELAY_SEC(5));
-    //     return;
-    // }
-    // signedmessage.message_len = len;
-    // signedmessage.signature = signature;
     send_packet_and_ack(len, buffer); 
 }
 
@@ -119,11 +110,6 @@ void secure_send(uint8_t* buffer, uint8_t len) {
  * This function must be implemented by your team to align with the security requirements.
 */
 int secure_receive(uint8_t* buffer) {
-    // int re = verify_signature(signedmessage.message_len,
-    //                           signedmessage.signature);
-    // if (re != 0) {
-    //     return ERROR_RETURN;
-    // }
     return wait_and_receive_packet(buffer);
 }
 
@@ -190,7 +176,7 @@ void process_boot() {
     // respond with the boot message
     uint8_t len = strlen(COMPONENT_BOOT_MSG) + 1;
     memcpy((void*)transmit_buffer, COMPONENT_BOOT_MSG, len);
-    send_packet_and_ack(len,transmit_buffer);
+    send_packet_and_ack(len, transmit_buffer);
     // Call the boot function
     boot();
 }
@@ -199,21 +185,21 @@ void process_scan() {
     // The AP requested a scan. Respond with the Component ID
     scan_message* packet = (scan_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    send_packet_and_ack(sizeof(scan_message),transmit_buffer);
+    send_packet_and_ack(sizeof(scan_message), transmit_buffer);
 }
 
 void process_validate() {
     // The AP requested a validation. Respond with the Component ID
     validate_message* packet = (validate_message*) transmit_buffer;
     packet->component_id = COMPONENT_ID;
-    send_packet_and_ack(sizeof(validate_message),transmit_buffer);
+    send_packet_and_ack(sizeof(validate_message), transmit_buffer);
 }
 
 void process_attest() {
     // The AP requested attestation. Respond with the attestation data
     uint8_t len = sprintf((char*)transmit_buffer, "LOC>%s\nDATE>%s\nCUST>%s\n",
                 ATTESTATION_LOC, ATTESTATION_DATE, ATTESTATION_CUSTOMER) + 1;
-    send_packet_and_ack(len,transmit_buffer);
+    send_packet_and_ack(len, transmit_buffer);
 }
 
 /*********************************** MAIN *************************************/

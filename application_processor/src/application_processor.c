@@ -482,15 +482,15 @@ int validate_token() {
         print_debug("Token Accepted!\n");
         return SUCCESS_RETURN;
     }
-    print_error("Invalid Token!\n");
-    return ERROR_RETURN;
+    // print_error("Invalid Token!\n");
+    // return ERROR_RETURN;
     // uint8_t key[KEY_SIZE];
     // uint8_t o_CIPHER[BLOCK_SIZE];
     // uint8_t u_CIPHER[BLOCK_SIZE];
     // uint8_t iv[KEY_SIZE];
     // uint8_t salt[SALT_LEN+1];
     // char hex_str[BLOCK_SIZE * 2 + 1];
-    // char new_t[33];
+    // char new_t[32];
     // generate_key(key);
     // generate_random_iv(iv);
     // gen_salt((char *)salt);
@@ -511,9 +511,7 @@ int validate_token() {
     // strncpy(new_t, buf, 17);
     // strncat(new_t, (char *)salt,13);
     // if(encrypt_n(buf,strlen(new_t) +1 ,u_CIPHER,key,iv)!=0){
-    //     print_info("Failed to encrypt the input pin");
     //     return ERROR_RETURN;
-    //     // print_info("I failed.\n");
     // }
     // // print_hex(u_CIPHER,BLOCK_SIZE);
     // memset(new_t, 0, 33);
@@ -523,8 +521,6 @@ int validate_token() {
     //     print_info("I failed to encrypt AP PIN");
     //     return ERROR_RETURN;
     // }
-    // print_hex(o_CIPHER,BLOCK_SIZE);
-    // print_info("o CIpHER: ", o_CIPHER);
     // if (compare_pins(o_CIPHER, u_CIPHER) == SUCCESS_RETURN) {
     //     // print_info("Token of correct length\n");
     //     // print_info("Token Acepted should returun Sucess return and it is: %d "
