@@ -436,50 +436,50 @@ void boot() {
 
 // Compare the entered PIN to the correct PIN
 int validate_pin() {
-    char buf[50];
-    recv_input("Enter pin: ", buf);
-    if (!strcmp(buf, AP_PIN)) {
-        print_debug("Pin Accepted!\n");
-        return SUCCESS_RETURN;
-    }
-    print_error("Invalid PIN!\n");
-    return ERROR_RETURN;
-    // uint8_t key[KEY_SIZE];
-    // uint8_t o_CIPHER[BLOCK_SIZE];
-    // uint8_t u_CIPHER[BLOCK_SIZE];
-    // uint8_t iv[KEY_SIZE];
-    // uint8_t salt[SALT_LEN+1];
-    // // char hex_str[BLOCK_SIZE * 2 + 1];
-    // char new_p[23];
-    // generate_key(key);
-    // generate_random_iv(iv);
-    // gen_salt((char *)salt);
     // char buf[50];
-    // recv_input("Enter PIN: ",buf);
-    // if(strlen(buf)>=7){
-    //     MXC_Delay(MXC_DELAY_SEC(5));
-    //     print_error("Invalid PIN!\n");
-    //     return ERROR_RETURN;
-    // }
-    // strncpy(new_p, buf,7);
-    // strncat(new_p, (char *)salt,13);
-    // // print_info("user_pin Length: %zu", strlen(new_p));
-    // if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
-    //     return ERROR_RETURN;
-    // }
-    // memset(new_p, 0, 23);
-    // strncpy(new_p, AP_PIN,7);    
-    // strncat(new_p,(char *) salt,13);
-    // if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)!=0){
-    //     return ERROR_RETURN;
-    // }
-    // if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
-    //     print_debug("PIN ACCEPTED!\n");
+    // recv_input("Enter pin: ", buf);
+    // if (!strcmp(buf, AP_PIN)) {
+    //     print_debug("Pin Accepted!\n");
     //     return SUCCESS_RETURN;
     // }
-    // MXC_Delay(MXC_DELAY_SEC(5));
-    // print_error("Invalid Pin!\n");
+    // print_error("Invalid PIN!\n");
     // return ERROR_RETURN;
+    uint8_t key[KEY_SIZE];
+    uint8_t o_CIPHER[BLOCK_SIZE];
+    uint8_t u_CIPHER[BLOCK_SIZE];
+    uint8_t iv[KEY_SIZE];
+    uint8_t salt[SALT_LEN+1];
+    // char hex_str[BLOCK_SIZE * 2 + 1];
+    char new_p[23];
+    generate_key(key);
+    generate_random_iv(iv);
+    gen_salt((char *)salt);
+    char buf[50];
+    recv_input("Enter PIN: ",buf);
+    if(strlen(buf)>=7){
+        MXC_Delay(MXC_DELAY_SEC(5));
+        print_error("Invalid PIN!\n");
+        return ERROR_RETURN;
+    }
+    strncpy(new_p, buf,7);
+    strncat(new_p, (char *)salt,13);
+    // print_info("user_pin Length: %zu", strlen(new_p));
+    if(encrypt_n(new_p,strlen(new_p)+ 1,u_CIPHER,key,iv)!=0){
+        return ERROR_RETURN;
+    }
+    memset(new_p, 0, 23);
+    strncpy(new_p, AP_PIN,7);    
+    strncat(new_p,(char *) salt,13);
+    if(encrypt_n(new_p, strlen(new_p) + 1, o_CIPHER, key, iv)!=0){
+        return ERROR_RETURN;
+    }
+    if(compare_pins(o_CIPHER,u_CIPHER)==SUCCESS_RETURN){
+        print_debug("PIN ACCEPTED!\n");
+        return SUCCESS_RETURN;
+    }
+    MXC_Delay(MXC_DELAY_SEC(5));
+    print_error("Invalid Pin!\n");
+    return ERROR_RETURN;
 }
 
 // Function to validate the replacement token
